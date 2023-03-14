@@ -17,7 +17,6 @@ type DockerService struct {
 }
 
 func (ds DockerService) Build(client *client.Client) error {
-
         loggerUtil := logger.LoggerUtil{}
         loggerUtil.PrintInfo("Building...")
         ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
@@ -33,9 +32,6 @@ func (ds DockerService) Build(client *client.Client) error {
             Tags:       []string{ds.ContainerRepo + "/" + ds.AppName},
             Remove:     true,
         }
-
-        loggerUtil.PrintInfo(ds.DockerDirectory + ds.DockerFileName + ds.ContainerRepo + ds.AppName)
-
 
         buildResponse, err := client.ImageBuild(ctx, buildContext, buildOptions)
         loggerUtil.PrintInfo(ds.ContainerRepo + "/" + ds.AppName)
