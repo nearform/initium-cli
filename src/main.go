@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
 	"k8s-kurated-addons.cli/src/services/docker"
     "k8s-kurated-addons.cli/src/utils/logger"
+    "k8s-kurated-addons.cli/src/utils/helper"
 
 	"github.com/urfave/cli/v2"
 	"github.com/docker/docker/client"
@@ -18,16 +18,18 @@ func main() {
     		Name:  "k8s kurated addons",
     		Usage: "CLI tool ",
     		Action: func(cCtx *cli.Context) error {
-    			appName := cCtx.String("app-name")
-    			dockerFilePath := cCtx.String("dockerfile")
-    			repoName := cCtx.String("repo-name")
-    			run(appName, repoName, dockerFilePath)
+                appName := cCtx.String("app-name")
+       			dockerFilePath := cCtx.String("dockerfile-directory")
+       			repoName := cCtx.String("repo-name")
+       			dockerFileName := cCtx.String("dockerfile-name")
+       			initArguments(&appName, &repoName, &dockerFilePath, &dockerFileName)
+    			run(appName, repoName, dockerFilePath, dockerFileName)
     			return nil
     		},
 			Flags: []cli.Flag{
 				&cli.StringFlag{Name: "app-name"},
 				&cli.StringFlag{Name: "repo-name"},
-				&cli.StringFlag{Name: "dockerfile"},
+				&cli.StringFlag{Name: "dockerfile-directory"},
 				&cli.BoolFlag{Name: "non-interactive", Aliases: []string{"ni"}},
 			},
     	}
@@ -37,8 +39,18 @@ func main() {
     	}
 }
 
-func run(appName string, repoName string, dockerFilePath string) error {
-    fmt.Println("nearForm: k8s kurated addons")
+func initArguments(appName *string, repoName *string, dockerFilePath *string, dockerFileName *string) {
+    helper.ReplaceIfEmpty(appName, "k8s-kurated-addons-cli")
+    helper.ReplaceIfEmpty(dockerFilePath, "docker")
+    helper.ReplaceIfEmpty(repoName, "ghcr.io/nearform")
+    helper.ReplaceIfEmpty(dockerFileName, "Dockerfile")
+}
+
+func run(appName string, repoName string, dockerFilePath string, dockerFileName string) error {
+    loggerUtil := logger.LoggerUtil{}
+    loggerUtil.PrintInfo("nearForm: k8s kurated addons")
+    loggerUtil.PrintInfo("Dockerfile Location: " + dockerFilePath + "/" + dockerFileName)
+    loggerUtil.PrintInfo("Building to: " + repoName + "/" + appName)
 
     dockerService := docker.DockerService {
         DockerDirectory: dockerFilePath,
@@ -47,7 +59,6 @@ func run(appName string, repoName string, dockerFilePath string) error {
         AppName: appName,
     }
 
-    loggerUtil := logger.LoggerUtil{}
     cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
     if (err != nil) {
         loggerUtil.PrintError("Failed to create docker client: ", err)
