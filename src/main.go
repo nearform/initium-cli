@@ -19,21 +19,20 @@ func main() {
     		Usage: "CLI tool for KKA",
     		Action: func(cCtx *cli.Context) error {
                 appName := cCtx.String("app-name")
-       			dockerFilePath := cCtx.String("dockerfile-directory")
-       			repoName := cCtx.String("repo-name")
-       			dockerFileName := cCtx.String("dockerfile-name")
+                dockerFilePath := cCtx.String("dockerfile-directory")
+                repoName := cCtx.String("repo-name")
+                dockerFileName := cCtx.String("dockerfile-name")
 
-       			initArguments(&appName, &repoName, &dockerFilePath, &dockerFileName)
-    			run(appName, repoName, dockerFilePath, dockerFileName)
+                initArguments(&appName, &repoName, &dockerFilePath, &dockerFileName)
+                run(appName, repoName, dockerFilePath, dockerFileName)
 
-    			return nil
+                return nil
     		},
 			Flags: []cli.Flag{
 				&cli.StringFlag{Name: "app-name"},
 				&cli.StringFlag{Name: "repo-name"},
 				&cli.StringFlag{Name: "dockerfile-directory"},
 				&cli.StringFlag{Name: "dockerfile-name"},
-				&cli.BoolFlag{Name: "non-interactive", Aliases: []string{"ni"}},
 			},
     	}
 
