@@ -1,34 +1,38 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
 	"k8s-kurated-addons.cli/src/services/docker"
+
     "k8s-kurated-addons.cli/src/utils/logger"
+    "k8s-kurated-addons.cli/src/utils/helper"
+    "k8s-kurated-addons.cli/src/utils/defaults"
 
 	"github.com/urfave/cli/v2"
-	"github.com/docker/docker/client"
 )
-
 
 func main() {
     app := &cli.App{
     		Name:  "k8s kurated addons",
-    		Usage: "CLI tool ",
+    		Usage: "CLI tool for KKA",
     		Action: func(cCtx *cli.Context) error {
-    			appName := cCtx.String("app-name")
-    			dockerFilePath := cCtx.String("dockerfile")
-    			repoName := cCtx.String("repo-name")
-    			run(appName, repoName, dockerFilePath)
-    			return nil
+                appName := cCtx.String("app-name")
+                dockerFilePath := cCtx.String("dockerfile-directory")
+                repoName := cCtx.String("repo-name")
+                dockerFileName := cCtx.String("dockerfile-name")
+
+                initArguments(&appName, &repoName, &dockerFilePath, &dockerFileName)
+                run(appName, repoName, dockerFilePath, dockerFileName)
+
+                return nil
     		},
 			Flags: []cli.Flag{
 				&cli.StringFlag{Name: "app-name"},
 				&cli.StringFlag{Name: "repo-name"},
-				&cli.StringFlag{Name: "dockerfile"},
-				&cli.BoolFlag{Name: "non-interactive", Aliases: []string{"ni"}},
+				&cli.StringFlag{Name: "dockerfile-directory"},
+				&cli.StringFlag{Name: "dockerfile-name"},
 			},
     	}
 
@@ -37,24 +41,24 @@ func main() {
     	}
 }
 
-func run(appName string, repoName string, dockerFilePath string) error {
-    fmt.Println("nearForm: k8s kurated addons")
+// Initialize default values
+func initArguments(appName *string, repoName *string, dockerFilePath *string, dockerFileName *string) {
+    helper.ReplaceIfEmpty(appName, defaults.DefaultAppName)
+    helper.ReplaceIfEmpty(dockerFilePath, defaults.DefaultDockerDirectory)
+    helper.ReplaceIfEmpty(repoName, defaults.DefaultRepoName)
+    helper.ReplaceIfEmpty(dockerFileName, defaults.DefaultDockerfileName)
+}
 
-    dockerService := docker.DockerService {
-        DockerDirectory: dockerFilePath,
-        DockerFileName: "Dockerfile",
-        ContainerRepo: repoName,
-        AppName: appName,
-    }
+// Run the CLI
+func run(appName string, repoName string, dockerFilePath string, dockerFileName string) error {
+    logger.PrintInfo("nearForm: k8s kurated addons CLI")
+    logger.PrintInfo("Dockerfile Location: " + dockerFilePath + "/" + dockerFileName)
+    logger.PrintInfo("Building to: " + repoName + "/" + appName)
 
-    loggerUtil := logger.LoggerUtil{}
-    cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-    if (err != nil) {
-        loggerUtil.PrintError("Failed to create docker client: ", err)
-    }
+    dockerService := docker.New(dockerFilePath, dockerFileName, repoName, appName)
 
-    dockerService.Build(cli)
-    dockerService.Push(cli)
+    dockerService.Build()
+    dockerService.Push()
 
     return nil
 }

@@ -1,27 +1,44 @@
 # k8s Kurated Addons Cli
 
-This project is intended for building a executable file to run on various CI/CD platfroms in order to get a project deployed to a kubernetes environment
+This project is intended for building an executable file to run on various CI/CD platforms in order to get a project deployed to a containerised environment
+
+### Pre-requisites
+
+You need Docker installed (or similar solutions) to run this project.
+
+Here you can find a list of possible candidates:
+
+- [Docker](https://docs.docker.com/engine/install/) ( cross-platform, paid solution )
+- [Rancher Desktop](https://rancherdesktop.io/) ( cross-platform, FOSS )
+- [lima](https://github.com/lima-vm/lima) + [nerdctl](https://github.com/containerd/nerdctl) ( macOS only )
+
+
+This project assumes that you are able to push to your container repository. You can test this by running
+
+```bash
+
+docker push <yourcontainer.repo/imagename>
+```
 
 ### Running the executable
 
-In order to run the executable you simply need to run 
+In order to build the executable you simply need to run 
 
 ```
 make
 ```
 
-#### Interactive
+The executable takes a few arguments. Running without any arguments will default to values for this project
+
+| Parameter                | Description                                                                                                       |
+|--------------------------|-------------------------------------------------------------------------------------------------------------------|
+| `--app-name`             | The name of the app. Defaults to `k8s-kurarted-addons-cli `                                                       |
+| `--repo-name`            | The base address of the container reppsitory you are wanting to push the image to. Defaults to `ghcr.io/nearform` |
+| `--dockerfile-directory` | The directory in which your Dockerfile lives. Defaults to `docker`                                                |       
+| `--dockerfile-name`      | The name of the Dockerfile. Defaults to `Dockerfile`                                                              |
+
+You will be able to run the executable from 
 
 ```bash
 ./bin/kka-cli
 ```
-
-This will launch an interactive prompt in which you will need to provide a set of parameters to get your integration working correctly 
-
-#### Non-Interactive
-
-To use the non-interactive (automated) version of this tool, you will need to specify the flag `--non-interactive` or `-ni`. You will need to provide the application with a series of environment variables or parameters
-
-`KKA_APP_NAME` or `--app-name`: The application name
-
-`KKA_APP_PORT` or `--app-port`: The port in which the application runs on
