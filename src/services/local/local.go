@@ -14,7 +14,7 @@ type LocalService struct {
 // Create the Dockerfile
 func (ls LocalService) CreateDockerfile(dockerFilePath string) {
     logger.PrintInfo("Creating Dockerfile under " + dockerFilePath + "/" + defaults.DefaultDockerfileName)
-    data, err := bindata.Asset("Dockerfile")
+    data, err := bindata.Asset(dockerFilePath + "/" + defaults.DefaultDockerfileName)
     if err != nil {
         logger.PrintError("Dockerfile asset not found", err)
     }
