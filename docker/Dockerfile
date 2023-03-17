@@ -1,7 +1,12 @@
-FROM node:12
+FROM node:lts-alpine
 
-WORKDIR /src
+# Connect the built container to a repository when push to the Github Package registry, automatically
+# See https://docs.github.com/en/packages/learn-github-packages/connecting-a-repository-to-a-package
+ARG LABEL_IMAGE_SOURCE
+LABEL org.opencontainers.image.source=${LABEL_IMAGE_SOURCE}
 
-COPY . .
+ADD . /app
 
-CMD [ "node", "app.js"]
+WORKDIR /app
+
+ENTRYPOINT [ "npm", "start" ]

@@ -33,7 +33,7 @@ The executable takes a few arguments. Running without any arguments will default
 | Parameter                | Description                                                                                                       |
 |--------------------------|-------------------------------------------------------------------------------------------------------------------|
 | `--app-name`             | The name of the app. Defaults to `k8s-kurarted-addons-cli `                                                       |
-| `--repo-name`            | The base address of the container reppsitory you are wanting to push the image to. Defaults to `ghcr.io/nearform` |
+| `--repo-name`            | The base address of the container repository you are wanting to push the image to. Defaults to `ghcr.io/nearform` |
 | `--dockerfile-directory` | The directory in which your Dockerfile lives. Defaults to `docker`                                                |       
 | `--dockerfile-name`      | The name of the Dockerfile. Defaults to `Dockerfile`                                                              |
 
