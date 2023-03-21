@@ -20,6 +20,22 @@ This project assumes that you are able to push to your container repository. You
 docker push <yourcontainer.repo/imagename>
 ```
 
+### Updating the pre-built Dockerfile
+
+This project contains a Dockerfile within `docker/Dockerfile`, which acts as the default Dockerfile when none is given. It is built into the compliation of the CLI.
+
+To accomplish this, this project uses go-bindata, which should be installed once you run
+
+``` bash
+make install
+```
+
+If you would like to update the Dockerfile, make your changes and run the make command:
+
+```bash
+make update-dockerfile
+```
+
 ### Running the executable
 
 In order to build the executable you simply need to run 
@@ -33,7 +49,7 @@ The executable takes a few arguments. Running without any arguments will default
 | Parameter                | Description                                                                                                       |
 |--------------------------|-------------------------------------------------------------------------------------------------------------------|
 | `--app-name`             | The name of the app. Defaults to `k8s-kurarted-addons-cli `                                                       |
-| `--repo-name`            | The base address of the container reppsitory you are wanting to push the image to. Defaults to `ghcr.io/nearform` |
+| `--repo-name`            | The base address of the container repository you are wanting to push the image to. Defaults to `ghcr.io/nearform` |
 | `--dockerfile-directory` | The directory in which your Dockerfile lives. Defaults to `docker`                                                |       
 | `--dockerfile-name`      | The name of the Dockerfile. Defaults to `Dockerfile`                                                              |
 
