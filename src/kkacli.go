@@ -5,6 +5,7 @@ import (
     "os"
 
     "k8s-kurated-addons.cli/src/services/docker"
+    "k8s-kurated-addons.cli/src/services/kubernetes"
     "k8s-kurated-addons.cli/src/services/local"
 
     "k8s-kurated-addons.cli/src/utils/logger"
@@ -21,22 +22,26 @@ func Run() {
         Usage: "kka-cli",
         Action: func(cCtx *cli.Context) error {
             appName := cCtx.String("app-name")
+            appPort := cCtx.String("app-port")
             dockerFilePath := cCtx.String("dockerfile-directory")
             repoName := cCtx.String("repo-name")
             dockerFileName := cCtx.String("dockerfile-name")
+            manifestPath := cCtx.String("manifest-path")
 
             localService := local.LocalService{
                 HasDockerfile: dockerFileName != "",
+                HasManifest: manifestPath != "",
             }
 
-            initArguments(&appName, &repoName, &dockerFilePath, &dockerFileName, localService)
-            runCli(appName, repoName, dockerFilePath, dockerFileName)
-            cleanUp(localService, dockerFilePath)
+            parameters := initParameters(&appName, &appPort, &repoName, &dockerFilePath, &dockerFileName, &manifestPath, localService)
+            runCli(parameters)
+//             cleanUp(localService, dockerFilePath)
 
             return nil
         },
         Flags: []cli.Flag{
             &cli.StringFlag{Name: "app-name", Usage: "The name of the app"},
+            &cli.StringFlag{Name: "app-port", Usage: "The name of the app"},
             &cli.StringFlag{Name: "repo-name", Usage: "The base address of the container repository you are wanting to push the image to."},
             &cli.StringFlag{Name: "dockerfile-directory", Usage: "The directory in which your Dockerfile lives."},
             &cli.StringFlag{Name: "dockerfile-name", Usage: "The name of the Dockerfile"},
@@ -49,7 +54,7 @@ func Run() {
 }
 
 // Initialize default values
-func initArguments(appName *string, repoName *string, dockerFilePath *string, dockerFileName *string, localService local.LocalService) {
+func initParameters(appName *string, appPort *string, repoName *string, dockerFilePath *string, dockerFileName *string, manifestPath *string, localService local.LocalService) helper.Parameters {
 
     helper.ReplaceIfEmpty(dockerFilePath, defaults.DefaultDockerDirectory)
 
@@ -60,18 +65,37 @@ func initArguments(appName *string, repoName *string, dockerFilePath *string, do
     }
 
     helper.ReplaceIfEmpty(appName, defaults.DefaultAppName)
+    helper.ReplaceIfEmpty(appPort, defaults.DefaultAppPort)
     helper.ReplaceIfEmpty(repoName, defaults.DefaultRepoName)
+
+    // If no manifest is given, we will create one
+    if (!localService.HasManifest) {
+        localService.CreateManifest(*appPort, *appName, *repoName)
+        helper.ReplaceIfEmpty(manifestPath, defaults.DefaultManifestPath)
+    }
+
+    return helper.Parameters{
+        AppName: *appName,
+        AppPort: *appPort,
+        RepoName: *repoName,
+        DockerFilePath: *dockerFilePath,
+        DockerFileName: *dockerFileName,
+        ManifestPath: *manifestPath,
+    }
 }
 
 // Run the CLI
-func runCli(appName string, repoName string, dockerFilePath string, dockerFileName string) error {
-    logger.PrintInfo("Dockerfile Location: " + dockerFilePath + "/" + dockerFileName)
-    logger.PrintInfo("Building to: " + repoName + "/" + appName)
+func runCli(parameters helper.Parameters) error {
+    logger.PrintInfo("Dockerfile Location: " + parameters.DockerFilePath + "/" + parameters.DockerFileName)
+    logger.PrintInfo("Building to: " + parameters.RepoName + "/" + parameters.AppName)
 
-    dockerService := docker.New(dockerFilePath, dockerFileName, repoName, appName)
+    dockerService := docker.New(parameters.DockerFilePath, parameters.DockerFileName, parameters.RepoName, parameters.AppName)
 
     dockerService.Build()
     dockerService.Push()
+
+    kubernetesService := kubernetes.New()
+    kubernetesService.DeployManifest(parameters.ManifestPath)
 
     return nil
 }

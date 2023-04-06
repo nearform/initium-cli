@@ -1,6 +1,7 @@
 // Code generated for package bindata by go-bindata DO NOT EDIT. (@generated)
 // sources:
 // docker/Dockerfile
+// manifests/knative-app.yaml
 package bindata
 
 import (
@@ -92,7 +93,27 @@ func dockerDockerfile() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "docker/Dockerfile", size: 365, mode: os.FileMode(420), modTime: time.Unix(1679074884, 0)}
+	info := bindataFileInfo{name: "docker/Dockerfile", size: 365, mode: os.FileMode(420), modTime: time.Unix(1680689653, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var _manifestsKnativeAppYaml = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x5c\xcd\x3f\x8b\x83\x40\x10\x05\xf0\x7e\x3f\xc5\x14\xd7\x9e\x72\xed\x76\x16\x72\x04\x49\xb2\xa8\x04\x52\xc9\xa0\x83\x2c\x66\xff\xb0\x3b\x6c\x13\xfc\xee\x61\x09\x8a\xc9\xab\x86\xf7\xe0\x37\xe8\xf5\x8d\x42\xd4\xce\x4a\x88\x14\x92\xb6\x73\xb1\x58\x64\x9d\xa8\x98\x28\x95\xe9\x4f\x2c\xda\x4e\x12\xba\x3c\x8e\x24\x0c\x31\x4e\xc8\x28\x05\x80\x45\x43\x12\x7e\x9e\x4d\x53\x0d\x95\x52\xc3\xa5\x3a\xd7\xab\x88\x9e\xc6\xbc\x32\x19\xff\x40\xa6\x7c\x03\x6c\x6d\xce\xe8\x2c\xa3\xb6\x14\xe2\xd6\x00\xfc\x82\x36\x38\x7f\x70\x6d\xfd\x7f\xea\xfa\xf6\xbe\x96\xdf\x2f\x60\x8f\x77\x81\x0f\xca\x5b\xda\x7d\xe5\x02\x1f\x45\x75\x6d\xfb\x55\xbc\x02\x00\x00\xff\xff\x77\x33\xff\xda\xf4\x00\x00\x00")
+
+func manifestsKnativeAppYamlBytes() ([]byte, error) {
+	return bindataRead(
+		_manifestsKnativeAppYaml,
+		"manifests/knative-app.yaml",
+	)
+}
+
+func manifestsKnativeAppYaml() (*asset, error) {
+	bytes, err := manifestsKnativeAppYamlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "manifests/knative-app.yaml", size: 244, mode: os.FileMode(420), modTime: time.Unix(1680689609, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -149,7 +170,8 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"docker/Dockerfile": dockerDockerfile,
+	"docker/Dockerfile":          dockerDockerfile,
+	"manifests/knative-app.yaml": manifestsKnativeAppYaml,
 }
 
 // AssetDir returns the file names below a certain
@@ -195,6 +217,9 @@ type bintree struct {
 var _bintree = &bintree{nil, map[string]*bintree{
 	"docker": &bintree{nil, map[string]*bintree{
 		"Dockerfile": &bintree{dockerDockerfile, map[string]*bintree{}},
+	}},
+	"manifests": &bintree{nil, map[string]*bintree{
+		"knative-app.yaml": &bintree{manifestsKnativeAppYaml, map[string]*bintree{}},
 	}},
 }}
 
