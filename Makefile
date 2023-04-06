@@ -10,4 +10,4 @@ install:
 	go install
 
 update-bindata:
-	go-bindata -pkg bindata -o src/utils/bindata/bindata.go docker/Dockerfile
+	go-bindata -pkg bindata -o src/utils/bindata/bindata.go docker/Dockerfile manifests/knative-app.yaml

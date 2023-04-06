@@ -1,0 +1,11 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: k8s-kurated-addons-cli
+spec:
+  template:
+    spec:
+      containers:
+        - image: ghcr.io/nearform/k8s-kurated-addons-cli
+          ports:
+            - containerPort: 8081
