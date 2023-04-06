@@ -1,11 +1,11 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: k8s-kurated-addons-cli
+  name: ${KKA_APP_NAME}
 spec:
   template:
     spec:
       containers:
-        - image: ghcr.io/nearform/k8s-kurated-addons-cli
+        - image: ${KKA_APP_REGISTRY}/${KKA_APP_NAME}
           ports:
-            - containerPort: 8081
+            - containerPort: ${KKA_APP_PORT}
