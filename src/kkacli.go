@@ -1,84 +1,126 @@
 package kkacli
 
 import (
-    "log"
-    "os"
+	"embed"
+	"fmt"
+	"log"
+	"os"
+	"path"
 
-    "k8s-kurated-addons.cli/src/services/docker"
-    "k8s-kurated-addons.cli/src/services/local"
+	"k8s-kurated-addons.cli/src/services/docker"
 
-    "k8s-kurated-addons.cli/src/utils/logger"
-    "k8s-kurated-addons.cli/src/utils/helper"
-    "k8s-kurated-addons.cli/src/utils/defaults"
+	"k8s-kurated-addons.cli/src/utils/defaults"
+	"k8s-kurated-addons.cli/src/utils/logger"
 
-    "github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v2"
 )
 
+//go:embed dockerfiles
+var res embed.FS
+
 func Run() {
-    logger.PrintInfo("nearForm: k8s kurated addons CLI")
-    app := &cli.App{
-        Name:  "k8s kurated addons",
-        Usage: "kka-cli",
-        Action: func(cCtx *cli.Context) error {
-            appName := cCtx.String("app-name")
-            dockerFilePath := cCtx.String("dockerfile-directory")
-            repoName := cCtx.String("repo-name")
-            dockerFileName := cCtx.String("dockerfile-name")
+	logger.PrintInfo("nearForm: k8s kurated addons CLI")
+	app := &cli.App{
+		Name:  "k8s kurated addons",
+		Usage: "kka-cli",
+		Commands: []*cli.Command{
+			{
+				Name:  "build",
+				Usage: "build a container image from the project directory",
+				Action: func(cCtx *cli.Context) error {
+					appName := cCtx.String("app-name")
+					projectPath := cCtx.String("project-directory")
+					repoName := cCtx.String("repo-name")
+					dockerFileName := cCtx.String("dockerfile-name")
 
-            localService := local.LocalService{
-                HasDockerfile: dockerFileName != "",
-            }
+					runCli(appName, repoName, projectPath, dockerFileName, "build")
 
-            initArguments(&appName, &repoName, &dockerFilePath, &dockerFileName, localService)
-            runCli(appName, repoName, dockerFilePath, dockerFileName)
-            cleanUp(localService, dockerFilePath)
+					return nil
+				},
+			},
+			{
+				Name:  "push",
+				Usage: "push the container image ot a registry",
+				Action: func(cCtx *cli.Context) error {
+					appName := cCtx.String("app-name")
+					projectPath := cCtx.String("project-directory")
+					repoName := cCtx.String("repo-name")
+					dockerFileName := cCtx.String("dockerfile-name")
 
-            return nil
-        },
-        Flags: []cli.Flag{
-            &cli.StringFlag{Name: "app-name", Usage: "The name of the app"},
-            &cli.StringFlag{Name: "repo-name", Usage: "The base address of the container repository you are wanting to push the image to."},
-            &cli.StringFlag{Name: "dockerfile-directory", Usage: "The directory in which your Dockerfile lives."},
-            &cli.StringFlag{Name: "dockerfile-name", Usage: "The name of the Dockerfile"},
-        },
-    }
+					runCli(appName, repoName, projectPath, dockerFileName, "push")
+					return nil
+				},
+			},
+		},
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "app-name",
+				Usage:   "The name of the app",
+				Value:   defaults.AppName,
+				EnvVars: []string{"KKA_APP_NAME"},
+			},
+			&cli.StringFlag{
+				Name:    "repo-name",
+				Usage:   "The base address of the container repository you are wanting to push the image to.",
+				Value:   defaults.RepoName,
+				EnvVars: []string{"KKA_REPO_NAME"},
+			},
+			&cli.StringFlag{
+				Name:    "project-directory",
+				Usage:   "The directory in which your Dockerfile lives.",
+				Value:   defaults.ProjectDirectory,
+				EnvVars: []string{"KKA_PROJECT_DIRECTORY"},
+			},
+			&cli.StringFlag{
+				Name:    "dockerfile-name",
+				Usage:   "The name of the Dockerfile",
+				Value:   defaults.DockerfileName,
+				EnvVars: []string{"KKA_DOCKERFILE_NAME"},
+			},
+		},
+	}
 
-    if err := app.Run(os.Args); err != nil {
-        log.Fatal(err)
-    }
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
 }
 
-// Initialize default values
-func initArguments(appName *string, repoName *string, dockerFilePath *string, dockerFileName *string, localService local.LocalService) {
-
-    helper.ReplaceIfEmpty(dockerFilePath, defaults.DefaultDockerDirectory)
-
-    // If no Dockerfile is given, we will create one
-    if (!localService.HasDockerfile) {
-        localService.CreateDockerfile(*dockerFilePath)
-        helper.ReplaceIfEmpty(dockerFileName, defaults.DefaultDockerfileName)
-    }
-
-    helper.ReplaceIfEmpty(appName, defaults.DefaultAppName)
-    helper.ReplaceIfEmpty(repoName, defaults.DefaultRepoName)
+func detectProjectType(projectDirectory string) (string, error) {
+	if _, err := os.Stat(path.Join(projectDirectory, "package.json")); err == nil {
+		return "node", err
+	} else {
+		return "", fmt.Errorf("Cannot detect project type")
+	}
 }
 
 // Run the CLI
-func runCli(appName string, repoName string, dockerFilePath string, dockerFileName string) error {
-    logger.PrintInfo("Dockerfile Location: " + dockerFilePath + "/" + dockerFileName)
-    logger.PrintInfo("Building to: " + repoName + "/" + appName)
+func runCli(appName string, repoName string, projectDirectory string, dockerFileName string, action string) error {
+	logger.PrintInfo("Dockerfile Location: " + path.Join(projectDirectory, dockerFileName))
+	logger.PrintInfo("Pushing to: " + repoName + "/" + appName)
+	dockerService := docker.New(projectDirectory, dockerFileName, repoName, appName)
 
-    dockerService := docker.New(dockerFilePath, dockerFileName, repoName, appName)
+	if action == "push" {
+		dockerService.Push()
+		return nil
+	}
 
-    dockerService.Build()
-    dockerService.Push()
+	defer docker.DeleteDockerFile(projectDirectory)
+	projectType, err := detectProjectType(projectDirectory)
+	if err != nil {
+		return fmt.Errorf("Detect project type: %v", err)
+	}
 
-    return nil
-}
+	dockerfileTemplate := path.Join(".", "dockerfiles", "Dockerfile."+projectType)
+	dockerfileContent, err := res.ReadFile(dockerfileTemplate)
+	if err != nil {
+		return fmt.Errorf("Getting dockerfile content: %v", err)
+	}
 
-// Clean up any temporary files
-func cleanUp(localService local.LocalService, dockerFilePath string) {
-    if (!localService.HasDockerfile) {
-        localService.RemoveDockerfile(dockerFilePath)
-    }
+	err = docker.PersistDockerFile(projectDirectory, dockerfileContent)
+	if err != nil {
+		return fmt.Errorf("Persisting docker file content: %v", err)
+	}
+
+	dockerService.Build()
+	return nil
 }
