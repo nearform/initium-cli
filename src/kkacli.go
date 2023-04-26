@@ -8,6 +8,7 @@ import (
 	"path"
 
 	"k8s-kurated-addons.cli/src/services/docker"
+	"k8s-kurated-addons.cli/src/services/project"
 
 	"k8s-kurated-addons.cli/src/utils/defaults"
 	"k8s-kurated-addons.cli/src/utils/logger"
@@ -33,9 +34,7 @@ func Run() {
 					repoName := cCtx.String("repo-name")
 					dockerFileName := cCtx.String("dockerfile-name")
 
-					runCli(appName, repoName, projectPath, dockerFileName, "build")
-
-					return nil
+					return runCli(appName, repoName, projectPath, dockerFileName, "build")
 				},
 			},
 			{
@@ -47,8 +46,7 @@ func Run() {
 					repoName := cCtx.String("repo-name")
 					dockerFileName := cCtx.String("dockerfile-name")
 
-					runCli(appName, repoName, projectPath, dockerFileName, "push")
-					return nil
+					return runCli(appName, repoName, projectPath, dockerFileName, "push")
 				},
 			},
 		},
@@ -85,38 +83,20 @@ func Run() {
 	}
 }
 
-func detectProjectType(projectDirectory string) (string, error) {
-	if _, err := os.Stat(path.Join(projectDirectory, "package.json")); err == nil {
-		return "node", err
-	} else {
-		return "", fmt.Errorf("Cannot detect project type")
-	}
-}
-
 // Run the CLI
 func runCli(appName string, repoName string, projectDirectory string, dockerFileName string, action string) error {
 	logger.PrintInfo("Dockerfile Location: " + path.Join(projectDirectory, dockerFileName))
 	logger.PrintInfo("Pushing to: " + repoName + "/" + appName)
-	dockerService := docker.New(projectDirectory, dockerFileName, repoName, appName)
+	project := project.New(repoName, projectDirectory)
+	dockerService := docker.New(project, dockerFileName, repoName)
 
 	if action == "push" {
 		dockerService.Push()
 		return nil
 	}
 
-	defer docker.DeleteDockerFile(projectDirectory)
-	projectType, err := detectProjectType(projectDirectory)
-	if err != nil {
-		return fmt.Errorf("Detect project type: %v", err)
-	}
-
-	dockerfileTemplate := path.Join(".", "dockerfiles", "Dockerfile."+projectType)
-	dockerfileContent, err := res.ReadFile(dockerfileTemplate)
-	if err != nil {
-		return fmt.Errorf("Getting dockerfile content: %v", err)
-	}
-
-	err = docker.PersistDockerFile(projectDirectory, dockerfileContent)
+	defer project.DeleteDockerFile()
+	err := project.AddDockerFile(res)
 	if err != nil {
 		return fmt.Errorf("Persisting docker file content: %v", err)
 	}
