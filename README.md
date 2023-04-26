@@ -26,3 +26,10 @@ You will be able to run the executable from
 ```bash
 ./bin/kka-cli
 ```
+
+### Testing
+
+1. Move into the example folder and either run `../bin/kka-cli build` or `go run ../main.go build`
+2. Run `docker run ghcr.io/nearform/k8s-kurated-addons-cli:latest`
+3. You should see the `KKA-CLI from NearForm` output in your console
+4. Remove the image `docker image rmi -f ghcr.io/nearform/k8s-kurated-addons-cli:latest`

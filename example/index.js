@@ -1,1 +1,1 @@
-console.log("KKA-CLI")
+console.log("KKA-CLI from NearForm")
