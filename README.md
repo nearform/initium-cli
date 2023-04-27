@@ -4,32 +4,35 @@ This project is intended for building an executable file to run on various CI/CD
 
 ### Pre-requisites
 
-You need Docker installed (or similar solutions) to run this project.
+1. GoLang
 
-Here you can find a list of possible candidates:
+    You can install it with your prefered package manager or usign asfd with `asdf install`.
 
-- [Docker](https://docs.docker.com/engine/install/) ( cross-platform, paid solution )
-- [Rancher Desktop](https://rancherdesktop.io/) ( cross-platform, FOSS )
-- [lima](https://github.com/lima-vm/lima) + [nerdctl](https://github.com/containerd/nerdctl) ( macOS only )
+2. Docker (or similar solutions)  
+
+    Here you can find a list of possible candidates:
+    - [Docker](https://docs.docker.com/engine/install/) ( cross-platform, paid solution )
+    - [Rancher Desktop](https://rancherdesktop.io/) ( cross-platform, FOSS )
+    - [lima](https://github.com/lima-vm/lima) + [nerdctl](https://github.com/containerd/nerdctl) ( macOS only )
 
 
-### Running the executable
+### Run from code
+
+1. Run `go run main.go --project-directory example build`
+2. Run `docker run ghcr.io/nearform/k8s-kurated-addons-cli:latest`
+3. You should see the `KKA-CLI from NearForm` output in your console
+4. Remove the image `docker image rmi -f ghcr.io/nearform/k8s-kurated-addons-cli:latest`
+
+### Build the executable
 
 In order to build the executable you simply need to run 
 
-```
+```bash
 make
-```                                                 |
+```
 
 You will be able to run the executable from 
 
 ```bash
 ./bin/kka-cli
 ```
-
-### Testing
-
-1. Run `go run main.go --project-directory example build`
-2. Run `docker run ghcr.io/nearform/k8s-kurated-addons-cli:latest`
-3. You should see the `KKA-CLI from NearForm` output in your console
-4. Remove the image `docker image rmi -f ghcr.io/nearform/k8s-kurated-addons-cli:latest`
