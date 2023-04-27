@@ -1,10 +1,9 @@
 package main
 
 import (
-    "k8s-kurated-addons.cli/src"
+	kkacli "k8s-kurated-addons.cli/src"
 )
 
 func main() {
-    kkacli.Run()
+	kkacli.Run()
 }
-

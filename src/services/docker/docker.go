@@ -1,93 +1,91 @@
 package docker
 
 import (
-    	"context"
-    	"time"
-    	"k8s-kurated-addons.cli/src/utils/logger"
-    	"github.com/docker/docker/api/types"
-    	"github.com/docker/docker/client"
-    	"github.com/docker/docker/pkg/archive"
+	"context"
+	"time"
+
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/client"
+	"github.com/docker/docker/pkg/archive"
+	"k8s-kurated-addons.cli/src/services/project"
+	"k8s-kurated-addons.cli/src/utils/logger"
 )
 
 type DockerService struct {
-    DockerDirectory string
-    DockerFileName string
-    ContainerRepo string
-    AppName string
-    Client client.Client
+	project        project.Project
+	DockerFileName string
+	ContainerRepo  string
+	Client         client.Client
 }
-
 
 // Create a new instance of the DockerService
-func New(dockerDirectory string, dockerFileName string, containerRepo string, AppName string) DockerService {
-    return DockerService{
-        DockerDirectory: dockerDirectory,
-        DockerFileName: dockerFileName,
-        ContainerRepo: containerRepo,
-        AppName: AppName,
-        Client: *getClient(),
-    }
+func New(project project.Project, dockerFileName string, containerRepo string) DockerService {
+	return DockerService{
+		project:        project,
+		DockerFileName: dockerFileName,
+		ContainerRepo:  containerRepo,
+		Client:         *getClient(),
+	}
 }
 
-
 func getClient() *client.Client {
-    cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
-    if (err != nil) {
-        logger.PrintError("Failed to create docker client: ", err)
-    }
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		logger.PrintError("Failed to create docker client: ", err)
+	}
 
-    return cli
+	return cli
 }
 
 // Build Docker image
 func (ds DockerService) Build() error {
-        logger.PrintInfo("Building...")
+	logger.PrintInfo("Building...")
 
-        ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
-        defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
+	defer cancel()
 
-        // Get the context for the docker build
-        buildContext, err := archive.TarWithOptions(ds.DockerDirectory, &archive.TarOptions{})
-        if (err != nil) {
-            logger.PrintError("Failed to create build context", err)
-        }
+	// Get the context for the docker build
+	buildContext, err := archive.TarWithOptions(ds.project.Directory, &archive.TarOptions{})
+	if err != nil {
+		logger.PrintError("Failed to create build context", err)
+	}
 
-        // Get the options for the docker build
-        buildOptions := types.ImageBuildOptions{
-            Dockerfile: ds.DockerFileName,
-            Tags:       []string{ds.ContainerRepo + "/" + ds.AppName},
-            Remove:     true,
-        }
+	// Get the options for the docker build
+	buildOptions := types.ImageBuildOptions{
+		Dockerfile: ds.DockerFileName,
+		Tags:       []string{ds.ContainerRepo + "/" + ds.project.Name},
+		Remove:     true,
+	}
 
-        // Build the image
-        buildResponse, err := ds.Client.ImageBuild(ctx, buildContext, buildOptions)
-        logger.PrintInfo(ds.ContainerRepo + "/" + ds.AppName)
-        if (err != nil) {
-            logger.PrintError("Failed to build docker image", err)
-        }
+	// Build the image
+	buildResponse, err := ds.Client.ImageBuild(ctx, buildContext, buildOptions)
+	logger.PrintInfo(ds.ContainerRepo + "/" + ds.project.Name)
+	if err != nil {
+		logger.PrintError("Failed to build docker image", err)
+	}
 
-        defer buildResponse.Body.Close()
+	defer buildResponse.Body.Close()
 
-        logger.PrintStream(buildResponse.Body)
+	logger.PrintStream(buildResponse.Body)
 
-        return nil
+	return nil
 }
 
 // Push Docker image
 func (ds DockerService) Push() error {
-    logger.PrintInfo("Pushing...")
+	logger.PrintInfo("Pushing...")
 
-    ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
-    defer cancel()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
+	defer cancel()
 
-    // Push the image
-    pushResponse, err := ds.Client.ImagePush(ctx, ds.ContainerRepo + "/" + ds.AppName, types.ImagePushOptions{})
-    if (err != nil) {
-        logger.PrintError("Failed to push docker image", err)
-    }
+	// Push the image
+	pushResponse, err := ds.Client.ImagePush(ctx, ds.ContainerRepo+"/"+ds.project.Name, types.ImagePushOptions{})
+	if err != nil {
+		logger.PrintError("Failed to push docker image", err)
+	}
 
-    defer pushResponse.Close()
-    logger.PrintStream(pushResponse)
+	defer pushResponse.Close()
+	logger.PrintStream(pushResponse)
 
-    return nil
+	return nil
 }
