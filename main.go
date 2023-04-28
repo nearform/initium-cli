@@ -1,7 +1,7 @@
 package main
 
 import (
-	kkacli "k8s-kurated-addons.cli/src"
+	kkacli "github.com/nearform/k8s-kurated-addons-cli/src"
 )
 
 func main() {

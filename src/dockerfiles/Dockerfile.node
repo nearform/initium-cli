@@ -1,9 +1,0 @@
-FROM node:20 AS build-env
-COPY . /src
-WORKDIR /src
-RUN npm i --omit=dev
-
-FROM gcr.io/distroless/nodejs20-debian11
-COPY --from=build-env /src /src
-WORKDIR /src
-CMD ["index.js"]

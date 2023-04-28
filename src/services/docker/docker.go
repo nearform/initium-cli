@@ -2,13 +2,16 @@ package docker
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
 	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"
-	"k8s-kurated-addons.cli/src/services/project"
-	"k8s-kurated-addons.cli/src/utils/logger"
+	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
+	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
 )
 
 type DockerService struct {
@@ -16,6 +19,7 @@ type DockerService struct {
 	DockerFileName string
 	ContainerRepo  string
 	Client         client.Client
+	AuthConfig     types.AuthConfig
 }
 
 // Create a new instance of the DockerService
@@ -37,9 +41,17 @@ func getClient() *client.Client {
 	return cli
 }
 
+func (ds DockerService) Remote() string {
+	tag := "latest"
+	if ds.project.Version != "" {
+		tag = ds.project.Version
+	}
+	return fmt.Sprintf("%s/%s:%s", ds.ContainerRepo, ds.project.Name, tag)
+}
+
 // Build Docker image
 func (ds DockerService) Build() error {
-	logger.PrintInfo("Building...")
+	logger.PrintInfo("Building " + ds.Remote())
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
 	defer cancel()
@@ -53,13 +65,12 @@ func (ds DockerService) Build() error {
 	// Get the options for the docker build
 	buildOptions := types.ImageBuildOptions{
 		Dockerfile: ds.DockerFileName,
-		Tags:       []string{ds.ContainerRepo + "/" + ds.project.Name},
+		Tags:       []string{ds.Remote()},
 		Remove:     true,
 	}
 
 	// Build the image
 	buildResponse, err := ds.Client.ImageBuild(ctx, buildContext, buildOptions)
-	logger.PrintInfo(ds.ContainerRepo + "/" + ds.project.Name)
 	if err != nil {
 		logger.PrintError("Failed to build docker image", err)
 	}
@@ -73,19 +84,24 @@ func (ds DockerService) Build() error {
 
 // Push Docker image
 func (ds DockerService) Push() error {
-	logger.PrintInfo("Pushing...")
-
+	logger.PrintInfo("Pushing to " + ds.Remote())
+	logger.PrintInfo("User: " + ds.AuthConfig.Username)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
 	defer cancel()
 
-	// Push the image
-	pushResponse, err := ds.Client.ImagePush(ctx, ds.ContainerRepo+"/"+ds.project.Name, types.ImagePushOptions{})
+	encodedJSON, err := json.Marshal(ds.AuthConfig)
+	if err != nil {
+		return err
+	}
+	ipo := types.ImagePushOptions{
+		RegistryAuth: base64.URLEncoding.EncodeToString(encodedJSON),
+	}
+
+	pushResponse, err := ds.Client.ImagePush(ctx, ds.Remote(), ipo)
+	defer pushResponse.Close()
 	if err != nil {
 		logger.PrintError("Failed to push docker image", err)
 	}
 
-	defer pushResponse.Close()
-	logger.PrintStream(pushResponse)
-
-	return nil
+	return logger.PrintStream(pushResponse)
 }
