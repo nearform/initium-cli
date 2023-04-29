@@ -1,9 +1,17 @@
 package main
 
 import (
-	kkacli "github.com/nearform/k8s-kurated-addons-cli/src"
+	"embed"
+
+	"github.com/nearform/k8s-kurated-addons-cli/src/cli"
 )
 
+//go:embed assets
+var resources embed.FS
+
 func main() {
-	kkacli.Run()
+	cli := cli.CLI{
+		Resources: resources,
+	}
+	cli.Run()
 }

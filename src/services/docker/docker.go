@@ -53,7 +53,7 @@ func (ds DockerService) Remote() string {
 func (ds DockerService) Build() error {
 	logger.PrintInfo("Building " + ds.Remote())
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
 
 	// Get the context for the docker build

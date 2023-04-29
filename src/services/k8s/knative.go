@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"path"
+	"time"
 
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
@@ -56,8 +57,8 @@ func loadManifest(project project.Project) (*servingv1.Service, error) {
 
 func Apply(config *rest.Config, project project.Project) error {
 	logger.PrintInfo("Deploying Knative service to " + config.Host)
-	ctx := context.Background()
-
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
+	defer cancel()
 	// Create a new Knative Serving client
 	servingClient, err := servingv1client.NewForConfig(config)
 	if err != nil {
@@ -83,7 +84,7 @@ func Apply(config *rest.Config, project project.Project) error {
 	} else {
 		updatedService, err := servingClient.Services(service.ObjectMeta.Namespace).Update(ctx, getService, metav1.UpdateOptions{})
 		if err != nil {
-			panic(err)
+			return fmt.Errorf("Updating Knative service %v", err)
 		}
 		fmt.Printf("Updated Knative service %q.\n", updatedService.GetObjectMeta().GetName())
 	}
