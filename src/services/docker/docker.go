@@ -24,22 +24,28 @@ type DockerService struct {
 }
 
 // Create a new instance of the DockerService
-func New(project project.Project, dockerFileName string, containerRepo string) DockerService {
+func New(project project.Project, dockerFileName string, containerRepo string) (DockerService, error) {
+	client, err := getClient()
+	if err != nil {
+		return DockerService{}, err
+	}
+
 	return DockerService{
 		project:        project,
 		DockerFileName: dockerFileName,
 		ContainerRepo:  containerRepo,
-		Client:         *getClient(),
-	}
+		Client:         *client,
+	}, nil
 }
 
-func getClient() *client.Client {
+func getClient() (*client.Client, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		logger.PrintError("Failed to create docker client: ", err)
+		return nil, err
 	}
 
-	return cli
+	return cli, nil
 }
 
 func (ds DockerService) RemoteTag() string {
@@ -70,7 +76,7 @@ func (ds DockerService) Build() error {
 	// Get the context for the docker build
 	buildContext, err := archive.TarWithOptions(ds.project.Directory, &archive.TarOptions{})
 	if err != nil {
-		logger.PrintError("Failed to create build context", err)
+		return fmt.Errorf("Failed to create build context %v", err)
 	}
 
 	// Get the options for the docker build
@@ -83,13 +89,12 @@ func (ds DockerService) Build() error {
 	// Build the image
 	buildResponse, err := ds.Client.ImageBuild(ctx, buildContext, buildOptions)
 	if err != nil {
-		logger.PrintError("Failed to build docker image", err)
+		return fmt.Errorf("Failed to build docker image %v", err)
 	}
 
 	defer buildResponse.Body.Close()
 
 	logger.PrintStream(buildResponse.Body)
-
 	return nil
 }
 

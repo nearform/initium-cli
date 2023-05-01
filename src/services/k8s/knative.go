@@ -8,7 +8,9 @@ import (
 
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	certutil "k8s.io/client-go/util/cert"
@@ -70,8 +72,19 @@ func Apply(config *rest.Config, project project.Project) error {
 		return err
 	}
 
-	service.ObjectMeta.Namespace = project.Version
+	service.ObjectMeta.Namespace = "default"
 	service.ObjectMeta.Name = project.Name
+
+	client, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return fmt.Errorf("Creating Kubernetes client %v", err)
+	}
+
+	client.CoreV1().Namespaces().Create(ctx, &corev1.Namespace{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: project.Version,
+		},
+	}, metav1.CreateOptions{})
 
 	getService, err := servingClient.Services(service.ObjectMeta.Namespace).Get(ctx, service.ObjectMeta.Name, metav1.GetOptions{})
 
