@@ -7,9 +7,7 @@ import (
 	"path"
 
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
-
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
-
 	"github.com/urfave/cli/v2"
 )
 

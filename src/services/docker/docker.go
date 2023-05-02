@@ -5,14 +5,19 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 	"time"
+
+	"github.com/charmbracelet/log"
+	"github.com/moby/term"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"
+	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
 )
 
 type DockerService struct {
@@ -38,10 +43,18 @@ func New(project project.Project, dockerFileName string, containerRepo string) (
 	}, nil
 }
 
+func streamOutput(body io.ReadCloser) error {
+	fd, isTerminal := term.GetFdInfo(os.Stdout)
+	if err := jsonmessage.DisplayJSONMessagesStream(body, os.Stdout, fd, isTerminal, nil); err != nil {
+		return fmt.Errorf("Failed to print Docker build output %v", err)
+	}
+	return nil
+}
+
 func getClient() (*client.Client, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
-		logger.PrintError("Failed to create docker client: ", err)
+		log.Error("Failed to create docker client: ", err)
 		return nil, err
 	}
 
@@ -68,7 +81,8 @@ func (ds DockerService) LocalTag() string {
 
 // Build Docker image
 func (ds DockerService) Build() error {
-	logger.PrintInfo("Building " + ds.LocalTag())
+	log.SetLevel(log.DebugLevel)
+	log.Infof("Building %s", ds.LocalTag())
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
@@ -76,7 +90,7 @@ func (ds DockerService) Build() error {
 	// Get the context for the docker build
 	buildContext, err := archive.TarWithOptions(ds.project.Directory, &archive.TarOptions{})
 	if err != nil {
-		logger.PrintError("Failed to create build context", err)
+		return fmt.Errorf("Failed to create build context %v", err)
 	}
 
 	// Get the options for the docker build
@@ -89,19 +103,20 @@ func (ds DockerService) Build() error {
 	// Build the image
 	buildResponse, err := ds.Client.ImageBuild(ctx, buildContext, buildOptions)
 	if err != nil {
-		logger.PrintError("Failed to build docker image", err)
+		return fmt.Errorf("Failed to build docker image %v", err)
 	}
-
 	defer buildResponse.Body.Close()
 
-	logger.PrintStream(buildResponse.Body)
+	if err = streamOutput(buildResponse.Body); err != nil {
+		return err
+	}
 	return nil
 }
 
 // Push Docker image
 func (ds DockerService) Push() error {
-	logger.PrintInfo("Pushing to " + ds.RemoteTag())
-	logger.PrintInfo("User: " + ds.AuthConfig.Username)
+	log.Infof("Pushing to %s", ds.RemoteTag())
+	log.Debug("User: %s", ds.AuthConfig.Username)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
 	defer cancel()
 
@@ -119,10 +134,14 @@ func (ds DockerService) Push() error {
 	}
 
 	pushResponse, err := ds.Client.ImagePush(ctx, ds.RemoteTag(), ipo)
-	defer pushResponse.Close()
 	if err != nil {
 		return fmt.Errorf("Failed to push docker image %v", err)
 	}
+	defer pushResponse.Close()
 
-	return logger.PrintStream(pushResponse)
+	if err = streamOutput(pushResponse); err != nil {
+		return err
+	}
+
+	return nil
 }

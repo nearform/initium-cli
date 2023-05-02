@@ -6,8 +6,8 @@ import (
 	"path"
 	"time"
 
+	"github.com/charmbracelet/log"
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
@@ -56,7 +56,7 @@ func loadManifest(project project.Project) (*servingv1.Service, error) {
 }
 
 func Apply(config *rest.Config, project project.Project) error {
-	logger.PrintInfo("Deploying Knative service to " + config.Host)
+	log.Info("Deploying Knative service to ", config.Host)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
 	// Create a new Knative Serving client
@@ -93,7 +93,7 @@ func Apply(config *rest.Config, project project.Project) error {
 }
 
 func Clean(config *rest.Config, project project.Project) error {
-	logger.PrintInfo("Deleting Knative service from " + config.Host)
+	log.Info("Deleting Knative service from", config.Host)
 	ctx := context.Background()
 
 	// Create a new Knative Serving client
@@ -107,6 +107,6 @@ func Clean(config *rest.Config, project project.Project) error {
 		return fmt.Errorf("deleting the service: %v", err)
 	}
 
-	logger.PrintInfo("Deleted Knative service " + project.Name)
+	log.Info("Deleted Knative service ", project.Name)
 	return nil
 }
