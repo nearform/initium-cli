@@ -7,15 +7,12 @@ import (
 	"path"
 
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
-
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
-
 	"github.com/urfave/cli/v2"
 )
 
 type CLI struct {
 	Resources embed.FS
-	CWD       string
 }
 
 func (c CLI) newProject(cCtx *cli.Context) project.Project {
@@ -29,11 +26,17 @@ func (c CLI) newProject(cCtx *cli.Context) project.Project {
 }
 
 func (c CLI) Run() {
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	flags := []cli.Flag{
 		&cli.StringFlag{
 			Name:    "app-name",
 			Usage:   "The name of the app",
-			Value:   path.Base(c.CWD),
+			Value:   path.Base(cwd),
 			EnvVars: []string{"KKA_APP_NAME"},
 		},
 		&cli.StringFlag{
