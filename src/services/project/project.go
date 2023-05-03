@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"text/template"
@@ -59,23 +58,11 @@ func (proj Project) loadDockerfile() ([]byte, error) {
 }
 
 // TODO: there is no need to persist this file, we could add it to the tar context from memory or a temp dir
-func (proj Project) AddDockerFile() error {
+func (proj Project) Dockerfile() ([]byte, error) {
 	content, err := proj.loadDockerfile()
 	if err != nil {
-		return err
+		return []byte{}, err
 	}
 
-	err = ioutil.WriteFile(path.Join(proj.Directory, "Dockerfile.kka"), content, 0644)
-	if err != nil {
-		return fmt.Errorf("Writing Dockerfile content: %v", err)
-	}
-	return nil
-}
-
-func (proj Project) DeleteDockerFile() error {
-	err := os.Remove(path.Join(proj.Directory, "Dockerfile.kka"))
-	if err != nil {
-		return fmt.Errorf("Deleting generated dockerfile: %v", err)
-	}
-	return nil
+	return content, nil
 }
