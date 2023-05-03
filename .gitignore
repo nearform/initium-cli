@@ -1,3 +1,4 @@
 .idea/
+.vscode/
 .env
-example/Dockerfile.kka
+Dockerfile.kka
