@@ -1,10 +1,13 @@
 package docker
 
 import (
+	"archive/tar"
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
 	"time"
 
 	"github.com/docker/docker/api/types"
@@ -66,6 +69,63 @@ func (ds DockerService) LocalTag() string {
 	return fmt.Sprintf("%s:%s", ds.project.Name, tag)
 }
 
+func (ds DockerService) buildContext() (*bytes.Reader, error) {
+	// Get the context for the docker build
+	existingBuildContext, err := archive.TarWithOptions(ds.project.Directory, &archive.TarOptions{})
+	if err != nil {
+		return nil, fmt.Errorf("Failed to create build context %v", err)
+	}
+
+	// Create a new in-memory tar archive for the combined build context
+	var combinedBuildContext bytes.Buffer
+	tarWriter := tar.NewWriter(&combinedBuildContext)
+
+	// Copy the existing build context into the new tar archive
+	tarReader := tar.NewReader(existingBuildContext)
+	for {
+		hdr, err := tarReader.Next()
+		if err == io.EOF {
+			break // End of the archive
+		}
+		if err != nil {
+			return nil, fmt.Errorf("Error copy context %v", err)
+		}
+		if err := tarWriter.WriteHeader(hdr); err != nil {
+			return nil, fmt.Errorf("Error copy context %v", err)
+		}
+		if _, err := io.Copy(tarWriter, tarReader); err != nil {
+			return nil, fmt.Errorf("Error copy context %v", err)
+		}
+	}
+
+	// Add another file to the build context from an array of bytes
+	fileBytes, err := ds.project.Dockerfile()
+	if err != nil {
+		return nil, fmt.Errorf("Loading dockerfile %v", err)
+	}
+	hdr := &tar.Header{
+		Name:    "Dockerfile.kka",
+		Mode:    0600,
+		Size:    int64(len(fileBytes)),
+		ModTime: time.Now(),
+	}
+
+	if err := tarWriter.WriteHeader(hdr); err != nil {
+		return nil, fmt.Errorf("Writing Dockerfile header %v", err)
+	}
+	if _, err := tarWriter.Write(fileBytes); err != nil {
+		return nil, fmt.Errorf("Writing Dockerfile content %v", err)
+	}
+
+	// Close the tar archive
+	if err := tarWriter.Close(); err != nil {
+		return nil, fmt.Errorf("Closing tarWriter %v", err)
+	}
+
+	// Convert the combined build context to an io.Reader
+	return bytes.NewReader(combinedBuildContext.Bytes()), nil
+}
+
 // Build Docker image
 func (ds DockerService) Build() error {
 	logger.PrintInfo("Building " + ds.LocalTag())
@@ -73,21 +133,21 @@ func (ds DockerService) Build() error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
 
-	// Get the context for the docker build
-	buildContext, err := archive.TarWithOptions(ds.project.Directory, &archive.TarOptions{})
+	combinedBuildContextReader, err := ds.buildContext()
 	if err != nil {
-		return fmt.Errorf("Failed to create build context %v", err)
+		return fmt.Errorf("Creating docker context %v", err)
 	}
 
 	// Get the options for the docker build
 	buildOptions := types.ImageBuildOptions{
+		Context:    combinedBuildContextReader,
 		Dockerfile: ds.DockerFileName,
 		Tags:       []string{ds.LocalTag()},
 		Remove:     true,
 	}
 
 	// Build the image
-	buildResponse, err := ds.Client.ImageBuild(ctx, buildContext, buildOptions)
+	buildResponse, err := ds.Client.ImageBuild(ctx, combinedBuildContextReader, buildOptions)
 	if err != nil {
 		return fmt.Errorf("Failed to build docker image %v", err)
 	}

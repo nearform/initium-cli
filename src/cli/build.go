@@ -5,7 +5,6 @@ import (
 	"path"
 
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/docker"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
 	"github.com/urfave/cli/v2"
 )
@@ -20,14 +19,6 @@ func (c CLI) Build(cCtx *cli.Context) error {
 	}
 
 	logger.PrintInfo("Dockerfile Location: " + path.Join(project.Directory, docker.DockerFileName))
-	if dockerFileName == defaults.DockerfileName {
-		defer project.DeleteDockerFile()
-		err := project.AddDockerFile()
-		if err != nil {
-			return fmt.Errorf("Persisting docker file content: %v", err)
-		}
-	}
-
 	return docker.Build()
 }
 
