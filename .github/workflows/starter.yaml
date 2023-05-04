@@ -19,7 +19,7 @@ jobs:
 
       - name: build
         env:
-          PROJECT_DIRECTORY: example
+          KKA_PROJECT_DIRECTORY: example
         run: make project_build
       
       - name: push

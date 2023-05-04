@@ -1,5 +1,4 @@
 
-PROJECT_DIRECTORY := $(PWD)
 SHELL=/bin/bash
 
 
@@ -12,7 +11,7 @@ build: ## build cli app as binary
 	go build -o bin/kka-cli
 
 project_build: ## build a project using the cli
-	@go run main.go --project-directory PROJECT_DIRECTORY=$(PROJECT_DIRECTORY) build
+	@go run main.go build
 
 project_push: ## push a project to an registry
 	@go run main.go push
