@@ -3,7 +3,7 @@ name: nodejs
 on: 
   push:
     branches:
-      - feature/issue-14
+      - master
 
 jobs:
   nodejs_build:
