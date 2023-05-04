@@ -1,9 +1,12 @@
 name: nodejs
 
-on: [push]
+on: 
+  push:
+    branches:
+      - feature/issue-14
 
 jobs:
-  build:
+  nodejs_build:
 
     runs-on: ubuntu-latest
     steps:
@@ -15,10 +18,12 @@ jobs:
           go-version: '1.20'
 
       - name: build
-        run: go run main.go build
+        env:
+          PROJECT_DIRECTORY: example
+        run: make project_build
       
       - name: push
-        run: go run main.go push
+        run: make project_push
         env:
           KKA_REGISTRY_USER: ${{ github.actor }}
           KKA_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
