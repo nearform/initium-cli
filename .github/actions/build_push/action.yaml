@@ -9,10 +9,9 @@ inputs:
     description: Project directory where the CLI is going to build and create the docker image
     required: true
 
+
 runs:
   using: "composite"
-  env:
-      KKA_PROJECT_DIRECTORY: ${{ inputs.KKA_PROJECT_DIRECTORY }}
   steps:
     - name: Set up Go
       uses: actions/setup-go@v4
@@ -20,10 +19,15 @@ runs:
         go-version: ${{ inputs.GO_VERSION }}
 
     - name: build
+      shell: bash
+      env:
+        KKA_PROJECT_DIRECTORY: ${{ inputs.KKA_PROJECT_DIRECTORY }}
       run: make project_build
     
     - name: push
+      shell: bash
       run: make project_push
       env:
         KKA_REGISTRY_USER: ${{ github.actor }}
         KKA_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        KKA_PROJECT_DIRECTORY: ${{ inputs.KKA_PROJECT_DIRECTORY }}
