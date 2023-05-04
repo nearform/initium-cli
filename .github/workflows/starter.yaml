@@ -11,7 +11,7 @@ jobs:
     steps:
 
       - uses: actions/checkout@v3
-      - uses: nearform/k8s-kurated-addons-cli/actions/build_push@'feature/issue-14'
+      - uses: ./.github/actions/build_push
         with:
           GO_VERSION: '1.20'
           KKA_PROJECT_DIRECTORY: example
