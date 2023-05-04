@@ -11,7 +11,7 @@ jobs:
     steps:
 
       - uses: actions/checkout@v3
-      - uses: actions/build_push
+      - uses: actions/build_push@feature/issue-14
         with:
           GO_VERSION: '1.20'
           KKA_PROJECT_DIRECTORY: example
