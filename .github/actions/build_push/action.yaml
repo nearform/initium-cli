@@ -8,6 +8,9 @@ inputs:
   KKA_PROJECT_DIRECTORY:
     description: Project directory where the CLI is going to build and create the docker image
     required: true
+  KKA_REGISTRY_PASSWORD:
+    description: Registry password to be used to authenticate against remote registry
+    required: true
 
 
 runs:
@@ -29,5 +32,5 @@ runs:
       run: make project_push
       env:
         KKA_REGISTRY_USER: ${{ github.actor }}
-        KKA_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        KKA_REGISTRY_PASSWORD: ${{ inputs.KKA_REGISTRY_PASSWORD }}
         KKA_PROJECT_DIRECTORY: ${{ inputs.KKA_PROJECT_DIRECTORY }}
