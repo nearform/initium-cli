@@ -14,6 +14,7 @@ runs:
   env:
       KKA_PROJECT_DIRECTORY: ${{ inputs.KKA_PROJECT_DIRECTORY }}
   steps:
+    - uses: actions/checkout@v3
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
