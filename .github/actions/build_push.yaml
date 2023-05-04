@@ -1,0 +1,29 @@
+name: 'Build and Push'
+description: 'Action used to build and push docker image using the K8s-Kurated-Addons-CLI'
+inputs:
+  GO_VERSION:
+    description: Golang version used to run the cli code
+    required: true
+    default: '1.20'
+  KKA_PROJECT_DIRECTORY:
+    description: Project directory where the CLI is going to build and create the docker image
+    required: true
+
+runs:
+  using: "composite"
+  env:
+      KKA_PROJECT_DIRECTORY: ${{ inputs.KKA_PROJECT_DIRECTORY }}
+  steps:
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: ${{ inputs.GO_VERSION }}
+
+    - name: build
+      run: make project_build
+    
+    - name: push
+      run: make project_push
+      env:
+        KKA_REGISTRY_USER: ${{ github.actor }}
+        KKA_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
