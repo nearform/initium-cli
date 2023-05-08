@@ -72,6 +72,7 @@ func (c CLI) Run() {
 			c.DeployCMD(),
 			c.DeleteCMD(),
 			c.OnMainCMD(),
+			c.TemplateCMD(),
 		},
 	}
 
