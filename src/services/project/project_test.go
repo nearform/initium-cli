@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"testing"
+	"strings"
 )
 
 var projects = map[string]map[string]string{
@@ -54,5 +55,24 @@ func TestLoadDockerfile(t *testing.T) {
 		if err != nil {
 			t.Fatalf(fmt.Sprintf("Error: %s", err))
 		}
+	}
+}
+
+
+func TestCorrectRuntime(t *testing.T) {
+	
+	proj_runtime := Project{Name: "test",
+		Directory: path.Join(root, projects["node"]["directory"]),
+		Resources: os.DirFS(root),
+		RuntimeVersion: "30",
+	}
+	data, err := proj_runtime.loadDockerfile()
+
+	if err != nil {
+		t.Fatalf(fmt.Sprintf("Error: %s", err))
+	}
+
+	if isContain := strings.Contains(string(data), "node:"+proj_runtime.RuntimeVersion); !isContain {
+		t.Fatalf(fmt.Sprintf("Runtime %v not properly replaced", proj_runtime.RuntimeVersion))
 	}
 }
