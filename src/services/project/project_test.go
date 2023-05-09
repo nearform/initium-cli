@@ -6,6 +6,8 @@ import (
 	"path"
 	"strings"
 	"testing"
+
+	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 )
 
 var projects = map[ProjectType]map[string]string{
@@ -74,5 +76,47 @@ func TestCorrectRuntime(t *testing.T) {
 
 	if isContain := strings.Contains(string(data), "node:"+proj_runtime.RuntimeVersion); !isContain {
 		t.Fatalf(fmt.Sprintf("Runtime %v not properly replaced", proj_runtime.RuntimeVersion))
+	}
+}
+
+func TestInit(t *testing.T) {
+
+	supportedPipelineTypes := []string{"github"}
+
+	for _, pipelineType := range supportedPipelineTypes {
+		sourcePipelineTemplate := path.Join(root, "assets", pipelineType, "pipeline.tmpl")
+
+		// check if embedded folder and pipeline.tmpl file exists
+		if _, err := os.Stat(sourcePipelineTemplate); err != nil {
+			t.Fatalf(fmt.Sprintf("Error: template file for supported pipeline %v dont exists", pipelineType))
+		}
+
+		testDestinationFolder := fmt.Sprintf(".init_test_%s", pipelineType)
+
+		// test function
+		files, err := ProjectInit(InitOptions{
+			DestinationFolder: testDestinationFolder,
+			DefaultBranch:     defaults.GithubDefaultBranch,
+			PipelineType:      "github",
+		}, os.DirFS(root))
+
+		if err != nil {
+			t.Errorf(fmt.Sprintf("Error: %v", err))
+		}
+
+		for _, file := range files {
+			if _, err := os.Stat(file); os.IsNotExist(err) {
+				t.Fatalf(fmt.Sprintf("error: cannot find file %s", file))
+			}
+			if err = os.Remove(file); err != nil {
+				t.Errorf(fmt.Sprintf("error while removing %s: %v", file, err))
+			}
+		}
+
+		err = os.Remove(testDestinationFolder)
+		if err != nil {
+			t.Errorf(fmt.Sprintf("error while removing %s: %v", testDestinationFolder, err))
+		}
+
 	}
 }

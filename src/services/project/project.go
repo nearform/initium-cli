@@ -26,6 +26,12 @@ type Project struct {
 	Resources             fs.FS
 }
 
+type InitOptions struct {
+	DestinationFolder string
+	DefaultBranch     string
+	PipelineType      string
+}
+
 func New(name string, directory string, runtimeVersion string, version string, resources fs.FS) Project {
 	return Project{
 		Name:           name,
@@ -44,7 +50,7 @@ func (proj *Project) detectType() (ProjectType, error) {
 		proj.DefaultRuntimeVersion = defaults.DefaultGoRuntimeVersion
 		return GoProject, nil
 	} else {
-		return "", fmt.Errorf("Cannot detect project type %v", err)
+		return "", fmt.Errorf("cannot detect project type %v", err)
 	}
 }
 
@@ -61,14 +67,12 @@ func (proj Project) loadDockerfile() ([]byte, error) {
 	}
 
 	output := &bytes.Buffer{}
-	// TODO replace map[string]string{} with proper values
 	if err = template.Execute(output, proj); err != nil {
 		return []byte{}, err
 	}
 	return output.Bytes(), nil
 }
 
-// TODO: there is no need to persist this file, we could add it to the tar context from memory or a temp dir
 func (proj Project) Dockerfile() ([]byte, error) {
 	content, err := proj.loadDockerfile()
 	if err != nil {
@@ -76,4 +80,35 @@ func (proj Project) Dockerfile() ([]byte, error) {
 	}
 
 	return content, nil
+}
+
+func ProjectInit(options InitOptions, resources fs.FS) ([]string, error) {
+
+	returnData := []string{}
+
+	template, err := template.ParseFS(resources, path.Join("assets", options.PipelineType, "pipeline.tmpl"))
+
+	if err != nil {
+		return returnData, fmt.Errorf("error: %v", err)
+	}
+
+	fileContent := &bytes.Buffer{}
+	if err = template.Execute(fileContent, options); err != nil {
+		return returnData, err
+	}
+
+	destinationFile := path.Join(options.DestinationFolder, "kka_on_main.yaml")
+
+	if err := os.MkdirAll(options.DestinationFolder, os.ModePerm); err != nil {
+		return returnData, fmt.Errorf("error: %v", err)
+	}
+
+	// I assume that the file is in source control and the user will be able to
+	// revert the changes, I'll create an issue to make this step interactive so
+	// we can ask confirmation to override the file.
+	if err = os.WriteFile(destinationFile, fileContent.Bytes(), 0755); err != nil {
+		return returnData, fmt.Errorf("error: %v", err)
+	}
+
+	return append(returnData, destinationFile), nil
 }

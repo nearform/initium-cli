@@ -1,0 +1,24 @@
+# This file is generate by https://github.com/nearform/k8s-kurated-addons-cli
+name: Build and Push
+
+on: 
+  push:
+    branches:
+      - {{ .DefaultBranch }}
+
+jobs:
+  cli:
+    runs-on: ubuntu-latest
+    container: 
+      image: ghcr.io/nearform/k8s-kurated-addons-cli:latest
+    steps:
+      - name: build docker image application
+        run: build
+      
+      - name: push docker image application
+        run: push
+        env:
+          KKA_REGISTRY_USER: {{ `${{ github.actor }}` }}
+          KKA_REGISTRY_PASSWORD: {{ `${{ secrets.GITHUB_TOKEN }}` }}
+      
+     

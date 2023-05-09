@@ -108,6 +108,7 @@ func (c CLI) Run() {
 			c.DeleteCMD(),
 			c.OnMainCMD(),
 			c.TemplateCMD(),
+			c.InitCMD(),
 		},
 	}
 
