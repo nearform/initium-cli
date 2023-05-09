@@ -3,6 +3,7 @@ package k8s
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"path"
 	"time"
 
@@ -33,7 +34,7 @@ func Config(endpoint string, token string, caCrt []byte) (*rest.Config, error) {
 }
 
 func loadManifest(project project.Project) (*servingv1.Service, error) {
-	data, err := project.Resources.ReadFile(path.Join("assets", "knative", "service.yaml"))
+	data, err := fs.ReadFile(project.Resources, path.Join("assets", "knative", "service.yaml"))
 	if err != nil {
 		return nil, fmt.Errorf("error reading the knative service yaml: %v", err)
 	}
