@@ -1,59 +1,71 @@
 package k8s
 
 import (
-
-	_"k8s.io/client-go/util/cert"
 	"fmt"
 	"testing"
-	_"crypto/rsa"
+	"os"
+	"encoding/base64"
+	"path"
+
+
+	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
 	
 )
 
-var k8sInfo = map[string]string{
-	"caCrt":  `
-	-----BEGIN CERTIFICATE-----
-MIIBkjCCATegAwIBAgIIRvqLB4BCntMwCgYIKoZIzj0EAwIwIzEhMB8GA1UEAwwY
-azNzLWNsaWVudC1jYUAxNjgzMjA2OTEyMB4XDTIzMDUwNDEzMjgzMloXDTI0MDUw
-MzEzMjgzMlowMDEXMBUGA1UEChMOc3lzdGVtOm1hc3RlcnMxFTATBgNVBAMTDHN5
-c3RlbTphZG1pbjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABIK6xKvVGY+MUdH0
-MahZ+B4TPZC6EhboO6lPL+7eNl6W+Ar60Hje+QKATxciNX0p4r0CVs9HmWYTgQPQ
-uyRieQijSDBGMA4GA1UdDwEB/wQEAwIFoDATBgNVHSUEDDAKBggrBgEFBQcDAjAf
-BgNVHSMEGDAWgBT/yKboRYR/66YB21hnmZK9CPZfFTAKBggqhkjOPQQDAgNJADBG
-AiEAhoLrnKOq/6Cu9ZSf9GtseSEPekMYUBy0wnkVOJ/+nSICIQCXcHjqVaWxmO8U
-DZvlOseXlHljNP54oFOuXJ4iFpKK+Q==
------END CERTIFICATE-----
------BEGIN CERTIFICATE-----
-MIIBeDCCAR2gAwIBAgIBADAKBggqhkjOPQQDAjAjMSEwHwYDVQQDDBhrM3MtY2xp
-ZW50LWNhQDE2ODMyMDY5MTIwHhcNMjMwNTA0MTMyODMyWhcNMzMwNTAxMTMyODMy
-WjAjMSEwHwYDVQQDDBhrM3MtY2xpZW50LWNhQDE2ODMyMDY5MTIwWTATBgcqhkjO
-PQIBBggqhkjOPQMBBwNCAAR8MKRsvffcDVlIv2ffOFuZbmoQdfpJVyWS72lrFHHZ
-XmmIZPFMJbhgJ8/B20nV1zMSwYFk33AEIIWI+elS27Xno0IwQDAOBgNVHQ8BAf8E
-BAMCAqQwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQU/8im6EWEf+umAdtYZ5mS
-vQj2XxUwCgYIKoZIzj0EAwIDSQAwRgIhANmzIE9boUJ/t0/7d6QxbRBS0hmXkwap
-OHK+JHIkIJUWAiEAw3vv7B3fDqeh5USkDctTf6fNTVj3o9LQ8A3o+DzUzN0=
------END CERTIFICATE-----` ,
-	"endpoint":  "https://127.0.0.1:6443",
-	"token": `-----BEGIN EC PRIVATE KEY-----
-	MHcCAQEEIGppDcvonjlKLWtpKQAsTzd5tWNcxnq1nGaRPt2n+PXToAoGCCqGSM49
-	AwEHoUQDQgAEgrrEq9UZj4xR0fQxqFn4HhM9kLoSFug7qU8v7t42Xpb4CvrQeN75
-	AoBPFyI1fSnivQJWz0eZZhOBA9C7JGJ5CA==
-	-----END EC PRIVATE KEY-----`,
-}
+var root = "../../../"
+
+var caCrt = "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNsakNDQVg0Q0NRRCtnL1BXUWJDSEFUQU5CZ2txaGtpRzl3MEJBUXNGQURBTk1Rc3dDUVlEVlFRR0V3SlYKVXpBZUZ3MHlNekExTURreE9EUTNNakZhRncweU5EQTFNRGd4T0RRM01qRmFNQTB4Q3pBSkJnTlZCQVlUQWxWVApNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQTMzZXhaMldSUGtGeTJiQTQ4Z3RvClVwK0JkMFd2THFROU50WDBOS014YnA1SjEwMS9VaTVsY1RIcllDMWRqYTVwdjFKVGNGUW1jcWpBajBpL3dBakMKRm5oL1JKbVFrMHE1Y2liZWNURnA5UUFvRVNmbzJxYXovUTFmbmk4OG9ONlk1b1VGd2hrdTJ1bzNUWnV6M0JDMApNRnRyNXRDSGh1UzFObFhVT05VcHpzbW1UZzdZL0R1QXpNK3VIZS9qZlo1eHFqQUx3WHV6SkRFNkNCUGdhbHh6Ck9QM0V4QWNaMmRDWnRCREpVUnpTL29qMFYxOVdsRG5FK1FkTmtGTXlaMHN1UGxPTy95V0Ercno1byt2c2dKVGgKa2ZjaVZQSXZBOUdJdDdOcDZVdzU3MW1VOVlmd2x6MlU0Qm1xTXl6M05pZFF3bVd3V0wvay8yRHlXa0JDaFRBKwpvd0lEQVFBQk1BMEdDU3FHU0liM0RRRUJDd1VBQTRJQkFRQWQ2M01qbFRJSWlSaVdOSDZvcDJySURjY1d5aWNKClJGbHJoODllSDVWeU04Q1o0NUhPYzVjbzZvRDVFdzQ3eG9vSlI2enZEd0c2anozelpFL3ArY2I5aGJ5dFJ5cysKaWNDd1g2dnRtbVpPN0M1RHdIMFYrUzk4emowNytmZFR3dUJHTDIxSlpZVmg1bFR6cEFpdU9iSkh6OTA5d1Y3OApObVhRSHpkMmtEZnpmTWhUaXpWZERPZEs3K2k1Q1RmaENIWUc4dDY2U3pmMGU5cWJ5eUFvTndwRnpxV01lRHROCkdJTGxBNHljcm1pYzBldUpmenZjeGk5NUVwMDdaZ1dYY3pINytLTWJtVnd2RkJWblZHdE9MZC9kMWhKaXlnU20KZUZERURxam9xL1JEcndCU2thbnlJMjNVa21uNGxkNDUvbHFVNDRSMVNqZXJaQmtNUmVIeTN0ZloKLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo="
+
+var endpoint = "https://127.0.0.1:6443"
+
+var token = "ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNklqWllaRFEwT0ZwUWVsRlJRVkp0TUMxa04wWTRNV3N6UzFwVmRXOVhSMDlvYzA5MWFESXdPVWhwVkhjaWZRLmV5SnBjM01pT2lKcmRXSmxjbTVsZEdWekwzTmxjblpwWTJWaFkyTnZkVzUwSWl3aWEzVmlaWEp1WlhSbGN5NXBieTl6WlhKMmFXTmxZV05qYjNWdWRDOXVZVzFsYzNCaFkyVWlPaUpyZFdKbExYTjVjM1JsYlNJc0ltdDFZbVZ5Ym1WMFpYTXVhVzh2YzJWeWRtbGpaV0ZqWTI5MWJuUXZjMlZqY21WMExtNWhiV1VpT2lKdmEyVXRhM1ZpWldOdmJtWnBaeTF6WVMxMGIydGxiaUlzSW10MVltVnlibVYwWlhNdWFXOHZjMlZ5ZG1salpXRmpZMjkxYm5RdmMyVnlkbWxqWlMxaFkyTnZkVzUwTG01aGJXVWlPaUowWlhOMExYTmhJaXdpYTNWaVpYSnVaWFJsY3k1cGJ5OXpaWEoyYVdObFlXTmpiM1Z1ZEM5elpYSjJhV05sTFdGalkyOTFiblF1ZFdsa0lqb2lNelV4TkdJME9XVXRaVE15TWkwMFpHTTBMVGhsTUdVdE1qSTROemxsWm1GaE9HTXpJaXdpYzNWaUlqb2ljM2x6ZEdWdE9uTmxjblpwWTJWaFkyTnZkVzUwT210MVltVXRjM2x6ZEdWdE9uUmxjM1F0YzJFaWZRLlI5YnN3LU1MUjBubUhNOVJoUWJBZTBoZ2U0Z3JzYkJPa25RZUxVWC13SnRFY2dWejRDLVp6MFhVbUpPMEo4SVFmZXU1b3F3RnJwVHpSVEp0R24wdVdqc1RrSTZHSWNRNkpxM0FUSms3MEkwVzFqUTVJTkpJVjVmMFpfZDlIazNpZnVQaFNUUmpBZ2ljTDJCNjdMUHVBaW40T05hOHNkTE95VTZrSXFDU2Q3dURUNVMtLS1qQ0JzTnpJd1p0QVg1dVFfbDZGUHVUdlZxdGJiSUJGblVQUGExandaSWwwd3U1YV9DTG9rVFhWbDduVkZYUzBxZTJ1RWFmUlEwVGZIOWFjbWZndkFVcWFXbkNsTV9oekNzekhKOTBYaHNtOXIzQ3oya29UcDJhLWtVVWlhSWQxbGlPeWcyNFMtS29TZlNwUEpiNWcxVzZhNHB5VU1xMXNDNGFuUQ=="
 
 func TestConfig(t *testing.T) {
 
-	// key, err := rsa.GenerateKey(cryptorand.Reader, 2048)
-	// if err != nil {
-	// 	t.Fatalf("rsa key failed to generate: %v", err)
-	// }
+	decodedCert, err := base64.StdEncoding.DecodeString(caCrt)
+
+	if err != nil {
+		t.Fatalf("Not possible to decode base64 cert into a string: %v", err)
+	}
+
+	decodedToken, err := base64.StdEncoding.DecodeString(token)
+
+	if err != nil {
+		t.Fatalf("Not possible to decode base64 token into a string: %v", err)
+	}
 	
-	_, err := Config(k8sInfo["endpoint"], k8sInfo["token"], []byte(k8sInfo["caCrt"]))
+	_, err = Config(endpoint, fmt.Sprintf("%x", decodedToken), []byte(decodedCert))
 
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Error: %s", err))
 	}
 
-	
+	mockDummyValues := map[string]string{
+		"caCrt": "certificatestring",
+		"endpoint": "endpoint",
+		"token": "tokenstring",
+	}
+
+	_, err = Config(mockDummyValues["endpoint"], mockDummyValues["token"], []byte(mockDummyValues["caCrt"]))
+
+	if err == nil {
+		t.Fatalf("Error: strings shouldn't be not supported")
+	}
+
 }
 
 
+func TestLoadManifest(t *testing.T){
+	proj_knative := project.Project{Name: "knative_test",
+		Directory: path.Join(root, "example"),
+		Resources: os.DirFS(root),
+	}
+
+	_, err := loadManifest(proj_knative)
+
+	if err != nil {
+		t.Fatalf(fmt.Sprintf("Error: %v", err))
+	}
+
+
+}
