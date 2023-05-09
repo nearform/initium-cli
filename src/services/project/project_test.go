@@ -52,7 +52,6 @@ func TestLoadDockerfile(t *testing.T) {
 		}
 
 		if err != nil {
-			fmt.Println(err)
 			t.Fatalf(fmt.Sprintf("Error: %s", err))
 		}
 	}
