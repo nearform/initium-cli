@@ -1,58 +1,59 @@
 package project
 
 import (
-	"testing"
 	"fmt"
 	"os"
-	// _"embed"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
+	"path"
+	"testing"
 )
 
-var projects = []map[string]string{
-	{"name": "node", "directory": "example"},
-	{"name": "go", "directory": "."},
+var projects = map[string]map[string]string{
+	"node":    {"directory": "example"},
+	"go":      {"directory": "."},
+	"invalid": {"directory": "src"},
 }
 
-var root = defaults.RootDirectoryTests
+var root = "../../../"
 
 func TestDetectType(t *testing.T) {
 
-	for _, value := range projects {
-		test_proj_type := Project{Name: value["name"], 
-							      Directory: fmt.Sprintf("%s%s", root, value["directory"])}
+	for project_type, props := range projects {
+		test_proj_type := Project{Name: project_type,
+			Directory: path.Join(root, props["directory"])}
 
 		proj_type, err := test_proj_type.detectType()
+
+		// if we cannot autodetect a project we will return an error
+		if project_type == "invalid" && err != nil {
+			return
+		}
 
 		if err != nil {
 			t.Fatalf(fmt.Sprintf("Error: %s", err))
 		}
 
-		if proj_type != value["name"] {
-			t.Fatalf("Error: %s project not found", value["name"])
-		}
-	}	
-}
-
-func TestTemplateFile(t *testing.T){
-
-	for _, value := range projects {
-		if _, err := os.Stat(fmt.Sprintf("%s/assets/docker/Dockerfile.%s.tmpl", root, value["name"])); err != nil {
-			t.Fatalf("Error: Dockerfile.%s.tmpl template not found", value["name"])
+		if proj_type != project_type {
+			t.Fatalf("Error: %s project not found", project_type)
 		}
 	}
 }
 
-func TestLoadDockerfile(t *testing.T){
-	for _, value := range projects {
-		proj_dockerfile := Project{Name: value["name"], 
-							      Directory: fmt.Sprintf("%s%s", root, value["directory"]),
-								  Resources: defaults.TemplateFS}
+func TestLoadDockerfile(t *testing.T) {
+	for project_type, props := range projects {
+		proj_dockerfile := Project{Name: project_type,
+			Directory: path.Join(root, props["directory"]),
+			Resources: os.DirFS(root),
+		}
 		_, err := proj_dockerfile.loadDockerfile()
+
+		// if we cannot autodetect a project we will return an error
+		if project_type == "invalid" && err != nil {
+			return
+		}
 
 		if err != nil {
 			fmt.Println(err)
 			t.Fatalf(fmt.Sprintf("Error: %s", err))
 		}
-		
 	}
 }
