@@ -2,8 +2,8 @@ package project
 
 import (
 	"bytes"
-	"embed"
 	"fmt"
+	"io/fs"
 	"os"
 	"path"
 	"text/template"
@@ -14,10 +14,10 @@ type Project struct {
 	Version        string
 	Directory      string
 	RuntimeVersion string
-	Resources      embed.FS
+	Resources      fs.FS
 }
 
-func New(name string, directory string, runtimeVersion string, version string, resources embed.FS) Project {
+func New(name string, directory string, runtimeVersion string, version string, resources fs.FS) Project {
 	return Project{
 		Name:           name,
 		Directory:      directory,
