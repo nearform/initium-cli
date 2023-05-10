@@ -1,6 +1,9 @@
 name: nodejs
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   nodejs_build:
