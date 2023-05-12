@@ -9,6 +9,13 @@ import (
 	"text/template"
 )
 
+type ProjectType string
+
+const (
+	NodeProject ProjectType = "node"
+	GoProject   ProjectType = "go"
+)
+
 type Project struct {
 	Name           string
 	Version        string
@@ -27,11 +34,11 @@ func New(name string, directory string, runtimeVersion string, version string, r
 	}
 }
 
-func (proj Project) detectType() (string, error) {
+func (proj Project) detectType() (ProjectType, error) {
 	if _, err := os.Stat(path.Join(proj.Directory, "package.json")); err == nil {
-		return "node", nil
+		return NodeProject, nil
 	} else if _, err := os.Stat(path.Join(proj.Directory, "go.mod")); err == nil {
-		return "go", nil
+		return GoProject, nil
 	} else {
 		return "", fmt.Errorf("Cannot detect project type %v", err)
 	}
@@ -43,7 +50,7 @@ func (proj Project) loadDockerfile() ([]byte, error) {
 		return []byte{}, err
 	}
 
-	dockerfileTemplate := path.Join("assets", "docker", "Dockerfile."+projectType+".tmpl")
+	dockerfileTemplate := path.Join("assets", "docker", fmt.Sprintf("Dockerfile.%s.tmpl", projectType))
 	template, err := template.ParseFS(proj.Resources, dockerfileTemplate)
 	if err != nil {
 		return []byte{}, err

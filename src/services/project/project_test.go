@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"testing"
 	"strings"
+	"testing"
 )
 
-var projects = map[string]map[string]string{
-	"node":    {"directory": "example"},
-	"go":      {"directory": "."},
-	"invalid": {"directory": "src"},
+var projects = map[ProjectType]map[string]string{
+	NodeProject: {"directory": "example"},
+	GoProject:   {"directory": "."},
+	"invalid":   {"directory": "src"},
 }
 
 var root = "../../../"
@@ -19,7 +19,7 @@ var root = "../../../"
 func TestDetectType(t *testing.T) {
 
 	for project_type, props := range projects {
-		test_proj_type := Project{Name: project_type,
+		test_proj_type := Project{Name: string(project_type),
 			Directory: path.Join(root, props["directory"])}
 
 		proj_type, err := test_proj_type.detectType()
@@ -41,7 +41,7 @@ func TestDetectType(t *testing.T) {
 
 func TestLoadDockerfile(t *testing.T) {
 	for project_type, props := range projects {
-		proj_dockerfile := Project{Name: project_type,
+		proj_dockerfile := Project{Name: string(project_type),
 			Directory: path.Join(root, props["directory"]),
 			Resources: os.DirFS(root),
 		}
@@ -58,12 +58,11 @@ func TestLoadDockerfile(t *testing.T) {
 	}
 }
 
-
 func TestCorrectRuntime(t *testing.T) {
-	
+
 	proj_runtime := Project{Name: "test",
-		Directory: path.Join(root, projects["node"]["directory"]),
-		Resources: os.DirFS(root),
+		Directory:      path.Join(root, projects["node"]["directory"]),
+		Resources:      os.DirFS(root),
 		RuntimeVersion: "30",
 	}
 	data, err := proj_runtime.loadDockerfile()
