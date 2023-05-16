@@ -28,7 +28,7 @@ This project is intended for building an executable file to run on various CI/CD
 In order to build the executable you simply need to run 
 
 ```bash
-make
+make build
 ```
 
 You will be able to run the executable from 
