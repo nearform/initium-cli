@@ -24,6 +24,7 @@ func (c CLI) newProject(cCtx *cli.Context) project.Project {
 		cCtx.String("project-directory"),
 		cCtx.String("runtime-version"),
 		cCtx.String("app-version"),
+		cCtx.String("docker-image"),
 		c.Resources,
 	)
 }

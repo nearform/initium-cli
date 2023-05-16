@@ -21,16 +21,18 @@ type Project struct {
 	Version        string
 	Directory      string
 	RuntimeVersion string
+	DockerImage    string
 	Resources      fs.FS
 }
 
-func New(name string, directory string, runtimeVersion string, version string, resources fs.FS) Project {
+func New(name string, directory string, runtimeVersion string, version string, dockerImage string, resources fs.FS) Project {
 	return Project{
 		Name:           name,
 		Directory:      directory,
 		RuntimeVersion: runtimeVersion,
 		Resources:      resources,
 		Version:        version,
+		DockerImage:    dockerImage,
 	}
 }
 

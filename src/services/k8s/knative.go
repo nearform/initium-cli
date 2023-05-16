@@ -3,9 +3,10 @@ package k8s
 import (
 	"context"
 	"fmt"
-	"io/fs"
 	"path"
 	"time"
+	"text/template"
+	"bytes"
 
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
@@ -18,6 +19,10 @@ import (
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	servingv1client "knative.dev/serving/pkg/client/clientset/versioned/typed/serving/v1"
 )
+
+type ManifestInventory struct {
+    DockerImage string
+}
 
 func Config(endpoint string, token string, caCrt []byte) (*rest.Config, error) {
 	if _, err := certutil.NewPoolFromBytes(caCrt); err != nil {
@@ -33,11 +38,21 @@ func Config(endpoint string, token string, caCrt []byte) (*rest.Config, error) {
 	}, nil
 }
 
+
 func loadManifest(project project.Project) (*servingv1.Service, error) {
-	data, err := fs.ReadFile(project.Resources, path.Join("assets", "knative", "service.yaml"))
+    knativeTemplate := path.Join("assets", "knative", "service.yaml.tmpl")
+	template, err := template.ParseFS(project.Resources, knativeTemplate)
 	if err != nil {
 		return nil, fmt.Errorf("error reading the knative service yaml: %v", err)
 	}
+
+	output := &bytes.Buffer{}
+    // TODO replace map[string]string{} with proper values
+    if err = template.Execute(output, project); err != nil {
+        return nil, err
+    }
+
+    data := output.Bytes()
 
 	err = servingv1.AddToScheme(scheme.Scheme)
 	if err != nil {

@@ -19,6 +19,7 @@ func (c CLI) Build(cCtx *cli.Context) error {
 	}
 
 	logger.PrintInfo("Dockerfile Location: " + path.Join(project.Directory, docker.DockerFileName))
+
 	return docker.Build()
 }
 
