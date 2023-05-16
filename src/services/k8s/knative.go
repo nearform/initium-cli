@@ -20,10 +20,6 @@ import (
 	servingv1client "knative.dev/serving/pkg/client/clientset/versioned/typed/serving/v1"
 )
 
-type ManifestInventory struct {
-    DockerImage string
-}
-
 func Config(endpoint string, token string, caCrt []byte) (*rest.Config, error) {
 	if _, err := certutil.NewPoolFromBytes(caCrt); err != nil {
 		return nil, fmt.Errorf("Expected to load root CA from bytes, but got err: %v", err)

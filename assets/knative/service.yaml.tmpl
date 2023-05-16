@@ -1,13 +1,10 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: helloworld-go
+  name: {{ .Name }}
   namespace: default
 spec:
   template:
     spec:
       containers:
         - image: {{ .DockerImage }}
-          env:
-            - name: TARGET
-              value: "Go Sample v1"
