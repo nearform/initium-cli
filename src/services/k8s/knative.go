@@ -42,7 +42,7 @@ func loadManifest(project project.Project) (*servingv1.Service, error) {
 		return nil, fmt.Errorf("error reading the knative service yaml: %v", err)
 	}
 
-	output := &bytes.Buffer{}
+    output := &bytes.Buffer{}
     // TODO replace map[string]string{} with proper values
     if err = template.Execute(output, project); err != nil {
         return nil, err
@@ -73,15 +73,16 @@ func Apply(config *rest.Config, project project.Project) error {
 	logger.PrintInfo("Deploying Knative service to " + config.Host)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
+
+    service, err := loadManifest(project)
+    if err != nil {
+        return err
+    }
+
 	// Create a new Knative Serving client
 	servingClient, err := servingv1client.NewForConfig(config)
 	if err != nil {
 		return fmt.Errorf("Error creating the knative client %v", err)
-	}
-
-	service, err := loadManifest(project)
-	if err != nil {
-		return err
 	}
 
 	service.ObjectMeta.Namespace = "default"

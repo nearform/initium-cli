@@ -44,7 +44,7 @@ func Flags(command FlagsType) []cli.Flag {
 			&cli.StringFlag{
                 Name:     "docker-image",
                 EnvVars:  []string{"KKA_DOCKER_IMAGE"},
-                Required: true,
+                Required: false,
                 Category: "deploy",
                 Value:   defaults.DockerImage,
             },
