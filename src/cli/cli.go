@@ -9,17 +9,25 @@ import (
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
 
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
+	"github.com/nearform/k8s-kurated-addons-cli/src/services/docker"
+	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
 
 	"github.com/urfave/cli/v2"
 )
 
 type CLI struct {
-	Resources embed.FS
-	CWD       string
+	Resources       embed.FS
+	CWD             string
+	DockerService   docker.DockerService
+	project         project.Project
 }
 
-func (c CLI) newProject(cCtx *cli.Context) project.Project {
-	return project.New(
+func (c *CLI) newProject(cCtx *cli.Context) project.Project {
+
+    repoName := cCtx.String("repo-name")
+    dockerFileName := cCtx.String("dockerfile-name")
+
+	project := project.New(
 		cCtx.String("app-name"),
 		cCtx.String("project-directory"),
 		cCtx.String("runtime-version"),
@@ -27,6 +35,22 @@ func (c CLI) newProject(cCtx *cli.Context) project.Project {
 		cCtx.String("docker-image"),
 		c.Resources,
 	)
+
+	dockerService, err := docker.New(project, dockerFileName, repoName)
+    if err != nil {
+        logger.PrintError("Error creating docker service", err)
+    }
+
+    c.DockerService = dockerService
+
+    return project
+}
+
+func (c *CLI) getProject(cCtx *cli.Context) project.Project {
+    if (c.project == project.Project{}) {
+        c.project = c.newProject(cCtx)
+    }
+    return c.project
 }
 
 func (c CLI) Run() {

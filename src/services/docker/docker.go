@@ -127,7 +127,7 @@ func (ds DockerService) buildContext() (*bytes.Reader, error) {
 }
 
 // Build Docker image
-func (ds DockerService) Build() error {
+func (ds DockerService) Build(project *project.Project) error {
 	logger.PrintInfo("Building " + ds.LocalTag())
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
@@ -155,6 +155,9 @@ func (ds DockerService) Build() error {
 	defer buildResponse.Body.Close()
 
 	logger.PrintStream(buildResponse.Body)
+
+	project.DockerImage = ds.RemoteTag()
+
 	return nil
 }
 

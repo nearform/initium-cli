@@ -6,7 +6,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func (c CLI) OnMainCMD() *cli.Command {
+func (c *CLI) OnMainCMD() *cli.Command {
 	flags := []cli.Flag{}
 	flags = append(flags, Flags(Kubernetes)...)
 	flags = append(flags, Flags(Build)...)

@@ -50,6 +50,8 @@ func loadManifest(project project.Project) (*servingv1.Service, error) {
 
     data := output.Bytes()
 
+    logger.PrintInfo(string(data))
+
 	err = servingv1.AddToScheme(scheme.Scheme)
 	if err != nil {
 		return nil, fmt.Errorf("error adding Knative Serving scheme: %v", err)
