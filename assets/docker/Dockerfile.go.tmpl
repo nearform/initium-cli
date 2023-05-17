@@ -1,4 +1,4 @@
-FROM golang:{{ or .RuntimeVersion "1.20" }} as build
+FROM golang:{{ or .RuntimeVersion .DefaultRuntimeVersion }} as build
 
 WORKDIR /go/src/app
 COPY . .
