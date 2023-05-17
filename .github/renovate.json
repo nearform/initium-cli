@@ -1,0 +1,24 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "automergeType": "branch",
+    "baseBranches": ["main"],
+    "branchConcurrentLimit": 0,
+    "branchNameStrict": true,
+    "dependencyDashboard": false,
+    "enabledManagers": ["asdf", "gomod", "github-actions", "npm"],
+    "extends": ["config:base", ":disableDependencyDashboard", ":semanticCommitTypeAll(ci)"],
+    "gitAuthor": "NearForm Renovate App Bot <115552475+nearform-renovate-app[bot]@users.noreply.github.com>",
+    "packageRules":
+    [
+      {
+        "matchUpdateTypes": ["minor", "patch"],
+        "automerge": true
+      }
+    ],
+    "platform": "github",
+    "platformAutomerge": true,
+    "prConcurrentLimit": 0,
+    "rebaseWhen": "auto",
+    "repositories": ["nearform/k8s-kurated-addons-cli"],
+    "username": "nearform-renovate-app[bot]"
+  }
