@@ -118,7 +118,7 @@ func Apply(config *rest.Config, project *project.Project) error {
 	return nil
 }
 
-func Clean(config *rest.Config, project project.Project) error {
+func Clean(config *rest.Config, project *project.Project) error {
 	logger.PrintInfo("Deleting Knative service from " + config.Host)
 	ctx := context.Background()
 
