@@ -56,7 +56,7 @@ func TestConfig(t *testing.T) {
 
 
 func TestLoadManifest(t *testing.T){
-	proj_knative := project.Project{Name: "knative_test",
+	proj_knative := &project.Project{Name: "knative_test",
 		Directory: path.Join(root, "example"),
 		Resources: os.DirFS(root),
 	}

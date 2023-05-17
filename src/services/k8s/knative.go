@@ -35,7 +35,7 @@ func Config(endpoint string, token string, caCrt []byte) (*rest.Config, error) {
 }
 
 
-func loadManifest(project project.Project) (*servingv1.Service, error) {
+func loadManifest(project *project.Project) (*servingv1.Service, error) {
     knativeTemplate := path.Join("assets", "knative", "service.yaml.tmpl")
 	template, err := template.ParseFS(project.Resources, knativeTemplate)
 	if err != nil {
@@ -71,7 +71,7 @@ func loadManifest(project project.Project) (*servingv1.Service, error) {
 	return service, nil
 }
 
-func Apply(config *rest.Config, project project.Project) error {
+func Apply(config *rest.Config, project *project.Project) error {
 	logger.PrintInfo("Deploying Knative service to " + config.Host)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()

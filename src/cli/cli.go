@@ -46,11 +46,11 @@ func (c *CLI) newProject(cCtx *cli.Context) project.Project {
     return project
 }
 
-func (c *CLI) getProject(cCtx *cli.Context) project.Project {
+func (c *CLI) getProject(cCtx *cli.Context) *project.Project {
     if (c.project == project.Project{}) {
         c.project = c.newProject(cCtx)
     }
-    return c.project
+    return &c.project
 }
 
 func (c CLI) Run() {
