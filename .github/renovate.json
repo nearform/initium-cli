@@ -5,7 +5,7 @@
     "branchConcurrentLimit": 0,
     "branchNameStrict": true,
     "dependencyDashboard": false,
-    "enabledManagers": ["asdf", "gomod", "github-actions", "npm"],
+    "enabledManagers": ["asdf", "gomod", "github-actions", "npm", "dockerfile"],
     "extends": ["config:base", ":disableDependencyDashboard", ":semanticCommitTypeAll(ci)"],
     "gitAuthor": "NearForm Renovate App Bot <115552475+nearform-renovate-app[bot]@users.noreply.github.com>",
     "packageRules":
