@@ -14,7 +14,7 @@ func (c *CLI) Delete(cCtx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	project := c.newProject(cCtx)
+	project := c.getProject(cCtx)
 	return knative.Clean(config, project)
 }
 
