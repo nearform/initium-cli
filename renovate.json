@@ -12,7 +12,8 @@
      "gomod",
      "github-actions",
      "npm",
-     "dockerfile"
+     "dockerfile",
+     "regex"
   ],
   "extends":[
      "config:base",
