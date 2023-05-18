@@ -22,7 +22,6 @@ import (
 type DockerService struct {
 	project             project.Project
 	DockerFileName      string
-	ContainerRegistry   string
 	Client              client.Client
 	AuthConfig          types.AuthConfig
 	dockerImage         DockerImage
@@ -38,7 +37,6 @@ func New(project project.Project, dockerImage DockerImage, dockerFileName string
 	return DockerService{
 		project:            project,
 		DockerFileName:     dockerFileName,
-		ContainerRegistry:  dockerImage.Registry,
 		Client:             *client,
 		dockerImage:        dockerImage,
 	}, nil
