@@ -10,7 +10,7 @@ import (
 func (c *CLI) Build(cCtx *cli.Context) error {
     project := c.getProject(cCtx)
 	logger.PrintInfo("Dockerfile Location: " + path.Join(project.Directory, c.DockerService.DockerFileName))
-	return c.DockerService.Build(project)
+	return c.DockerService.Build()
 }
 
 func (c CLI) BuildCMD() *cli.Command {

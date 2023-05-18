@@ -2,7 +2,6 @@ package cli
 
 import (
 	"github.com/urfave/cli/v2"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 )
 
 type FlagsType string
@@ -41,13 +40,6 @@ func Flags(command FlagsType) []cli.Flag {
 				Required: true,
 				Category: "deploy",
 			},
-			&cli.StringFlag{
-                Name:     "docker-image",
-                EnvVars:  []string{"KKA_DOCKER_IMAGE"},
-                Required: false,
-                Category: "deploy",
-                Value:   defaults.DockerImage,
-            },
 		},
 		Registry: []cli.Flag{
 			&cli.StringFlag{

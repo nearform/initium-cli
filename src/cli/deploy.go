@@ -17,7 +17,7 @@ func (c *CLI) Deploy(cCtx *cli.Context) error {
 	}
 	project := c.getProject(cCtx)
 
-	return knative.Apply(config, project)
+	return knative.Apply(config, project, c.dockerImage)
 }
 
 func (c CLI) DeployCMD() *cli.Command {

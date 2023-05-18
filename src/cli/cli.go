@@ -20,28 +20,39 @@ type CLI struct {
 	CWD             string
 	DockerService   docker.DockerService
 	project         project.Project
+	dockerImage     docker.DockerImage
 }
 
 func (c *CLI) newProject(cCtx *cli.Context) project.Project {
 
     repoName := cCtx.String("repo-name")
     dockerFileName := cCtx.String("dockerfile-name")
+    appName         := cCtx.String("app-name")
+    version         := cCtx.String("app-version")
+    projectDirectory := cCtx.String("project-directory")
 
 	project := project.New(
-		cCtx.String("app-name"),
-		cCtx.String("project-directory"),
+		appName,
+		projectDirectory,
 		cCtx.String("runtime-version"),
-		cCtx.String("app-version"),
-		cCtx.String("docker-image"),
+		version,
 		c.Resources,
 	)
 
-	dockerService, err := docker.New(project, dockerFileName, repoName)
+	dockerImage := docker.DockerImage{
+	    Registry:   repoName,
+	    Name:       appName,
+	    Directory:  projectDirectory,
+	    Tag:        version,
+	}
+
+	dockerService, err := docker.New(project, dockerImage, dockerFileName)
     if err != nil {
         logger.PrintError("Error creating docker service", err)
     }
 
     c.DockerService = dockerService
+    c.dockerImage   = dockerImage
 
     return project
 }

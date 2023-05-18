@@ -60,7 +60,8 @@ func TestLoadDockerfile(t *testing.T) {
 
 func TestCorrectRuntime(t *testing.T) {
 
-	proj_runtime := Project{Name: "test",
+	proj_runtime := Project{
+	    Name: "test",
 		Directory:      path.Join(root, projects["node"]["directory"]),
 		Resources:      os.DirFS(root),
 		RuntimeVersion: "30",
