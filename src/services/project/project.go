@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"text/template"
+	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 )
 
 type ProjectType string
@@ -21,6 +22,7 @@ type Project struct {
 	Version        string
 	Directory      string
 	RuntimeVersion string
+	DefaultRuntimeVersion string
 	Resources      fs.FS
 }
 
@@ -34,10 +36,12 @@ func New(name string, directory string, runtimeVersion string, version string, r
 	}
 }
 
-func (proj Project) detectType() (ProjectType, error) {
+func (proj *Project) detectType() (ProjectType, error) {
 	if _, err := os.Stat(path.Join(proj.Directory, "package.json")); err == nil {
+		proj.DefaultRuntimeVersion = defaults.DefaultNodeRuntimeVersion
 		return NodeProject, nil
 	} else if _, err := os.Stat(path.Join(proj.Directory, "go.mod")); err == nil {
+		proj.DefaultRuntimeVersion = defaults.DefaultGoRuntimeVersion
 		return GoProject, nil
 	} else {
 		return "", fmt.Errorf("Cannot detect project type %v", err)
