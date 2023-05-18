@@ -20,5 +20,21 @@
     "prConcurrentLimit": 0,
     "rebaseWhen": "auto",
     "repositories": ["nearform/k8s-kurated-addons-cli"],
-    "username": "nearform-renovate-app[bot]"
+    "username": "nearform-renovate-app[bot]",
+    "regexManagers": [
+      {
+        "fileMatch": ["^src/utils/defaults/defaults\\.go$"],
+        "matchStrings": ["DefaultGoRuntimeVersion = \"(?<currentValue>.*?)\""],
+        "depTypeList": ["gomod"],
+        "datasourceTemplate": "github-tags",
+        "lookupNameTemplate": "golang/go"
+      },
+      {
+        "fileMatch": ["^src/utils/defaults/defaults\\.go$"],
+        "matchStrings": ["DefaultNodeRuntimeVersion = \"(?<currentValue>.*?)\""],
+        "depTypeList": ["npm"],
+        "datasourceTemplate": "github-tags",
+        "lookupNameTemplate": "nodejs/node"
+      }
+    ]
   }
