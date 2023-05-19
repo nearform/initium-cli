@@ -32,10 +32,6 @@
            "patch"
         ],
         "automerge":true
-     },
-     {
-      "matchUpdateTypes": ["minor"],
-      "enabled": false
      }
   ],
   "platform":"github",
