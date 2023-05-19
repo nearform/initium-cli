@@ -23,7 +23,7 @@
   "gitAuthor":"NearForm Renovate App Bot <115552475+nearform-renovate-app[bot]@users.noreply.github.com>",
   "packageRules":[
     {
-      "matchManagers": ["docker"],
+      "matchManagers": ["regex"],
       "matchUpdateTypes": ["patch"],
       "automerge": true
     },
