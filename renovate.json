@@ -53,8 +53,7 @@
         ],
         "matchStrings":[
            "datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\sconst Default.*RuntimeVersion = \"(?<currentValue>.*?)\""
-        ],
-        "versioningTemplate":"{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
-     }
+        ]
+    }
   ]
 }
