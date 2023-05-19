@@ -7,5 +7,5 @@ const DockerfileName = "Dockerfile.kka"
 //  renovate: datasource=docker depName=node versioning=node
 const DefaultNodeRuntimeVersion = "20"
 
-//  renovate: datasource=docker depName=golang versioning=gomod
+//  renovate: datasource=docker depName=golang
 const DefaultGoRuntimeVersion = "1.19.3"
