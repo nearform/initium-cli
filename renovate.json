@@ -43,7 +43,7 @@
            "^src/utils/defaults/defaults\\.go$"
         ],
         "matchStrings":[
-           "datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\sconst Default.*RuntimeVersion = \"(?<currentValue>.*?)\""
+           "datasource=(?<datasource>.*?) depName=(?<depName>.*?)\\sconst Default.*RuntimeVersion = \"(?<currentValue>.*?)\""
         ],
         "versioningTemplate":"{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
      }
