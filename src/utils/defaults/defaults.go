@@ -6,4 +6,4 @@ const DockerfileName = "Dockerfile.kka"
 //  renovate: datasource=github-tags depName=nodejs/node versioning=node
 const DefaultNodeRuntimeVersion="20"
 //  renovate: datasource=github-tags depName=golang/go
-const DefaultGoRuntimeVersion="1.19.9"
+const DefaultGoRuntimeVersion="1.19.8"
