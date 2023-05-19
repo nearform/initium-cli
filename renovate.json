@@ -51,8 +51,7 @@
      {
       "fileMatch": ["^src/utils/defaults/defaults\\.go$"],
       "matchStrings": ["const DefaultGoRuntimeVersion=\"(?<currentValue>.*?)\""],
-      "depNameTemplate": "golang/go",
-      "datasourceTemplate": "git-tags"
+      "depNameTemplate": "golang/go"
     }
   ]
 }
