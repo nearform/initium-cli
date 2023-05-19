@@ -22,12 +22,6 @@
   ],
   "gitAuthor":"NearForm Renovate App Bot <115552475+nearform-renovate-app[bot]@users.noreply.github.com>",
   "packageRules":[
-    {
-      "matchPackageNames": ["golang"],
-      "matchManagers": ["regex"],
-      "matchUpdateTypes": ["patch"],
-      "automerge": true
-    },
      {
         "matchUpdateTypes":[
            "patch"
@@ -35,7 +29,7 @@
         "automerge":true
      },
      {
-      "matchUpdateTypes": ["minor"],
+      "matchUpdateTypes": ["minor", "major"],
       "enabled": false
      }
   ],
