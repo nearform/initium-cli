@@ -50,7 +50,7 @@
      },
      {
       "fileMatch": ["^src/utils/defaults/defaults\\.go$"],
-      "matchStrings": ["DefaultGoRuntimeVersion = \"(?<currentValue>.*?)\""],
+      "matchStrings": ["DefaultGoRuntimeVersion=\"(?<currentValue>.*?)\""],
       "depNameTemplate": "golang/go",
       "datasourceTemplate": "github-releases"
     }
