@@ -4,7 +4,7 @@ const ProjectDirectory = "."
 const RepoName = "ghcr.io/nearform"
 const DockerfileName = "Dockerfile.kka"
 
-//  renovate: datasource=docker depName=node
+//  renovate: datasource=docker depName=node versioning=node
 const DefaultNodeRuntimeVersion = "20"
 
 //  renovate: datasource=docker depName=golang
