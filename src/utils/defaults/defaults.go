@@ -8,4 +8,4 @@ const DockerfileName = "Dockerfile.kka"
 const DefaultNodeRuntimeVersion = "20"
 
 //  renovate: datasource=docker depName=golang
-const DefaultGoRuntimeVersion = "1.19.8"
+const DefaultGoRuntimeVersion = "1.19.3"

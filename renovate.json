@@ -26,7 +26,9 @@
       "matchUpdateTypes":[
            "patch"
         ],
-        "automerge":true
+        "automerge":true,
+        "enabled": true
+
      },
      {
       "matchUpdateTypes": ["minor"],
