@@ -47,6 +47,12 @@
            "datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\sconst Default.*RuntimeVersion = \"(?<currentValue>.*?)\""
         ],
         "versioningTemplate":"{{#if versioning}}{{{versioning}}}{{else}}semver{{/if}}"
-     }
+     },
+     {
+      "fileMatch": ["^src/utils/defaults/defaults\\.go$"],
+      "matchStrings": ["DefaultGoRuntimeVersion = \"(?<currentValue>.*?)\""],
+      "depName": "golang/go",
+      "datasource": "github-tags"
+    }
   ]
 }
