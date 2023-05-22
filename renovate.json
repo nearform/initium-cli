@@ -30,15 +30,9 @@
     },
     {
       "matchUpdateTypes": [
-        "minor"
+        "minor", "major"
       ],
       "automerge": false
-    },
-    {
-      "matchUpdateTypes": [
-        "major"
-      ],
-      "enabled": false
     },
     {
       "packageName": "golang",
