@@ -5,7 +5,7 @@ RUN npm i
 RUN npm run build --if-present
 RUN npm test
 
-FROM gcr.io/distroless/nodejs{{ or .RuntimeVersion .DefaultRuntimeVersion }}-debian11
+FROM gcr.io/distroless/nodejs20-debian11
 COPY --from=build-env /src /src
 WORKDIR /src
 CMD ["index.js"]
