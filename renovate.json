@@ -1,0 +1,64 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "automergeType": "branch",
+  "baseBranches": [
+    "master"
+  ],
+  "branchConcurrentLimit": 0,
+  "branchNameStrict": true,
+  "dependencyDashboard": false,
+  "enabledManagers": [
+    "asdf",
+    "gomod",
+    "github-actions",
+    "npm",
+    "dockerfile",
+    "regex"
+  ],
+  "extends": [
+    "config:base",
+    ":disableDependencyDashboard",
+    ":semanticCommitTypeAll(ci)"
+  ],
+  "gitAuthor": "NearForm Renovate App Bot <115552475+nearform-renovate-app[bot]@users.noreply.github.com>",
+  "packageRules": [
+    {
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "automerge": true
+    },
+    {
+      "matchUpdateTypes": [
+        "minor", "major"
+      ],
+      "automerge": false
+    },
+    {
+      "packageName": "golang",
+      "enabled": false,
+      "updateTypes": [
+        "minor"
+      ]
+    }
+  ],
+  "platform": "github",
+  "platformAutomerge": true,
+  "prConcurrentLimit": 0,
+  "rebaseWhen": "auto",
+  "repositories": [
+    "nearform/k8s-kurated-addons-cli"
+  ],
+  "username": "nearform-renovate-app[bot]",
+  "regexManagers": [
+    {
+      "fileMatch": [
+        "^src/utils/defaults/defaults\\.go$"
+      ],
+      "matchStrings": [
+        "datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\sconst Default.*RuntimeVersion = \"(?<currentValue>.*?)\""
+      ]
+    }
+  ],
+  "separateMinorPatch": true
+}
