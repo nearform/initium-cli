@@ -49,5 +49,7 @@
            "datasource=(?<datasource>.*?) depName=(?<depName>.*?)( versioning=(?<versioning>.*?))?\\sconst Default.*RuntimeVersion = \"(?<currentValue>.*?)\""
         ]
     }
-  ]
+  ],
+  "separateMinorPatch": true
+
 }
