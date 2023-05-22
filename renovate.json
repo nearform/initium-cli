@@ -25,12 +25,7 @@
      {
       "matchUpdateTypes": ["major", "minor"],
       "enabled": false
-     },
-     {
-      "packageName": "golang",
-      "enabled": false,
-      "updateTypes": ["minor"]
-    }
+     }
   ],
   "platform":"github",
   "platformAutomerge":true,
