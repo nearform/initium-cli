@@ -6,7 +6,7 @@
   ],
   "branchConcurrentLimit":0,
   "branchNameStrict":true,
-  "dependencyDashboard":true,
+  "dependencyDashboard":false,
   "enabledManagers":[
      "asdf",
      "gomod",
