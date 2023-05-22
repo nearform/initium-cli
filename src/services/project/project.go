@@ -3,11 +3,11 @@ package project
 import (
 	"bytes"
 	"fmt"
+	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 	"io/fs"
 	"os"
 	"path"
 	"text/template"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 )
 
 type ProjectType string
@@ -18,12 +18,12 @@ const (
 )
 
 type Project struct {
-	Name           string
-	Version        string
-	Directory      string
-	RuntimeVersion string
+	Name                  string
+	Version               string
+	Directory             string
+	RuntimeVersion        string
 	DefaultRuntimeVersion string
-	Resources      fs.FS
+	Resources             fs.FS
 }
 
 func New(name string, directory string, runtimeVersion string, version string, resources fs.FS) Project {
