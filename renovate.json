@@ -22,10 +22,16 @@
   ],
   "gitAuthor":"NearForm Renovate App Bot <115552475+nearform-renovate-app[bot]@users.noreply.github.com>",
   "packageRules":[
-     {
+    {
+      "matchUpdateTypes":[
+        "patch"
+      ],
+      "automerge":true
+    },
+    {
       "matchUpdateTypes": ["major", "minor"],
       "enabled": false
-     }
+    }
   ],
   "platform":"github",
   "platformAutomerge":true,
