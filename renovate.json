@@ -24,9 +24,15 @@
   "packageRules":[
     {
       "matchUpdateTypes":[
-        "patch", "minor"
+        "patch"
       ],
       "automerge":true
+    },
+    {
+      "matchUpdateTypes":[
+        "minor"
+      ],
+      "automerge":false
     },
     {
       "matchUpdateTypes": ["major"],
