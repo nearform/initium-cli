@@ -8,7 +8,7 @@ require (
 	github.com/urfave/cli/v2 v2.25.0
 	k8s.io/api v0.27.1
 	k8s.io/apimachinery v0.27.1
-	k8s.io/client-go v0.27.1
+	k8s.io/client-go v11.0.0+incompatible
 	knative.dev/serving v0.37.0
 )
 
