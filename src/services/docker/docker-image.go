@@ -12,16 +12,16 @@ type DockerImage struct {
     Tag         string
 }
 
-func (di DockerImage) RemoteTag() string {
-	if di.Directory != defaults.ProjectDirectory {
-		return fmt.Sprintf("%s/%s/%s:%s", di.Registry, di.Name, di.Directory, di.Tag)
+func (dockerImage DockerImage) RemoteTag() string {
+	if dockerImage.Directory != defaults.ProjectDirectory {
+		return fmt.Sprintf("%s/%s/%s:%s", dockerImage.Registry, dockerImage.Name, dockerImage.Directory, dockerImage.Tag)
 	}
-	return fmt.Sprintf("%s/%s:%s", di.Registry, di.Name, di.Tag)
+	return fmt.Sprintf("%s/%s:%s", dockerImage.Registry, dockerImage.Name, dockerImage.Tag)
 }
 
-func (di DockerImage) LocalTag() string {
-	if di.Directory != defaults.ProjectDirectory {
-		return fmt.Sprintf("%s/%s:%s", di.Name, di.Directory, di.Tag)
+func (dockerImage DockerImage) LocalTag() string {
+	if dockerImage.Directory != defaults.ProjectDirectory {
+		return fmt.Sprintf("%s/%s:%s", dockerImage.Name, dockerImage.Directory, dockerImage.Tag)
 	}
-	return fmt.Sprintf("%s:%s", di.Name, di.Tag)
+	return fmt.Sprintf("%s:%s", dockerImage.Name, dockerImage.Tag)
 }
