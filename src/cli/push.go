@@ -6,7 +6,7 @@ import (
 )
 
 func (c *CLI) Push(cCtx *cli.Context) error {
-	c.getProject(cCtx)
+	c.init(cCtx)
 	c.DockerService.AuthConfig = types.AuthConfig{
 		Username: cCtx.String("registry-user"),
 		Password: cCtx.String("registry-password"),
