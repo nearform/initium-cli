@@ -1,25 +1,16 @@
 package cli
 
 import (
-	"fmt"
 	"path"
 
-	"github.com/nearform/k8s-kurated-addons-cli/src/services/docker"
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
 	"github.com/urfave/cli/v2"
 )
 
-func (c CLI) Build(cCtx *cli.Context) error {
-	repoName := cCtx.String("repo-name")
-	dockerFileName := cCtx.String("dockerfile-name")
-	project := c.newProject(cCtx)
-	docker, err := docker.New(project, dockerFileName, repoName)
-	if err != nil {
-		return fmt.Errorf("Creating docker service: %v", err)
-	}
-
-	logger.PrintInfo("Dockerfile Location: " + path.Join(project.Directory, docker.DockerFileName))
-	return docker.Build()
+func (c *CLI) Build(cCtx *cli.Context) error {
+	project := c.getProject(cCtx)
+	logger.PrintInfo("Dockerfile Location: " + path.Join(project.Directory, c.DockerService.DockerFileName))
+	return c.DockerService.Build()
 }
 
 func (c CLI) BuildCMD() *cli.Command {

@@ -1,14 +1,18 @@
 package k8s
 
 import (
+	"bytes"
 	"context"
 	"fmt"
-	"io/fs"
 	"path"
+	"text/template"
 	"time"
 
+	"github.com/nearform/k8s-kurated-addons-cli/src/services/docker"
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
+
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
+
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -33,11 +37,20 @@ func Config(endpoint string, token string, caCrt []byte) (*rest.Config, error) {
 	}, nil
 }
 
-func loadManifest(project project.Project) (*servingv1.Service, error) {
-	data, err := fs.ReadFile(project.Resources, path.Join("assets", "knative", "service.yaml"))
+func loadManifest(project *project.Project, dockerImage docker.DockerImage) (*servingv1.Service, error) {
+	knativeTemplate := path.Join("assets", "knative", "service.yaml.tmpl")
+	template, err := template.ParseFS(project.Resources, knativeTemplate)
 	if err != nil {
 		return nil, fmt.Errorf("error reading the knative service yaml: %v", err)
 	}
+
+	output := &bytes.Buffer{}
+	// TODO replace map[string]string{} with proper values
+	if err = template.Execute(output, dockerImage); err != nil {
+		return nil, err
+	}
+
+	data := output.Bytes()
 
 	err = servingv1.AddToScheme(scheme.Scheme)
 	if err != nil {
@@ -58,19 +71,20 @@ func loadManifest(project project.Project) (*servingv1.Service, error) {
 	return service, nil
 }
 
-func Apply(config *rest.Config, project project.Project) error {
+func Apply(config *rest.Config, project *project.Project, dockerImage docker.DockerImage) error {
 	logger.PrintInfo("Deploying Knative service to " + config.Host)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
+
+	service, err := loadManifest(project, dockerImage)
+	if err != nil {
+		return err
+	}
+
 	// Create a new Knative Serving client
 	servingClient, err := servingv1client.NewForConfig(config)
 	if err != nil {
 		return fmt.Errorf("Error creating the knative client %v", err)
-	}
-
-	service, err := loadManifest(project)
-	if err != nil {
-		return err
 	}
 
 	service.ObjectMeta.Namespace = "default"
@@ -106,7 +120,7 @@ func Apply(config *rest.Config, project project.Project) error {
 	return nil
 }
 
-func Clean(config *rest.Config, project project.Project) error {
+func Clean(config *rest.Config, project *project.Project) error {
 	logger.PrintInfo("Deleting Knative service from " + config.Host)
 	ctx := context.Background()
 

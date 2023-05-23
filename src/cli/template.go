@@ -6,8 +6,8 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func (c CLI) template(cCtx *cli.Context) error {
-	project := c.newProject(cCtx)
+func (c *CLI) template(cCtx *cli.Context) error {
+	project := c.getProject(cCtx)
 	content, err := project.Dockerfile()
 	if err != nil {
 		return fmt.Errorf("Getting docker file %v", err)
@@ -16,7 +16,7 @@ func (c CLI) template(cCtx *cli.Context) error {
 	return nil
 }
 
-func (c CLI) TemplateCMD() *cli.Command {
+func (c *CLI) TemplateCMD() *cli.Command {
 	return &cli.Command{
 		Name:   "template",
 		Usage:  "output the docker file used for this project",

@@ -13,21 +13,22 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"
+
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
+
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
 )
 
 type DockerService struct {
 	project        project.Project
 	DockerFileName string
-	ContainerRepo  string
 	Client         client.Client
 	AuthConfig     types.AuthConfig
+	dockerImage    DockerImage
 }
 
 // Create a new instance of the DockerService
-func New(project project.Project, dockerFileName string, containerRepo string) (DockerService, error) {
+func New(project project.Project, dockerImage DockerImage, dockerFileName string) (DockerService, error) {
 	client, err := getClient()
 	if err != nil {
 		return DockerService{}, err
@@ -36,8 +37,8 @@ func New(project project.Project, dockerFileName string, containerRepo string) (
 	return DockerService{
 		project:        project,
 		DockerFileName: dockerFileName,
-		ContainerRepo:  containerRepo,
 		Client:         *client,
+		dockerImage:    dockerImage,
 	}, nil
 }
 
@@ -51,27 +52,9 @@ func getClient() (*client.Client, error) {
 	return cli, nil
 }
 
-func (ds DockerService) RemoteTag() string {
-	tag := ds.project.Version
-	directory := ds.project.Directory
-	if directory != defaults.ProjectDirectory {
-		return fmt.Sprintf("%s/%s/%s:%s", ds.ContainerRepo, ds.project.Name, directory, tag)
-	}
-	return fmt.Sprintf("%s/%s:%s", ds.ContainerRepo, ds.project.Name, tag)
-}
-
-func (ds DockerService) LocalTag() string {
-	tag := ds.project.Version
-	directory := ds.project.Directory
-	if directory != defaults.ProjectDirectory {
-		return fmt.Sprintf("%s/%s:%s", ds.project.Name, directory, tag)
-	}
-	return fmt.Sprintf("%s:%s", ds.project.Name, tag)
-}
-
 func (ds DockerService) buildContext() (*bytes.Reader, error) {
 	// Get the context for the docker build
-	existingBuildContext, err := archive.TarWithOptions(ds.project.Directory, &archive.TarOptions{})
+	existingBuildContext, err := archive.TarWithOptions(ds.dockerImage.Directory, &archive.TarOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("Failed to create build context %v", err)
 	}
@@ -128,7 +111,7 @@ func (ds DockerService) buildContext() (*bytes.Reader, error) {
 
 // Build Docker image
 func (ds DockerService) Build() error {
-	logger.PrintInfo("Building " + ds.LocalTag())
+	logger.PrintInfo("Building " + ds.dockerImage.LocalTag())
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
@@ -142,7 +125,7 @@ func (ds DockerService) Build() error {
 	buildOptions := types.ImageBuildOptions{
 		Context:    combinedBuildContextReader,
 		Dockerfile: ds.DockerFileName,
-		Tags:       []string{ds.LocalTag()},
+		Tags:       []string{ds.dockerImage.LocalTag()},
 		Remove:     true,
 	}
 
@@ -155,12 +138,13 @@ func (ds DockerService) Build() error {
 	defer buildResponse.Body.Close()
 
 	logger.PrintStream(buildResponse.Body)
+
 	return nil
 }
 
 // Push Docker image
 func (ds DockerService) Push() error {
-	logger.PrintInfo("Pushing to " + ds.RemoteTag())
+	logger.PrintInfo("Pushing to " + ds.dockerImage.RemoteTag())
 	logger.PrintInfo("User: " + ds.AuthConfig.Username)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
 	defer cancel()
@@ -173,12 +157,12 @@ func (ds DockerService) Push() error {
 		RegistryAuth: base64.URLEncoding.EncodeToString(encodedJSON),
 	}
 
-	err = ds.Client.ImageTag(ctx, ds.LocalTag(), ds.RemoteTag())
+	err = ds.Client.ImageTag(ctx, ds.dockerImage.LocalTag(), ds.dockerImage.RemoteTag())
 	if err != nil {
 		return fmt.Errorf("Tagging local image for remote %v", err)
 	}
 
-	pushResponse, err := ds.Client.ImagePush(ctx, ds.RemoteTag(), ipo)
+	pushResponse, err := ds.Client.ImagePush(ctx, ds.dockerImage.RemoteTag(), ipo)
 	defer pushResponse.Close()
 	if err != nil {
 		return fmt.Errorf("Failed to push docker image %v", err)

@@ -5,7 +5,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func (c CLI) Deploy(cCtx *cli.Context) error {
+func (c *CLI) Deploy(cCtx *cli.Context) error {
 	config, err := knative.Config(
 		cCtx.String("endpoint"),
 		cCtx.String("token"),
@@ -15,9 +15,9 @@ func (c CLI) Deploy(cCtx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	project := c.newProject(cCtx)
+	project := c.getProject(cCtx)
 
-	return knative.Apply(config, project)
+	return knative.Apply(config, project, c.dockerImage)
 }
 
 func (c CLI) DeployCMD() *cli.Command {

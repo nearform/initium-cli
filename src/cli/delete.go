@@ -5,7 +5,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func (c CLI) Delete(cCtx *cli.Context) error {
+func (c *CLI) Delete(cCtx *cli.Context) error {
 	config, err := knative.Config(
 		cCtx.String("endpoint"),
 		cCtx.String("token"),
@@ -14,11 +14,11 @@ func (c CLI) Delete(cCtx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	project := c.newProject(cCtx)
+	project := c.getProject(cCtx)
 	return knative.Clean(config, project)
 }
 
-func (c CLI) DeleteCMD() *cli.Command {
+func (c *CLI) DeleteCMD() *cli.Command {
 	return &cli.Command{
 		Name:   "delete",
 		Usage:  "delete the knative service",
