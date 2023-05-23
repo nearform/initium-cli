@@ -23,7 +23,7 @@ type CLI struct {
 	dockerImage   docker.DockerImage
 }
 
-func (c *CLI) newProject(cCtx *cli.Context) project.Project {
+func (c *CLI) init(cCtx *cli.Context) project.Project {
 
 	repoName := cCtx.String("repo-name")
 	dockerFileName := cCtx.String("dockerfile-name")
@@ -59,7 +59,7 @@ func (c *CLI) newProject(cCtx *cli.Context) project.Project {
 
 func (c *CLI) getProject(cCtx *cli.Context) *project.Project {
 	if (c.project == project.Project{}) {
-		c.project = c.newProject(cCtx)
+		c.project = c.init(cCtx)
 	}
 	return &c.project
 }

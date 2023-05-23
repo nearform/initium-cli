@@ -7,7 +7,7 @@ import (
 )
 
 func (c *CLI) template(cCtx *cli.Context) error {
-	project := c.newProject(cCtx)
+	project := c.init(cCtx)
 	content, err := project.Dockerfile()
 	if err != nil {
 		return fmt.Errorf("Getting docker file %v", err)
