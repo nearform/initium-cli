@@ -1,15 +1,15 @@
 package docker
 
 import (
-    "fmt"
+	"fmt"
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 )
 
 type DockerImage struct {
-    Registry    string
-    Name        string
-    Directory   string
-    Tag         string
+	Registry  string
+	Name      string
+	Directory string
+	Tag       string
 }
 
 func (dockerImage DockerImage) RemoteTag() string {

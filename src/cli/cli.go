@@ -8,28 +8,28 @@ import (
 
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
 
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/docker"
+	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
 
 	"github.com/urfave/cli/v2"
 )
 
 type CLI struct {
-	Resources       embed.FS
-	CWD             string
-	DockerService   docker.DockerService
-	project         project.Project
-	dockerImage     docker.DockerImage
+	Resources     embed.FS
+	CWD           string
+	DockerService docker.DockerService
+	project       project.Project
+	dockerImage   docker.DockerImage
 }
 
 func (c *CLI) newProject(cCtx *cli.Context) project.Project {
 
-    repoName := cCtx.String("repo-name")
-    dockerFileName := cCtx.String("dockerfile-name")
-    appName         := cCtx.String("app-name")
-    version         := cCtx.String("app-version")
-    projectDirectory := cCtx.String("project-directory")
+	repoName := cCtx.String("repo-name")
+	dockerFileName := cCtx.String("dockerfile-name")
+	appName := cCtx.String("app-name")
+	version := cCtx.String("app-version")
+	projectDirectory := cCtx.String("project-directory")
 
 	project := project.New(
 		appName,
@@ -40,28 +40,28 @@ func (c *CLI) newProject(cCtx *cli.Context) project.Project {
 	)
 
 	dockerImage := docker.DockerImage{
-	    Registry:   repoName,
-	    Name:       appName,
-	    Directory:  projectDirectory,
-	    Tag:        version,
+		Registry:  repoName,
+		Name:      appName,
+		Directory: projectDirectory,
+		Tag:       version,
 	}
 
 	dockerService, err := docker.New(project, dockerImage, dockerFileName)
-    if err != nil {
-        logger.PrintError("Error creating docker service", err)
-    }
+	if err != nil {
+		logger.PrintError("Error creating docker service", err)
+	}
 
-    c.DockerService = dockerService
-    c.dockerImage   = dockerImage
+	c.DockerService = dockerService
+	c.dockerImage = dockerImage
 
-    return project
+	return project
 }
 
 func (c *CLI) getProject(cCtx *cli.Context) *project.Project {
-    if (c.project == project.Project{}) {
-        c.project = c.newProject(cCtx)
-    }
-    return &c.project
+	if (c.project == project.Project{}) {
+		c.project = c.newProject(cCtx)
+	}
+	return &c.project
 }
 
 func (c CLI) Run() {

@@ -20,11 +20,11 @@ import (
 )
 
 type DockerService struct {
-	project             project.Project
-	DockerFileName      string
-	Client              client.Client
-	AuthConfig          types.AuthConfig
-	dockerImage         DockerImage
+	project        project.Project
+	DockerFileName string
+	Client         client.Client
+	AuthConfig     types.AuthConfig
+	dockerImage    DockerImage
 }
 
 // Create a new instance of the DockerService
@@ -35,10 +35,10 @@ func New(project project.Project, dockerImage DockerImage, dockerFileName string
 	}
 
 	return DockerService{
-		project:            project,
-		DockerFileName:     dockerFileName,
-		Client:             *client,
-		dockerImage:        dockerImage,
+		project:        project,
+		DockerFileName: dockerFileName,
+		Client:         *client,
+		dockerImage:    dockerImage,
 	}, nil
 }
 

@@ -9,11 +9,11 @@ import (
 
 func TestLocalTag(t *testing.T) {
 
-    dockerImage := DockerImage{
-       Directory: defaults.ProjectDirectory,
-       Name: "test",
-       Tag:   "v1.1.0",
-   }
+	dockerImage := DockerImage{
+		Directory: defaults.ProjectDirectory,
+		Name:      "test",
+		Tag:       "v1.1.0",
+	}
 	ds := DockerService{
 		project: project.Project{
 			Directory: defaults.ProjectDirectory,
@@ -38,12 +38,12 @@ func TestLocalTag(t *testing.T) {
 }
 
 func TestRemoteTag(t *testing.T) {
-    dockerImage := DockerImage{
-        Registry: "example.org",
-        Directory: defaults.ProjectDirectory,
-        Name: "test",
-        Tag:   "v1.1.0",
-    }
+	dockerImage := DockerImage{
+		Registry:  "example.org",
+		Directory: defaults.ProjectDirectory,
+		Name:      "test",
+		Tag:       "v1.1.0",
+	}
 
 	ds := DockerService{
 		project: project.Project{
@@ -51,7 +51,7 @@ func TestRemoteTag(t *testing.T) {
 			Name:      "test",
 			Version:   "v1.1.0",
 		},
-	    dockerImage: dockerImage,
+		dockerImage: dockerImage,
 	}
 
 	remoteTag := ds.dockerImage.RemoteTag()

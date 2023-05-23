@@ -1,16 +1,14 @@
 package k8s
 
 import (
-	"fmt"
-	"testing"
-	"os"
 	"encoding/base64"
+	"fmt"
+	"os"
 	"path"
+	"testing"
 
-
-	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/docker"
-	
+	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
 )
 
 var root = "../../../"
@@ -34,7 +32,7 @@ func TestConfig(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Not possible to decode base64 token into a string: %v", err)
 	}
-	
+
 	_, err = Config(endpoint, fmt.Sprintf("%x", decodedToken), []byte(decodedCert))
 
 	if err != nil {
@@ -42,9 +40,9 @@ func TestConfig(t *testing.T) {
 	}
 
 	mockDummyValues := map[string]string{
-		"caCrt": "certificatestring",
+		"caCrt":    "certificatestring",
 		"endpoint": "endpoint",
-		"token": "tokenstring",
+		"token":    "tokenstring",
 	}
 
 	_, err = Config(mockDummyValues["endpoint"], mockDummyValues["token"], []byte(mockDummyValues["caCrt"]))
@@ -55,18 +53,17 @@ func TestConfig(t *testing.T) {
 
 }
 
-
-func TestLoadManifest(t *testing.T){
+func TestLoadManifest(t *testing.T) {
 	proj_knative := &project.Project{Name: "knative_test",
 		Directory: path.Join(root, "example"),
 		Resources: os.DirFS(root),
 	}
 
 	docker_image := docker.DockerImage{
-	    Registry: "example.com",
-	    Directory: ".",
-        Name: "test",
-        Tag:   "v1.1.0",
+		Registry:  "example.com",
+		Directory: ".",
+		Name:      "test",
+		Tag:       "v1.1.0",
 	}
 
 	_, err := loadManifest(proj_knative, docker_image)
@@ -74,6 +71,5 @@ func TestLoadManifest(t *testing.T){
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Error: %v", err))
 	}
-
 
 }
