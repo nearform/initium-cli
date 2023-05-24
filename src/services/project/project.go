@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
+	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
 	"io/fs"
 	"os"
 	"path"
@@ -111,4 +112,26 @@ func ProjectInit(options InitOptions, resources fs.FS) ([]string, error) {
 	}
 
 	return append(returnData, destinationFile), nil
+}
+
+func (proj Project) InstallCommand() string {
+    projectType, err := proj.detectType()
+    if err != nil {
+        logger.PrintError("Type not found", err)
+    }
+
+    installCommand := "npm i"
+
+    switch projectType {
+        case NodeProject:
+            if _, err := os.Stat(path.Join(proj.Directory, "package-lock.json")); err == nil {
+                installCommand = "npm cli"
+            }
+        case GoProject:
+            installCommand = "go mod download"
+        default:
+            logger.PrintError("Unable to determine install command", nil)
+    }
+
+    return installCommand
 }
