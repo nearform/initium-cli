@@ -1,7 +1,7 @@
 FROM node:{{ or .RuntimeVersion .DefaultRuntimeVersion }} AS build-env
 COPY . /src
 WORKDIR /src
-RUN {{ .InstallCommand }}
+RUN {{ .NodeInstallCommand }}
 RUN npm run build --if-present
 RUN npm test
 
