@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
 	"io/fs"
 	"os"
 	"path"
