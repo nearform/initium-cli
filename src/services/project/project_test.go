@@ -140,7 +140,7 @@ func TestNodeInstallCommand(t *testing.T) {
             packageLockFile := path.Join(root, props["directory"], "package-lock.json")
             _, err := os.Create(packageLockFile)
             if (err != nil) {
-                fmt.Errorf("Failed to create package-lock.json file for testing: %s", err)
+                t.Errorf("Failed to create package-lock.json file for testing: %s", err)
             }
 
             expected = "npm ci"
