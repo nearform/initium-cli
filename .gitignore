@@ -2,3 +2,5 @@
 .vscode/
 .env
 Dockerfile.kka
+*.init_test*
+kka_on_main.yaml

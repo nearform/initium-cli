@@ -8,8 +8,9 @@ type FlagsType string
 
 const (
 	Build      FlagsType = "build"
-	Kubernetes           = "kubernetes"
-	Registry             = "registry"
+	Kubernetes FlagsType = "kubernetes"
+	Registry   FlagsType = "registry"
+	Init       FlagsType = "init"
 )
 
 func Flags(command FlagsType) []cli.Flag {
