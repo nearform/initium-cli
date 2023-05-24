@@ -3,7 +3,7 @@ FROM golang:{{ or .RuntimeVersion .DefaultRuntimeVersion }} as build
 WORKDIR /go/src/app
 COPY . .
 
-RUN {{ .InstallCommand }}
+RUN go mod download
 RUN go vet -v ./...
 RUN go test -v ./...
 
