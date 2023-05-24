@@ -114,24 +114,11 @@ func ProjectInit(options InitOptions, resources fs.FS) ([]string, error) {
 	return append(returnData, destinationFile), nil
 }
 
-func (proj Project) InstallCommand() string {
-	projectType, err := proj.detectType()
-	if err != nil {
-		logger.PrintError("Type not found", err)
-	}
-
+func (proj Project) NodeInstallCommand() string {
 	installCommand := "npm i"
 
-	switch projectType {
-	case NodeProject:
-		if _, err := os.Stat(path.Join(proj.Directory, "package-lock.json")); err == nil {
-			installCommand = "npm cli"
-		}
-	case GoProject:
-		installCommand = "go mod download"
-	default:
-		logger.PrintError("Unable to determine install command", nil)
+	if _, err := os.Stat(path.Join(proj.Directory, "package-lock.json")); err == nil {
+		installCommand = "npm ci"
 	}
-
 	return installCommand
 }
