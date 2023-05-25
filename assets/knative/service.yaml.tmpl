@@ -8,3 +8,5 @@ spec:
     spec:
       containers:
         - image: {{ .RemoteTag }}
+          ports:
+          - containerPort: {{ .Port }}
