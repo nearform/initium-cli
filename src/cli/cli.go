@@ -13,6 +13,7 @@ import (
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
 
 	"github.com/urfave/cli/v2"
+    "github.com/joho/godotenv"
 )
 
 type CLI struct {
@@ -64,6 +65,14 @@ func (c *CLI) getProject(cCtx *cli.Context) *project.Project {
 }
 
 func (c CLI) Run() {
+    configFilePath := os.Getenv("KKA_CONFIG_FILE")
+    if (configFilePath != "") {
+        err := godotenv.Load(configFilePath)
+        if (err != nil) {
+            logger.PrintError("Unable to open config file", err)
+        }
+    }
+
 	flags := []cli.Flag{
 		&cli.StringFlag{
 			Name:    "app-name",
