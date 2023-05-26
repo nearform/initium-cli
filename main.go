@@ -18,7 +18,7 @@ func main() {
 	logger.PrintInfo("nearForm: k8s kurated addons CLI")
 
 	// load .env file
-    godotenv.Load(".env")
+	godotenv.Load(".env")
 
 	cwd, err := os.Getwd()
 	if err != nil {
