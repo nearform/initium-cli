@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
+
 	"github.com/nearform/k8s-kurated-addons-cli/src/cli"
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
 )
@@ -14,6 +16,9 @@ var resources embed.FS
 
 func main() {
 	logger.PrintInfo("nearForm: k8s kurated addons CLI")
+
+	// load .env file
+    godotenv.Load(".env")
 
 	cwd, err := os.Getwd()
 	if err != nil {
