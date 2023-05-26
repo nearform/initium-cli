@@ -120,3 +120,35 @@ func TestInit(t *testing.T) {
 
 	}
 }
+
+func TestNodeInstallCommand(t *testing.T) {
+
+    for project_type, props := range projects {
+        proj := Project{
+            Name: string(project_type),
+            Directory: path.Join(root, props["directory"]),
+            Resources: os.DirFS(root),
+        }
+
+        if (project_type == NodeProject) {
+            expected := "npm i"
+            installCommand := proj.NodeInstallCommand()
+            if (installCommand != expected) {
+                t.Fatalf("Expected '%s', got '%s'", expected, installCommand)
+            }
+
+            packageLockFile := path.Join(root, props["directory"], "package-lock.json")
+            _, err := os.Create(packageLockFile)
+            if (err != nil) {
+                t.Errorf("Failed to create package-lock.json file for testing: %s", err)
+            }
+
+            expected = "npm ci"
+            installCommand = proj.NodeInstallCommand()
+            if (installCommand != expected) {
+                t.Fatalf("Expected '%s', got '%s'", expected, installCommand)
+            }
+            os.Remove(packageLockFile)
+        }
+    }
+}
