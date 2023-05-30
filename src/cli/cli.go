@@ -12,7 +12,7 @@ import (
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
 
 	"github.com/urfave/cli/v2"
-//     "github.com/joho/godotenv"
+    "github.com/joho/godotenv"
 )
 
 type CLI struct {

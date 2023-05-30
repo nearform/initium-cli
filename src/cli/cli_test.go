@@ -13,8 +13,7 @@ func TestEnvConfig(t *testing.T) {
 		t.Fatalf("Error %s", err)
 	}
 
-    // Doesn't recognise global params
-	os.Args = []string{"./bin/kka-cli", "template", "--project-directory=" + root}
+	os.Args = []string{"./bin/kka-cli", "template"}
 
     cli := CLI{
         CWD: cwd,
