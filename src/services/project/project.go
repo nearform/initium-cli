@@ -3,11 +3,12 @@ package project
 import (
 	"bytes"
 	"fmt"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 	"io/fs"
 	"os"
 	"path"
 	"text/template"
+
+	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 )
 
 type ProjectType string
@@ -30,6 +31,8 @@ type InitOptions struct {
 	DestinationFolder string
 	DefaultBranch     string
 	PipelineType      string
+	Repository        string
+	AppName           string
 }
 
 func New(name string, directory string, runtimeVersion string, version string, resources fs.FS) Project {

@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 	"github.com/urfave/cli/v2"
 )
 
@@ -10,7 +11,7 @@ const (
 	Build      FlagsType = "build"
 	Kubernetes FlagsType = "kubernetes"
 	Registry   FlagsType = "registry"
-	Init       FlagsType = "init"
+	InitGithub FlagsType = "init-github"
 )
 
 func Flags(command FlagsType) []cli.Flag {
@@ -54,6 +55,20 @@ func Flags(command FlagsType) []cli.Flag {
 				EnvVars:  []string{"KKA_REGISTRY_PASSWORD"},
 				Required: true,
 				Category: "registry",
+			},
+		},
+		InitGithub: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "destination-folder",
+				Usage:    "Define a destination folder to place your pipeline file",
+				Category: "init",
+				Value:    defaults.GithubActionFolder,
+			},
+			&cli.StringFlag{
+				Name:     "default-branch",
+				Usage:    "Define the default branch in your repo",
+				Category: "init",
+				Value:    defaults.GithubDefaultBranch,
 			},
 		},
 	}
