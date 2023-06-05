@@ -6,9 +6,9 @@ require (
 	github.com/docker/docker v23.0.1+incompatible
 	github.com/moby/term v0.0.0-20221205130635-1aeaba878587
 	github.com/urfave/cli/v2 v2.25.0
-	k8s.io/api v0.27.1
-	k8s.io/apimachinery v0.27.1
-	k8s.io/client-go v0.27.1
+	k8s.io/api v0.27.2
+	k8s.io/apimachinery v0.27.2
+	k8s.io/client-go v0.27.2
 	knative.dev/serving v0.37.0
 )
 
@@ -72,7 +72,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gotest.tools/v3 v3.4.0 // indirect
 	k8s.io/klog/v2 v2.90.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20230308215209-15aac26d736a // indirect
+	k8s.io/kube-openapi v0.0.0-20230501164219-8b0f38b5fd1f // indirect
 	k8s.io/utils v0.0.0-20230220204549-a5ecb0141aa5 // indirect
 	knative.dev/networking v0.0.0-20230419144338-e5d04e805e50 // indirect
 	knative.dev/pkg v0.0.0-20230418073056-dfad48eaa5d0 // indirect
