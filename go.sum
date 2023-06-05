@@ -399,6 +399,8 @@ knative.dev/pkg v0.0.0-20230418073056-dfad48eaa5d0 h1:EFQcoUo8I4bc+U3y6tR1B3ONYZ
 knative.dev/pkg v0.0.0-20230418073056-dfad48eaa5d0/go.mod h1:2qWPP9Gjh9Q7ETti+WRHnBnGCSCq+6q7m3p/nmUQviE=
 knative.dev/serving v0.37.0 h1:hp/HconGRzv0kh2az9I/af1K1DY3NG3zcyiVc2rHyOk=
 knative.dev/serving v0.37.0/go.mod h1:v0Xbfp7olb0Gljm5l4qNuLsIf8/2p1rIt/mphxvx1z0=
+knative.dev/serving v0.37.1 h1:msn1sJ9yVBVWu/5slqkpSXXqCEQRIysHR+fKMO4EXlI=
+knative.dev/serving v0.37.1/go.mod h1:v0Xbfp7olb0Gljm5l4qNuLsIf8/2p1rIt/mphxvx1z0=
 sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd h1:EDPBXCAspyGV4jQlpZSudPeMmr1bNJefnuqLsRAsHZo=
 sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd/go.mod h1:B8JuhiUyNFVKdsE8h686QcCxMaH6HrOAZj4vswFpcB0=
 sigs.k8s.io/structured-merge-diff/v4 v4.2.3 h1:PRbqxJClWWYMNV1dhaG4NsibJbArud9kFxnAMREiWFE=
