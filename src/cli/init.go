@@ -2,7 +2,6 @@ package cli
 
 import (
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 	log "github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
 	"github.com/urfave/cli/v2"
 )
@@ -12,6 +11,8 @@ func (c CLI) Init(cCtx *cli.Context) error {
 		PipelineType:      cCtx.Command.Name,
 		DestinationFolder: cCtx.String("destination-folder"),
 		DefaultBranch:     cCtx.String("default-branch"),
+		AppName:           cCtx.String("app-name"),
+		Repository:        cCtx.String("repo-name"),
 	}
 	data, err := project.ProjectInit(options, c.Resources)
 
@@ -32,22 +33,9 @@ func (c CLI) InitCMD() *cli.Command {
 		Usage: "create a new pipeline file to be used for your provider",
 		Subcommands: []*cli.Command{
 			{
-				Name:  "github",
-				Usage: "create a github pipeline yaml file",
-				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:     "destination-folder",
-						Usage:    "Define a destination folder to place your pipeline file",
-						Category: "init",
-						Value:    defaults.GithubActionFolder,
-					},
-					&cli.StringFlag{
-						Name:     "default-branch",
-						Usage:    "Define the default branch in your repo",
-						Category: "init",
-						Value:    defaults.GithubDefaultBranch,
-					},
-				},
+				Name:   "github",
+				Usage:  "create a github pipeline yaml file",
+				Flags:  Flags(InitGithub),
 				Action: c.Init,
 			},
 		},
