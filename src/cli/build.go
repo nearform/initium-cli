@@ -17,7 +17,16 @@ func (c CLI) BuildCMD() *cli.Command {
 	return &cli.Command{
 		Name:   "build",
 		Usage:  "build a container image from the project directory",
-		Flags:  Flags(Build),
+		Flags:  c.CommandFlags(Build),
 		Action: c.Build,
+		Before: func(ctx *cli.Context) error {
+			err := c.loadFlagsFromConfig(ctx)
+
+			if err != nil {
+				c.Logger.Debug("failed to load config", err)
+			}
+
+			return nil
+		},
 	}
 }

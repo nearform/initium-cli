@@ -8,9 +8,9 @@ import (
 
 func (c *CLI) OnMainCMD() *cli.Command {
 	flags := []cli.Flag{}
-	flags = append(flags, Flags(Kubernetes)...)
-	flags = append(flags, Flags(Build)...)
-	flags = append(flags, Flags(Registry)...)
+	flags = append(flags, c.CommandFlags(Kubernetes)...)
+	flags = append(flags, c.CommandFlags(Build)...)
+	flags = append(flags, c.CommandFlags(Registry)...)
 	return &cli.Command{
 		Name:  "onmain",
 		Usage: "deploy the application as a knative service",
@@ -27,6 +27,15 @@ func (c *CLI) OnMainCMD() *cli.Command {
 			}
 
 			return c.Deploy(cCtx)
+		},
+		Before: func(ctx *cli.Context) error {
+			err := c.loadFlagsFromConfig(ctx)
+
+			if err != nil {
+				c.Logger.Debug("failed to load config", err)
+			}
+
+			return nil
 		},
 	}
 }

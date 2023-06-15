@@ -22,7 +22,16 @@ func (c *CLI) DeleteCMD() *cli.Command {
 	return &cli.Command{
 		Name:   "delete",
 		Usage:  "delete the knative service",
-		Flags:  Flags(Kubernetes),
+		Flags:  c.CommandFlags(Kubernetes),
 		Action: c.Delete,
+		Before: func(ctx *cli.Context) error {
+			err := c.loadFlagsFromConfig(ctx)
+
+			if err != nil {
+				c.Logger.Debug("failed to load config", err)
+			}
+
+			return nil
+		},
 	}
 }
