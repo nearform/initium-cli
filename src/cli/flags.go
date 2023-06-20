@@ -113,7 +113,7 @@ func (c CLI) Flags() map[FlagsType]([]cli.Flag) {
 			&cli.StringFlag{
 				Name:    "app-version",
 				Usage:   "The version of your application",
-				Value:   "latest",
+				Value:   defaults.AppVersion,
 				EnvVars: []string{"KKA_VERSION"},
 			},
 			&cli.StringFlag{

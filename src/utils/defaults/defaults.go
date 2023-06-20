@@ -6,6 +6,7 @@ const DockerfileName = "Dockerfile.kka"
 const GithubActionFolder = ".github/workflows"
 const GithubDefaultBranch = "main"
 const ConfigFile = ".kka"
+const AppVersion = "latest"
 
 // renovate: datasource=docker depName=node
 const DefaultNodeRuntimeVersion = "20.2.0"

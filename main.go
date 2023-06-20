@@ -25,7 +25,10 @@ func main() {
 			ReportCaller:    true,
 			ReportTimestamp: true,
 		}),
+		Writer: os.Stdout,
 	}
 
-	cli.Run()
+	if err := cli.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
 }

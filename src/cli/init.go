@@ -56,10 +56,16 @@ func (c CLI) InitConfig(ctx *cli.Context) error {
 		if slices.Contains(excludedFlags, stringFlag.Name) {
 			continue
 		}
-		if stringFlag.GetValue() == "" {
-			fmt.Printf("%s: null\n", stringFlag.Name)
+
+		value := ctx.String(stringFlag.Name)
+		if value == "" {
+			stringFlag.GetValue()
+		}
+
+		if value == "" {
+			fmt.Fprintf(c.Writer, "%s: null\n", stringFlag.Name)
 		} else {
-			fmt.Printf("%s: %s\n", stringFlag.Name, stringFlag.GetValue())
+			fmt.Fprintf(c.Writer, "%s: %s\n", stringFlag.Name, ctx.String(stringFlag.Name))
 		}
 	}
 
@@ -69,7 +75,7 @@ func (c CLI) InitConfig(ctx *cli.Context) error {
 func (c CLI) InitCMD() *cli.Command {
 	return &cli.Command{
 		Name:  "init",
-		Usage: "create a new pipeline file to be used for your provider",
+		Usage: "create configuration for the cli [EXPERIMENTAL]",
 		Subcommands: []*cli.Command{
 			{
 				Name:   "github",

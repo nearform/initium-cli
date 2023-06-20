@@ -2,7 +2,7 @@ package cli
 
 import (
 	"embed"
-	"os"
+	"io"
 	"sort"
 
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
@@ -20,6 +20,7 @@ type CLI struct {
 	Logger        *log.Logger
 	project       project.Project
 	dockerImage   docker.DockerImage
+	Writer        io.Writer
 }
 
 func (c *CLI) init(cCtx *cli.Context) {
@@ -61,7 +62,7 @@ func (c *CLI) getProject(cCtx *cli.Context) *project.Project {
 	return &c.project
 }
 
-func (c CLI) Run() {
+func (c CLI) Run(args []string) error {
 	app := &cli.App{
 		Name:  "k8s kurated addons",
 		Usage: "kka-cli",
@@ -89,7 +90,5 @@ func (c CLI) Run() {
 	sort.Sort(cli.FlagsByName(app.Flags))
 	sort.Sort(cli.CommandsByName(app.Commands))
 
-	if err := app.Run(os.Args); err != nil {
-		log.Fatal(err)
-	}
+	return app.Run(args)
 }

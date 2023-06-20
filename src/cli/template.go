@@ -12,7 +12,7 @@ func (c *CLI) template(cCtx *cli.Context) error {
 	if err != nil {
 		return fmt.Errorf("Getting docker file %v", err)
 	}
-	fmt.Println(string(content))
+	fmt.Fprintln(c.Writer, string(content))
 	return nil
 }
 
