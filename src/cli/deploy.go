@@ -24,7 +24,16 @@ func (c CLI) DeployCMD() *cli.Command {
 	return &cli.Command{
 		Name:   "deploy",
 		Usage:  "deploy the application as a knative service",
-		Flags:  Flags(Kubernetes),
+		Flags:  c.CommandFlags(Kubernetes),
 		Action: c.Deploy,
+		Before: func(ctx *cli.Context) error {
+			err := c.loadFlagsFromConfig(ctx)
+
+			if err != nil {
+				c.Logger.Debug("failed to load config", err)
+			}
+
+			return nil
+		},
 	}
 }

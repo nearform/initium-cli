@@ -1,8 +1,12 @@
 package cli
 
 import (
+	"io/ioutil"
+	"path"
+
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 	"github.com/urfave/cli/v2"
+	"gopkg.in/yaml.v2"
 )
 
 type FlagsType string
@@ -12,10 +16,38 @@ const (
 	Kubernetes FlagsType = "kubernetes"
 	Registry   FlagsType = "registry"
 	InitGithub FlagsType = "init-github"
+	App        FlagsType = "app"
 )
 
-func Flags(command FlagsType) []cli.Flag {
-	flags := map[FlagsType]([]cli.Flag){
+func (c CLI) loadFlagsFromConfig(ctx *cli.Context) error {
+	config := make(map[interface{}]interface{})
+	cfgFile := ctx.String("config-file")
+	yamlFile, err := ioutil.ReadFile(cfgFile)
+
+	if err != nil {
+		return err
+	}
+
+	if err = yaml.Unmarshal(yamlFile, &config); err != nil {
+		return err
+	}
+
+	for _, v := range ctx.Command.Flags {
+		name := v.Names()[0]
+		c.Logger.Debugf("%s is set to %s", name, ctx.String(name))
+		if name != "help" && !ctx.IsSet(name) {
+			if config[name] != nil {
+				c.Logger.Debugf("Loading %s as %s", name, config[name])
+				ctx.Set(name, config[name].(string))
+			}
+		}
+	}
+
+	return nil
+}
+
+func (c CLI) Flags() map[FlagsType]([]cli.Flag) {
+	return map[FlagsType]([]cli.Flag){
 		Build: []cli.Flag{
 			&cli.StringFlag{
 				Name:     "runtime-version",
@@ -71,7 +103,47 @@ func Flags(command FlagsType) []cli.Flag {
 				Value:    defaults.GithubDefaultBranch,
 			},
 		},
+		App: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "app-name",
+				Usage:   "The name of the app",
+				Value:   path.Base(c.CWD),
+				EnvVars: []string{"KKA_APP_NAME"},
+			},
+			&cli.StringFlag{
+				Name:    "app-version",
+				Usage:   "The version of your application",
+				Value:   defaults.AppVersion,
+				EnvVars: []string{"KKA_VERSION"},
+			},
+			&cli.StringFlag{
+				Name:    "project-directory",
+				Usage:   "The directory in which your Dockerfile lives",
+				Value:   defaults.ProjectDirectory,
+				EnvVars: []string{"KKA_PROJECT_DIRECTORY"},
+			},
+			&cli.StringFlag{
+				Name:    "repo-name",
+				Usage:   "The base address of the container repository",
+				Value:   defaults.RepoName,
+				EnvVars: []string{"KKA_REPO_NAME"},
+			},
+			&cli.StringFlag{
+				Name:    "dockerfile-name",
+				Usage:   "The name of the Dockerfile",
+				Value:   defaults.DockerfileName,
+				EnvVars: []string{"KKA_DOCKERFILE_NAME"},
+			},
+			&cli.StringFlag{
+				Name:    "config-file",
+				Usage:   "read parameters from config",
+				Value:   defaults.ConfigFile,
+				EnvVars: []string{"KKA_CONFIG_FILE"},
+			},
+		},
 	}
+}
 
-	return flags[command]
+func (c CLI) CommandFlags(command FlagsType) []cli.Flag {
+	return c.Flags()[command]
 }
