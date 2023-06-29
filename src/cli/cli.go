@@ -3,9 +3,13 @@ package cli
 import (
 	"embed"
 	"io"
+	"os"
+	"path"
+	"path/filepath"
 	"sort"
 
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
+	"k8s.io/utils/strings/slices"
 
 	"github.com/charmbracelet/log"
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/docker"
@@ -23,29 +27,51 @@ type CLI struct {
 	Writer        io.Writer
 }
 
+func (c CLI) baseBeforeFunc(ctx *cli.Context) error {
+	if err := c.loadFlagsFromConfig(ctx); err != nil {
+		return err
+	}
+
+	if err := c.checkRequiredFlags(ctx, []string{}); err != nil {
+		return err
+	}
+	return nil
+}
+
 func (c *CLI) init(cCtx *cli.Context) {
-	repoName := cCtx.String("repo-name")
-	dockerFileName := cCtx.String("dockerfile-name")
-	appName := cCtx.String("app-name")
-	version := cCtx.String("app-version")
-	projectDirectory := cCtx.String("project-directory")
+	appName := cCtx.String(appNameFlag)
+	version := cCtx.String(appVersionFlag)
+	projectDirectory := cCtx.String(projectDirectoryFlag)
+	absProjectDirectory, err := filepath.Abs(cCtx.String(projectDirectoryFlag))
+
+	if err != nil {
+		c.Logger.Warnf("could not get abs of %s", projectDirectory)
+		absProjectDirectory = projectDirectory
+	}
 
 	project := project.New(
 		appName,
 		projectDirectory,
-		cCtx.String("runtime-version"),
+		cCtx.String(runtimeVersionFlag),
 		version,
 		c.Resources,
 	)
 
+	dockerImageName := appName
+	invalidBases := []string{".", string(os.PathSeparator)}
+	base := filepath.Base(absProjectDirectory)
+	if !slices.Contains(invalidBases, base) && base != dockerImageName {
+		dockerImageName = appName + "/" + base
+	}
+
 	dockerImage := docker.DockerImage{
-		Registry:  repoName,
-		Name:      appName,
-		Directory: projectDirectory,
+		Registry:  cCtx.String(repoNameFlag),
+		Name:      dockerImageName,
+		Directory: absProjectDirectory,
 		Tag:       version,
 	}
 
-	dockerService, err := docker.New(project, dockerImage, dockerFileName)
+	dockerService, err := docker.New(project, dockerImage, cCtx.String(dockerFileNameFlag))
 	if err != nil {
 		logger.PrintError("Error creating docker service", err)
 	}
@@ -73,16 +99,29 @@ func (c CLI) Run(args []string) error {
 			c.DeployCMD(),
 			c.DeleteCMD(),
 			c.OnMainCMD(),
+			c.OnBranchCMD(),
 			c.TemplateCMD(),
 			c.InitCMD(),
 		},
 		Before: func(ctx *cli.Context) error {
-			err := c.loadFlagsFromConfig(ctx)
-
-			if err != nil {
-				c.Logger.Debug("failed to load config", err)
+			if err := c.loadFlagsFromConfig(ctx); err != nil {
+				return err
 			}
 
+			projectDirectory := ctx.String(projectDirectoryFlag)
+			absProjectDirectory, err := filepath.Abs(projectDirectory)
+
+			if err != nil {
+				return err
+			}
+
+			if ctx.String(appNameFlag) == "" {
+				ctx.Set(appNameFlag, path.Base(absProjectDirectory))
+			}
+
+			if err := c.checkRequiredFlags(ctx, []string{}); err != nil {
+				return err
+			}
 			return nil
 		},
 	}

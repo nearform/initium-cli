@@ -7,15 +7,15 @@ import (
 
 func (c *CLI) Delete(cCtx *cli.Context) error {
 	config, err := knative.Config(
-		cCtx.String("endpoint"),
-		cCtx.String("token"),
-		[]byte(cCtx.String("ca-crt")),
+		cCtx.String(endpointFlag),
+		cCtx.String(tokenFlag),
+		[]byte(cCtx.String(caCRTFlag)),
 	)
 	if err != nil {
 		return err
 	}
 	project := c.getProject(cCtx)
-	return knative.Clean(config, project)
+	return knative.Clean(cCtx.String(namespaceFlag), config, project)
 }
 
 func (c *CLI) DeleteCMD() *cli.Command {
@@ -24,14 +24,6 @@ func (c *CLI) DeleteCMD() *cli.Command {
 		Usage:  "delete the knative service",
 		Flags:  c.CommandFlags(Kubernetes),
 		Action: c.Delete,
-		Before: func(ctx *cli.Context) error {
-			err := c.loadFlagsFromConfig(ctx)
-
-			if err != nil {
-				c.Logger.Debug("failed to load config", err)
-			}
-
-			return nil
-		},
+		Before: c.baseBeforeFunc,
 	}
 }

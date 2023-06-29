@@ -3,4 +3,5 @@
 .env
 Dockerfile.kka
 *.init_test*
-kka_on_main.yaml
+kka_onmain.yaml
+kka_onbranch.yaml

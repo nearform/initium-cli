@@ -36,3 +36,16 @@ You will be able to run the executable from
 ```bash
 ./bin/kka-cli
 ```
+
+### Setup local environment
+
+These are the environment variables that you have to set in order to use the onmain, onbranch commands from your local environment
+
+```
+export KKA_REGISTRY_PASSWORD="<lucalprojects_pat>"
+export KKA_REGISTRY_USER="lucalprojects"
+export KKA_REPO_NAME="ghcr.io/llprojects/registry"
+export KKA_CLUSTER_ENDPOINT=$(kubectl config view -o jsonpath='{.clusters[?(@.name == "kind-k8s-kurated-addons")].cluster.server}')
+export KKA_CLUSTER_TOKEN=$(kubectl get secrets ci-bot-token -o jsonpath="{.data.token}" | base64 -d)
+export KKA_CLUSTER_CA_CERT=$(kubectl get secrets ci-bot-token -o jsonpath="{.data.ca\.crt}" | base64 -d)
+```

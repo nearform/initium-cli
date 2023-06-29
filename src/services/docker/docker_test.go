@@ -27,14 +27,6 @@ func TestLocalTag(t *testing.T) {
 	if localTag != expected {
 		t.Fatalf("Expected '%s' got %s", expected, localTag)
 	}
-
-	ds.dockerImage.Directory = "Subproject"
-
-	localTag = ds.dockerImage.LocalTag()
-	expected = "test/Subproject:v1.1.0"
-	if localTag != expected {
-		t.Fatalf("Expected '%s' got %s", expected, localTag)
-	}
 }
 
 func TestRemoteTag(t *testing.T) {
@@ -56,14 +48,6 @@ func TestRemoteTag(t *testing.T) {
 
 	remoteTag := ds.dockerImage.RemoteTag()
 	expected := "example.org/test:v1.1.0"
-	if remoteTag != expected {
-		t.Fatalf("Expected '%s' got %s", expected, remoteTag)
-	}
-
-	ds.dockerImage.Directory = "Subproject"
-
-	remoteTag = ds.dockerImage.RemoteTag()
-	expected = "example.org/test/Subproject:v1.1.0"
 	if remoteTag != expected {
 		t.Fatalf("Expected '%s' got %s", expected, remoteTag)
 	}

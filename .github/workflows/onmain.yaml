@@ -1,0 +1,24 @@
+name: Deploy on main
+
+on: 
+  push:
+    branches:
+      - main
+
+jobs:
+  cli:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ inputs.GO_VERSION }}
+
+      - name: build and deploy on main
+        run: go run main.go onmain --stop-on-push
+        env:
+          KKA_APP_NAME: k8s-kurated-addons-cli
+          KKA_REGISTRY_USER: ${{ github.actor }}
+          KKA_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}

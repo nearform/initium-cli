@@ -7,9 +7,9 @@ import (
 
 func (c *CLI) Deploy(cCtx *cli.Context) error {
 	config, err := knative.Config(
-		cCtx.String("endpoint"),
-		cCtx.String("token"),
-		[]byte(cCtx.String("ca-crt")),
+		cCtx.String(endpointFlag),
+		cCtx.String(tokenFlag),
+		[]byte(cCtx.String(caCRTFlag)),
 	)
 
 	if err != nil {
@@ -17,7 +17,7 @@ func (c *CLI) Deploy(cCtx *cli.Context) error {
 	}
 	project := c.getProject(cCtx)
 
-	return knative.Apply(config, project, c.dockerImage)
+	return knative.Apply(cCtx.String(namespaceFlag), config, project, c.dockerImage)
 }
 
 func (c CLI) DeployCMD() *cli.Command {
@@ -26,14 +26,6 @@ func (c CLI) DeployCMD() *cli.Command {
 		Usage:  "deploy the application as a knative service",
 		Flags:  c.CommandFlags(Kubernetes),
 		Action: c.Deploy,
-		Before: func(ctx *cli.Context) error {
-			err := c.loadFlagsFromConfig(ctx)
-
-			if err != nil {
-				c.Logger.Debug("failed to load config", err)
-			}
-
-			return nil
-		},
+		Before: c.baseBeforeFunc,
 	}
 }

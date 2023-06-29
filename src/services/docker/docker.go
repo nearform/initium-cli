@@ -153,6 +153,7 @@ func (ds DockerService) Push() error {
 	if err != nil {
 		return err
 	}
+
 	ipo := types.ImagePushOptions{
 		RegistryAuth: base64.URLEncoding.EncodeToString(encodedJSON),
 	}

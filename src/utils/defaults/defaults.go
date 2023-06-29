@@ -1,15 +1,17 @@
 package defaults
 
-const ProjectDirectory = "."
-const RepoName = "ghcr.io/nearform"
-const DockerfileName = "Dockerfile.kka"
-const GithubActionFolder = ".github/workflows"
-const GithubDefaultBranch = "main"
-const ConfigFile = ".kka"
-const AppVersion = "latest"
+const (
+	ProjectDirectory    string = "."
+	RepoName            string = "ghcr.io/nearform"
+	DockerfileName      string = "Dockerfile.kka"
+	GithubActionFolder  string = ".github/workflows"
+	GithubDefaultBranch string = "main"
+	ConfigFile          string = ".kka"
+	AppVersion          string = "latest"
+)
 
 // renovate: datasource=docker depName=node
-const DefaultNodeRuntimeVersion = "20.2.0"
+const DefaultNodeRuntimeVersion string = "20.2.0"
 
 // renovate: datasource=docker depName=golang
-const DefaultGoRuntimeVersion = "1.20.4"
+const DefaultGoRuntimeVersion string = "1.20.4"
