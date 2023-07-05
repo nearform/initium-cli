@@ -33,6 +33,7 @@ type InitOptions struct {
 	PipelineType      string
 	Repository        string
 	AppName           string
+	ProjectDirectory  string
 }
 
 func New(name string, directory string, runtimeVersion string, version string, resources fs.FS) Project {
@@ -88,32 +89,35 @@ func (proj Project) Dockerfile() ([]byte, error) {
 func ProjectInit(options InitOptions, resources fs.FS) ([]string, error) {
 
 	returnData := []string{}
+	for _, tmpl := range []string{"onmain", "onbranch"} {
+		template, err := template.ParseFS(resources, path.Join("assets", options.PipelineType, fmt.Sprintf("%s.tmpl", tmpl)))
 
-	template, err := template.ParseFS(resources, path.Join("assets", options.PipelineType, "pipeline.tmpl"))
+		if err != nil {
+			return returnData, fmt.Errorf("error: %v", err)
+		}
 
-	if err != nil {
-		return returnData, fmt.Errorf("error: %v", err)
+		fileContent := &bytes.Buffer{}
+		if err = template.Execute(fileContent, options); err != nil {
+			return returnData, err
+		}
+
+		destinationFile := path.Join(options.DestinationFolder, fmt.Sprintf("kka_%s.yaml", tmpl))
+
+		if err := os.MkdirAll(options.DestinationFolder, os.ModePerm); err != nil {
+			return returnData, fmt.Errorf("error: %v", err)
+		}
+
+		// I assume that the file is in source control and the user will be able to
+		// revert the changes, I'll create an issue to make this step interactive so
+		// we can ask confirmation to override the file.
+		if err = os.WriteFile(destinationFile, fileContent.Bytes(), 0755); err != nil {
+			return returnData, fmt.Errorf("error: %v", err)
+		}
+
+		returnData = append(returnData, destinationFile)
 	}
 
-	fileContent := &bytes.Buffer{}
-	if err = template.Execute(fileContent, options); err != nil {
-		return returnData, err
-	}
-
-	destinationFile := path.Join(options.DestinationFolder, "kka_on_main.yaml")
-
-	if err := os.MkdirAll(options.DestinationFolder, os.ModePerm); err != nil {
-		return returnData, fmt.Errorf("error: %v", err)
-	}
-
-	// I assume that the file is in source control and the user will be able to
-	// revert the changes, I'll create an issue to make this step interactive so
-	// we can ask confirmation to override the file.
-	if err = os.WriteFile(destinationFile, fileContent.Bytes(), 0755); err != nil {
-		return returnData, fmt.Errorf("error: %v", err)
-	}
-
-	return append(returnData, destinationFile), nil
+	return returnData, nil
 }
 
 func (proj Project) NodeInstallCommand() string {

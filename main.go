@@ -12,14 +12,8 @@ import (
 var resources embed.FS
 
 func main() {
-	cwd, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	cli := cli.CLI{
 		Resources: resources,
-		CWD:       cwd,
 		Logger: log.NewWithOptions(os.Stderr, log.Options{
 			Level:           log.ParseLevel(os.Getenv("KKA_LOG_LEVEL")),
 			ReportCaller:    true,

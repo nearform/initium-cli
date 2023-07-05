@@ -22,14 +22,6 @@ func (c *CLI) TemplateCMD() *cli.Command {
 		Usage:  "output the docker file used for this project",
 		Flags:  c.CommandFlags(Build),
 		Action: c.template,
-		Before: func(ctx *cli.Context) error {
-			err := c.loadFlagsFromConfig(ctx)
-
-			if err != nil {
-				c.Logger.Debug("failed to load config", err)
-			}
-
-			return nil
-		},
+		Before: c.baseBeforeFunc,
 	}
 }

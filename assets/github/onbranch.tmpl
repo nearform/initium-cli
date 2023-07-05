@@ -1,0 +1,42 @@
+# This file is generate by https://github.com/nearform/k8s-kurated-addons-cli
+name: Deploy on PR
+
+on:
+ pull_request:
+   types: [opened, synchronize, reopened, closed]
+
+jobs:
+  on_pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: delete application
+        if: github.event.type == "closed"
+        uses: docker://ghcr.io/nearform/k8s-kurated-addons-cli:latest
+        with:
+          args: onbranch --clean
+        env:
+          KKA_APP_NAME: {{ .AppName }}
+          KKA_PROJECT_DIRECTORY: {{ .ProjectDirectory }}
+          KKA_REPO_NAME: {{ .Repository }}
+          KKA_REGISTRY_USER: {{ `${{ github.actor }}` }}
+          KKA_REGISTRY_PASSWORD: {{ `${{ secrets.GITHUB_TOKEN }}` }}
+          KKA_CLUSTER_ENDPOINT: {{ `${{ secrets.CLUSTER_ENDPOINT }}` }}
+          KKA_CLUSTER_TOKEN: {{ `${{ secrets.CLUSTER_TOKEN }}` }}
+          KKA_CLUSTER_CA_CERT: {{ `${{ secrets.CLUSTER_CA_CERT }}` }}
+
+      - name: build and deploy application
+        if: github.event.type != "closed"
+        uses: docker://ghcr.io/nearform/k8s-kurated-addons-cli:latest
+        with:
+          args: onbranch
+        env:
+          KKA_APP_NAME: {{ .AppName }}
+          KKA_PROJECT_DIRECTORY: {{ .ProjectDirectory }}
+          KKA_REPO_NAME: {{ .Repository }}
+          KKA_REGISTRY_USER: {{ `${{ github.actor }}` }}
+          KKA_REGISTRY_PASSWORD: {{ `${{ secrets.GITHUB_TOKEN }}` }}
+          KKA_CLUSTER_ENDPOINT: {{ `${{ secrets.CLUSTER_ENDPOINT }}` }}
+          KKA_CLUSTER_TOKEN: {{ `${{ secrets.CLUSTER_TOKEN }}` }}
+          KKA_CLUSTER_CA_CERT: {{ `${{ secrets.CLUSTER_CA_CERT }}` }}

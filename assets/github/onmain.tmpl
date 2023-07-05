@@ -1,5 +1,5 @@
 # This file is generate by https://github.com/nearform/k8s-kurated-addons-cli
-name: Build and Push
+name: Deploy on {{ .DefaultBranch }}
 
 on: 
   push:
@@ -12,19 +12,16 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: build docker image application
+      - name: build and deploy on {{ .DefaultBranch }}
         uses: docker://ghcr.io/nearform/k8s-kurated-addons-cli:latest
         with:
-          args: build
+          args: onmain
         env:
           KKA_APP_NAME: {{ .AppName }}
-
-      - name: push docker image application
-        uses: docker://ghcr.io/nearform/k8s-kurated-addons-cli:latest
-        with:
-          args: push
-        env:
-          KKA_APP_NAME: {{ .AppName }}
+          KKA_PROJECT_DIRECTORY: {{ .ProjectDirectory }}
           KKA_REPO_NAME: {{ .Repository }}
           KKA_REGISTRY_USER: {{ `${{ github.actor }}` }}
           KKA_REGISTRY_PASSWORD: {{ `${{ secrets.GITHUB_TOKEN }}` }}
+          KKA_CLUSTER_ENDPOINT: {{ `${{ secrets.CLUSTER_ENDPOINT }}` }}
+          KKA_CLUSTER_TOKEN: {{ `${{ secrets.CLUSTER_TOKEN }}` }}
+          KKA_CLUSTER_CA_CERT: {{ `${{ secrets.CLUSTER_CA_CERT }}` }}
