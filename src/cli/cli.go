@@ -2,12 +2,14 @@ package cli
 
 import (
 	"embed"
+	"fmt"
 	"io"
 	"os"
 	"path"
 	"path/filepath"
 	"sort"
 
+	"github.com/nearform/k8s-kurated-addons-cli/src/services/git"
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
 	"k8s.io/utils/strings/slices"
 
@@ -38,7 +40,7 @@ func (c CLI) baseBeforeFunc(ctx *cli.Context) error {
 	return nil
 }
 
-func (c *CLI) init(cCtx *cli.Context) {
+func (c *CLI) init(cCtx *cli.Context) error {
 	appName := cCtx.String(appNameFlag)
 	version := cCtx.String(appVersionFlag)
 	projectDirectory := cCtx.String(projectDirectoryFlag)
@@ -64,11 +66,18 @@ func (c *CLI) init(cCtx *cli.Context) {
 		dockerImageName = appName + "/" + base
 	}
 
+	hash, err := git.GetHash()
+	if err != nil {
+		return err
+	}
+
+	tag := fmt.Sprintf("%s-%s", version, hash)
+
 	dockerImage := docker.DockerImage{
 		Registry:  cCtx.String(repoNameFlag),
 		Name:      dockerImageName,
 		Directory: absProjectDirectory,
-		Tag:       version,
+		Tag:       tag,
 	}
 
 	dockerService, err := docker.New(project, dockerImage, cCtx.String(dockerFileNameFlag))
@@ -79,13 +88,17 @@ func (c *CLI) init(cCtx *cli.Context) {
 	c.DockerService = dockerService
 	c.dockerImage = dockerImage
 	c.project = project
+	return nil
 }
 
-func (c *CLI) getProject(cCtx *cli.Context) *project.Project {
+func (c *CLI) getProject(cCtx *cli.Context) (*project.Project, error) {
 	if (c.project == project.Project{}) {
-		c.init(cCtx)
+		err := c.init(cCtx)
+		if err != nil {
+			return nil, err
+		}
 	}
-	return &c.project
+	return &c.project, nil
 }
 
 func (c CLI) Run(args []string) error {
