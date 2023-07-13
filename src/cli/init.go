@@ -8,19 +8,32 @@ import (
 	"github.com/charmbracelet/log"
 	"k8s.io/utils/strings/slices"
 
+	"github.com/nearform/k8s-kurated-addons-cli/src/services/git"
+	"github.com/nearform/k8s-kurated-addons-cli/src/services/k8s"
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
+	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 	"github.com/urfave/cli/v2"
 )
 
 func (c CLI) InitGithubCMD(cCtx *cli.Context) error {
 	logger := log.New(os.Stderr)
 	logger.SetLevel(log.DebugLevel)
+	registry := cCtx.String(repoNameFlag)
+
+	if registry == defaults.RepoName {
+		org, err := git.GetGithubOrg()
+		if err != nil {
+			return fmt.Errorf("cannot get github organization %v", err)
+		}
+		registry = fmt.Sprintf("ghcr.io/%s", org)
+	}
+
 	options := project.InitOptions{
 		PipelineType:      cCtx.Command.Name,
 		DestinationFolder: cCtx.String(destinationFolderFlag),
 		DefaultBranch:     cCtx.String(defaultBranchFlag),
 		AppName:           cCtx.String(appNameFlag),
-		Repository:        cCtx.String(repoNameFlag),
+		Repository:        registry,
 		ProjectDirectory:  cCtx.String(projectDirectoryFlag),
 	}
 	data, err := project.ProjectInit(options, c.Resources)
