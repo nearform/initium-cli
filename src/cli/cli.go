@@ -15,6 +15,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/docker"
+	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
 	"github.com/urfave/cli/v2"
 )
@@ -61,9 +62,11 @@ func (c *CLI) init(cCtx *cli.Context) error {
 
 	dockerImageName := appName
 	invalidBases := []string{".", string(os.PathSeparator)}
-	base := filepath.Base(absProjectDirectory)
-	if !slices.Contains(invalidBases, base) && base != dockerImageName {
-		dockerImageName = appName + "/" + base
+	if projectDirectory != defaults.ProjectDirectory {
+		base := filepath.Base(absProjectDirectory)
+		if !slices.Contains(invalidBases, base) && base != dockerImageName {
+			dockerImageName = appName + "/" + base
+		}
 	}
 
 	hash, err := git.GetHash()
