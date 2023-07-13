@@ -2,14 +2,12 @@ package cli
 
 import (
 	"embed"
-	"fmt"
 	"io"
 	"os"
 	"path"
 	"path/filepath"
 	"sort"
 
-	"github.com/nearform/k8s-kurated-addons-cli/src/services/git"
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
 	"k8s.io/utils/strings/slices"
 
@@ -69,18 +67,11 @@ func (c *CLI) init(cCtx *cli.Context) error {
 		}
 	}
 
-	hash, err := git.GetHash()
-	if err != nil {
-		return err
-	}
-
-	tag := fmt.Sprintf("%s-%s", version, hash)
-
 	dockerImage := docker.DockerImage{
 		Registry:  cCtx.String(repoNameFlag),
 		Name:      dockerImageName,
 		Directory: absProjectDirectory,
-		Tag:       tag,
+		Tag:       version,
 	}
 
 	dockerService, err := docker.New(project, dockerImage, cCtx.String(dockerFileNameFlag))

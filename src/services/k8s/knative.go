@@ -114,6 +114,7 @@ func Apply(namespace string, config *rest.Config, project *project.Project, dock
 			return fmt.Errorf("Creating Knative service %v", err)
 		}
 	} else {
+		service.Spec = serviceManifest.Spec
 		deployedService, err = servingClient.Services(serviceManifest.ObjectMeta.Namespace).Update(ctx, service, metav1.UpdateOptions{})
 		if err != nil {
 			return fmt.Errorf("Updating Knative service %v", err)
