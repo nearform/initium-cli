@@ -74,6 +74,10 @@ func (c CLI) InitConfigCMD(ctx *cli.Context) error {
 	return nil
 }
 
+func (c CLI) InitServiceAccountCMD(ctx *cli.Context) error {
+	return k8s.GetServiceAccount(c.Resources)
+}
+
 func (c CLI) InitCMD() *cli.Command {
 	return &cli.Command{
 		Name:  "init",
@@ -90,6 +94,12 @@ func (c CLI) InitCMD() *cli.Command {
 				Name:   "config",
 				Usage:  "create a config file with all available flags set to null",
 				Action: c.InitConfigCMD,
+				Before: c.baseBeforeFunc,
+			},
+			{
+				Name:   "service-account",
+				Usage:  "output all resources needed to create a service account",
+				Action: c.InitServiceAccountCMD,
 				Before: c.baseBeforeFunc,
 			},
 		},
