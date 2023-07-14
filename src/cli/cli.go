@@ -4,7 +4,6 @@ import (
 	"embed"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"sort"
 
@@ -74,7 +73,12 @@ func (c *CLI) init(cCtx *cli.Context) error {
 		Tag:       version,
 	}
 
-	dockerService, err := docker.New(project, dockerImage, cCtx.String(dockerFileNameFlag))
+	dockerFileName := cCtx.String(dockerFileNameFlag)
+	if dockerFileName == "" {
+		dockerFileName = defaults.GeneratedDockerFile
+	}
+
+	dockerService, err := docker.New(project, dockerImage, dockerFileName)
 	if err != nil {
 		logger.PrintError("Error creating docker service", err)
 	}
@@ -113,17 +117,6 @@ func (c CLI) Run(args []string) error {
 		Before: func(ctx *cli.Context) error {
 			if err := c.loadFlagsFromConfig(ctx); err != nil {
 				return err
-			}
-
-			projectDirectory := ctx.String(projectDirectoryFlag)
-			absProjectDirectory, err := filepath.Abs(projectDirectory)
-
-			if err != nil {
-				return err
-			}
-
-			if ctx.String(appNameFlag) == "" {
-				ctx.Set(appNameFlag, path.Base(absProjectDirectory))
 			}
 
 			if err := c.checkRequiredFlags(ctx, []string{}); err != nil {

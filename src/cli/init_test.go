@@ -8,23 +8,18 @@ import (
 	"testing"
 
 	"github.com/charmbracelet/log"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 )
 
 func compareConfig(t *testing.T, appName string, writer io.Writer) {
 	configTemplate := fmt.Sprintf(`app-name: %s
-app-version: %s
 cluster-endpoint: null
-default-branch: null
-dockerfile-name: %s
+default-branch: main
+dockerfile-name: null
 registry-user: null
-repo-name: %s
+repo-name: ghcr.io/nearform
 runtime-version: null
 `,
 		appName,
-		defaults.AppVersion,
-		defaults.DockerfileName,
-		defaults.RepoName,
 	)
 
 	result := fmt.Sprint(writer.(*bytes.Buffer))
@@ -35,7 +30,6 @@ runtime-version: null
 }
 
 func TestInitConfig(t *testing.T) {
-
 	cli := CLI{
 		Writer: new(bytes.Buffer),
 		Logger: log.NewWithOptions(os.Stderr, log.Options{
@@ -45,11 +39,8 @@ func TestInitConfig(t *testing.T) {
 		}),
 	}
 
-	if err := cli.Run([]string{"kka", "init", "config"}); err != nil {
-		t.Error(err)
-	}
+	os.Setenv("KKA_REPO_NAME", "ghcr.io/nearform")
 
-	compareConfig(t, "cli", cli.Writer)
 	// Config file is read correctly
 
 	// Generate temporary file and add app-name parameter

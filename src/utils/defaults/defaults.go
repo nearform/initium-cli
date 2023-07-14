@@ -3,11 +3,11 @@ package defaults
 const (
 	ProjectDirectory    string = "."
 	RepoName            string = "ghcr.io/nearform"
-	DockerfileName      string = "Dockerfile.kka"
 	GithubActionFolder  string = ".github/workflows"
 	GithubDefaultBranch string = "main"
 	ConfigFile          string = ".kka"
 	AppVersion          string = "latest"
+	GeneratedDockerFile string = "Dockerfile.kka"
 )
 
 // renovate: datasource=docker depName=node

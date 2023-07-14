@@ -8,10 +8,8 @@ import (
 	"github.com/charmbracelet/log"
 	"k8s.io/utils/strings/slices"
 
-	"github.com/nearform/k8s-kurated-addons-cli/src/services/git"
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/k8s"
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 	"github.com/urfave/cli/v2"
 )
 
@@ -19,14 +17,6 @@ func (c CLI) InitGithubCMD(cCtx *cli.Context) error {
 	logger := log.New(os.Stderr)
 	logger.SetLevel(log.DebugLevel)
 	registry := cCtx.String(repoNameFlag)
-
-	if registry == defaults.RepoName {
-		org, err := git.GetGithubOrg()
-		if err != nil {
-			return fmt.Errorf("cannot get github organization %v", err)
-		}
-		registry = fmt.Sprintf("ghcr.io/%s", org)
-	}
 
 	options := project.InitOptions{
 		PipelineType:      cCtx.Command.Name,
@@ -52,6 +42,7 @@ func (c CLI) InitGithubCMD(cCtx *cli.Context) error {
 func (c CLI) InitConfigCMD(ctx *cli.Context) error {
 	excludedFlags := []string{
 		"help",
+		appVersionFlag,
 		namespaceFlag,
 		configFileFlag,
 		projectDirectoryFlag,
@@ -74,13 +65,13 @@ func (c CLI) InitConfigCMD(ctx *cli.Context) error {
 
 		value := ctx.String(stringFlag.Name)
 		if value == "" {
-			stringFlag.GetValue()
+			value = stringFlag.Value
 		}
 
 		if value == "" {
 			fmt.Fprintf(c.Writer, "%s: null\n", stringFlag.Name)
 		} else {
-			fmt.Fprintf(c.Writer, "%s: %s\n", stringFlag.Name, ctx.String(stringFlag.Name))
+			fmt.Fprintf(c.Writer, "%s: %s\n", stringFlag.Name, value)
 		}
 	}
 
