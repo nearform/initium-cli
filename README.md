@@ -49,7 +49,6 @@ export KKA_REGISTRY_USER="<github_user>"
 and
 
 ```
-export KKA_REPO_NAME="ghcr.io/$KKA_REGISTRY_USER"
 export KKA_CLUSTER_ENDPOINT=$(kubectl config view -o jsonpath='{.clusters[?(@.name == "kind-k8s-kurated-addons")].cluster.server}')
 export KKA_CLUSTER_TOKEN=$(kubectl get secrets kka-cli-token -o jsonpath="{.data.token}" | base64 -d)
 export KKA_CLUSTER_CA_CERT=$(kubectl get secrets kka-cli-token -o jsonpath="{.data.ca\.crt}" | base64 -d)
