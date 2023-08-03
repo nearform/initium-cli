@@ -52,9 +52,9 @@ export KKA_CLUSTER_ENDPOINT=$(kubectl config view -o jsonpath='{.clusters[?(@.na
 export KKA_CLUSTER_TOKEN=$(kubectl get secrets kka-cli-token -o jsonpath="{.data.token}" | base64 -d)
 export KKA_CLUSTER_CA_CERT=$(kubectl get secrets kka-cli-token -o jsonpath="{.data.ca\.crt}" | base64 -d)
 ```
-13. `echo` the variables set above and set CLUSTER_CA_CERT, CLUSTER_ENDPOINT and CLUSTER_TOKEN as [GitHub Actions secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository) in the new repo (or in the GitHub organization itself), using the values returned
-    * The CLUSTER_ENDPOINT value should be in the URL:port format
-    * You might need to expose publicly the CLUSTER_ENDPOINT using ngrok or another tool
+13. `echo` the variables set above and set `CLUSTER_CA_CERT`, `CLUSTER_ENDPOINT` and `CLUSTER_TOKEN` as [GitHub Actions secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository) in the new repo (or in the GitHub organization itself), using the values returned
+    * The `CLUSTER_ENDPOINT` value should be in the URL:port format
+    * You might need to expose publicly the `CLUSTER_ENDPOINT` using ngrok or another tool
 14. Write the JS / Go code for your repository, exposing a port, and push it to GitHub
 15. Open a pull request
 16. A workflow should be running in GitHub Actions, building an image (even if there’s no Dockerfile in the repo), pushing the image to the registry, and deploying the service to the cluster
