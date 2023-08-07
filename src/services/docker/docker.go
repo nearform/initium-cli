@@ -16,6 +16,7 @@ import (
 
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
 
+	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
 )
 
@@ -52,6 +53,29 @@ func getClient() (*client.Client, error) {
 	return cli, nil
 }
 
+func (ds DockerService) generateDockerfile(tarWriter *tar.Writer) error {
+	// Add another file to the build context from an array of bytes
+	fileBytes, err := ds.project.Dockerfile()
+	if err != nil {
+		return fmt.Errorf("Loading dockerfile %v", err)
+	}
+	hdr := &tar.Header{
+		Name:    defaults.GeneratedDockerFile,
+		Mode:    0600,
+		Size:    int64(len(fileBytes)),
+		ModTime: time.Now(),
+	}
+
+	if err := tarWriter.WriteHeader(hdr); err != nil {
+		return fmt.Errorf("Writing Dockerfile header %v", err)
+	}
+	if _, err := tarWriter.Write(fileBytes); err != nil {
+		return fmt.Errorf("Writing Dockerfile content %v", err)
+	}
+
+	return nil
+}
+
 func (ds DockerService) buildContext() (*bytes.Reader, error) {
 	// Get the context for the docker build
 	existingBuildContext, err := archive.TarWithOptions(ds.dockerImage.Directory, &archive.TarOptions{})
@@ -81,23 +105,11 @@ func (ds DockerService) buildContext() (*bytes.Reader, error) {
 		}
 	}
 
-	// Add another file to the build context from an array of bytes
-	fileBytes, err := ds.project.Dockerfile()
-	if err != nil {
-		return nil, fmt.Errorf("Loading dockerfile %v", err)
-	}
-	hdr := &tar.Header{
-		Name:    "Dockerfile.kka",
-		Mode:    0600,
-		Size:    int64(len(fileBytes)),
-		ModTime: time.Now(),
-	}
-
-	if err := tarWriter.WriteHeader(hdr); err != nil {
-		return nil, fmt.Errorf("Writing Dockerfile header %v", err)
-	}
-	if _, err := tarWriter.Write(fileBytes); err != nil {
-		return nil, fmt.Errorf("Writing Dockerfile content %v", err)
+	// if dockerfile-name is not specified generate a dockerfile
+	if ds.DockerFileName == defaults.GeneratedDockerFile {
+		if err = ds.generateDockerfile(tarWriter); err != nil {
+			return nil, err
+		}
 	}
 
 	// Close the tar archive

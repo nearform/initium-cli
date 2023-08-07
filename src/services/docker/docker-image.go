@@ -2,6 +2,7 @@ package docker
 
 import (
 	"fmt"
+	"strings"
 )
 
 type DockerImage struct {
@@ -12,7 +13,7 @@ type DockerImage struct {
 }
 
 func (dockerImage DockerImage) RemoteTag() string {
-	return fmt.Sprintf("%s/%s:%s", dockerImage.Registry, dockerImage.Name, dockerImage.Tag)
+	return fmt.Sprintf("%s/%s:%s", strings.ToLower(dockerImage.Registry), dockerImage.Name, dockerImage.Tag)
 }
 
 func (dockerImage DockerImage) LocalTag() string {

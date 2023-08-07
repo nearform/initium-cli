@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/nearform/k8s-kurated-addons-cli/src/services/git"
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
@@ -46,7 +47,14 @@ const (
 var requiredFlags []string
 var flags map[FlagsType]([]cli.Flag)
 
+// This function is executed when the module is loaded
 func init() {
+	registry := ""
+	org, err := git.GetGithubOrg()
+	if err == nil {
+		registry = fmt.Sprintf("ghcr.io/%s", org)
+	}
+
 	defaultFlags := map[FlagsType]([]cli.Flag){
 		Build: []cli.Flag{
 			&cli.StringFlag{
@@ -111,9 +119,10 @@ func init() {
 		},
 		App: []cli.Flag{
 			&cli.StringFlag{
-				Name:    appNameFlag,
-				Usage:   "The name of the app",
-				EnvVars: []string{"KKA_APP_NAME"},
+				Name:     appNameFlag,
+				Usage:    "The name of the app",
+				Required: true,
+				EnvVars:  []string{"KKA_APP_NAME"},
 			},
 			&cli.StringFlag{
 				Name:    appVersionFlag,
@@ -128,15 +137,15 @@ func init() {
 				EnvVars: []string{"KKA_PROJECT_DIRECTORY"},
 			},
 			&cli.StringFlag{
-				Name:    repoNameFlag,
-				Usage:   "The base address of the container repository",
-				Value:   defaults.RepoName,
-				EnvVars: []string{"KKA_REPO_NAME"},
+				Name:     repoNameFlag,
+				Usage:    "The base address of the container repository",
+				Value:    registry,
+				Required: registry == "",
+				EnvVars:  []string{"KKA_REPO_NAME"},
 			},
 			&cli.StringFlag{
 				Name:    dockerFileNameFlag,
 				Usage:   "The name of the Dockerfile",
-				Value:   defaults.DockerfileName,
 				EnvVars: []string{"KKA_DOCKERFILE_NAME"},
 			},
 			&cli.StringFlag{

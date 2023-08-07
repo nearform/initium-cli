@@ -7,19 +7,19 @@ on:
 
 jobs:
   on_pr:
+    concurrency: {{ `${{ github.head_ref }}` }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          ref: {{ `${{ github.head_ref }}` }}
 
       - name: delete application
-        if: github.event.type == "closed"
+        if: github.event.action == 'closed'
         uses: docker://ghcr.io/nearform/k8s-kurated-addons-cli:latest
         with:
           args: onbranch --clean
         env:
-          KKA_APP_NAME: {{ .AppName }}
-          KKA_PROJECT_DIRECTORY: {{ .ProjectDirectory }}
-          KKA_REPO_NAME: {{ .Repository }}
           KKA_REGISTRY_USER: {{ `${{ github.actor }}` }}
           KKA_REGISTRY_PASSWORD: {{ `${{ secrets.GITHUB_TOKEN }}` }}
           KKA_CLUSTER_ENDPOINT: {{ `${{ secrets.CLUSTER_ENDPOINT }}` }}
@@ -27,14 +27,11 @@ jobs:
           KKA_CLUSTER_CA_CERT: {{ `${{ secrets.CLUSTER_CA_CERT }}` }}
 
       - name: build and deploy application
-        if: github.event.type != "closed"
+        if: github.event.action != 'closed'
         uses: docker://ghcr.io/nearform/k8s-kurated-addons-cli:latest
         with:
           args: onbranch
         env:
-          KKA_APP_NAME: {{ .AppName }}
-          KKA_PROJECT_DIRECTORY: {{ .ProjectDirectory }}
-          KKA_REPO_NAME: {{ .Repository }}
           KKA_REGISTRY_USER: {{ `${{ github.actor }}` }}
           KKA_REGISTRY_PASSWORD: {{ `${{ secrets.GITHUB_TOKEN }}` }}
           KKA_CLUSTER_ENDPOINT: {{ `${{ secrets.CLUSTER_ENDPOINT }}` }}

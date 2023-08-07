@@ -8,7 +8,11 @@ import (
 )
 
 func (c *CLI) Build(cCtx *cli.Context) error {
-	project := c.getProject(cCtx)
+	project, err := c.getProject(cCtx)
+	if err != nil {
+		return err
+	}
+
 	logger.PrintInfo("Dockerfile Location: " + path.Join(project.Directory, c.DockerService.DockerFileName))
 	return c.DockerService.Build()
 }

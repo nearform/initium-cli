@@ -14,7 +14,10 @@ func (c *CLI) Delete(cCtx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	project := c.getProject(cCtx)
+	project, err := c.getProject(cCtx)
+	if err != nil {
+		return err
+	}
 	return knative.Clean(cCtx.String(namespaceFlag), config, project)
 }
 

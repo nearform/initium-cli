@@ -80,7 +80,6 @@ func (c CLI) OnBranchCMD() *cli.Command {
 			}
 
 			branchName := head.Name().Short()
-			c.Logger.Infof("Using branch %v as version and namespace", branchName)
 
 			ctx.Set(appVersionFlag, utils.EncodeRFC1123(branchName))
 			ctx.Set(namespaceFlag, utils.EncodeRFC1123(branchName))

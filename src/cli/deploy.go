@@ -15,7 +15,10 @@ func (c *CLI) Deploy(cCtx *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	project := c.getProject(cCtx)
+	project, err := c.getProject(cCtx)
+	if err != nil {
+		return err
+	}
 
 	return knative.Apply(cCtx.String(namespaceFlag), config, project, c.dockerImage)
 }

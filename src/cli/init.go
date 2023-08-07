@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/log"
 	"k8s.io/utils/strings/slices"
 
+	"github.com/nearform/k8s-kurated-addons-cli/src/services/k8s"
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
 	"github.com/urfave/cli/v2"
 )
@@ -15,12 +16,14 @@ import (
 func (c CLI) InitGithubCMD(cCtx *cli.Context) error {
 	logger := log.New(os.Stderr)
 	logger.SetLevel(log.DebugLevel)
+	registry := cCtx.String(repoNameFlag)
+
 	options := project.InitOptions{
 		PipelineType:      cCtx.Command.Name,
 		DestinationFolder: cCtx.String(destinationFolderFlag),
 		DefaultBranch:     cCtx.String(defaultBranchFlag),
 		AppName:           cCtx.String(appNameFlag),
-		Repository:        cCtx.String(repoNameFlag),
+		Repository:        registry,
 		ProjectDirectory:  cCtx.String(projectDirectoryFlag),
 	}
 	data, err := project.ProjectInit(options, c.Resources)
@@ -39,6 +42,7 @@ func (c CLI) InitGithubCMD(cCtx *cli.Context) error {
 func (c CLI) InitConfigCMD(ctx *cli.Context) error {
 	excludedFlags := []string{
 		"help",
+		appVersionFlag,
 		namespaceFlag,
 		configFileFlag,
 		projectDirectoryFlag,
@@ -61,17 +65,21 @@ func (c CLI) InitConfigCMD(ctx *cli.Context) error {
 
 		value := ctx.String(stringFlag.Name)
 		if value == "" {
-			stringFlag.GetValue()
+			value = stringFlag.Value
 		}
 
 		if value == "" {
 			fmt.Fprintf(c.Writer, "%s: null\n", stringFlag.Name)
 		} else {
-			fmt.Fprintf(c.Writer, "%s: %s\n", stringFlag.Name, ctx.String(stringFlag.Name))
+			fmt.Fprintf(c.Writer, "%s: %s\n", stringFlag.Name, value)
 		}
 	}
 
 	return nil
+}
+
+func (c CLI) InitServiceAccountCMD(ctx *cli.Context) error {
+	return k8s.GetServiceAccount(c.Resources)
 }
 
 func (c CLI) InitCMD() *cli.Command {
@@ -90,6 +98,12 @@ func (c CLI) InitCMD() *cli.Command {
 				Name:   "config",
 				Usage:  "create a config file with all available flags set to null",
 				Action: c.InitConfigCMD,
+				Before: c.baseBeforeFunc,
+			},
+			{
+				Name:   "service-account",
+				Usage:  "output all resources needed to create a service account",
+				Action: c.InitServiceAccountCMD,
 				Before: c.baseBeforeFunc,
 			},
 		},

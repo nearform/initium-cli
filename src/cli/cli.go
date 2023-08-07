@@ -4,7 +4,6 @@ import (
 	"embed"
 	"io"
 	"os"
-	"path"
 	"path/filepath"
 	"sort"
 
@@ -13,6 +12,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/nearform/k8s-kurated-addons-cli/src/services/docker"
+	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
 	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
 	"github.com/urfave/cli/v2"
 )
@@ -38,7 +38,7 @@ func (c CLI) baseBeforeFunc(ctx *cli.Context) error {
 	return nil
 }
 
-func (c *CLI) init(cCtx *cli.Context) {
+func (c *CLI) init(cCtx *cli.Context) error {
 	appName := cCtx.String(appNameFlag)
 	version := cCtx.String(appVersionFlag)
 	projectDirectory := cCtx.String(projectDirectoryFlag)
@@ -59,9 +59,11 @@ func (c *CLI) init(cCtx *cli.Context) {
 
 	dockerImageName := appName
 	invalidBases := []string{".", string(os.PathSeparator)}
-	base := filepath.Base(absProjectDirectory)
-	if !slices.Contains(invalidBases, base) && base != dockerImageName {
-		dockerImageName = appName + "/" + base
+	if projectDirectory != defaults.ProjectDirectory {
+		base := filepath.Base(absProjectDirectory)
+		if !slices.Contains(invalidBases, base) && base != dockerImageName {
+			dockerImageName = appName + "/" + base
+		}
 	}
 
 	dockerImage := docker.DockerImage{
@@ -71,7 +73,12 @@ func (c *CLI) init(cCtx *cli.Context) {
 		Tag:       version,
 	}
 
-	dockerService, err := docker.New(project, dockerImage, cCtx.String(dockerFileNameFlag))
+	dockerFileName := cCtx.String(dockerFileNameFlag)
+	if dockerFileName == "" {
+		dockerFileName = defaults.GeneratedDockerFile
+	}
+
+	dockerService, err := docker.New(project, dockerImage, dockerFileName)
 	if err != nil {
 		logger.PrintError("Error creating docker service", err)
 	}
@@ -79,13 +86,17 @@ func (c *CLI) init(cCtx *cli.Context) {
 	c.DockerService = dockerService
 	c.dockerImage = dockerImage
 	c.project = project
+	return nil
 }
 
-func (c *CLI) getProject(cCtx *cli.Context) *project.Project {
+func (c *CLI) getProject(cCtx *cli.Context) (*project.Project, error) {
 	if (c.project == project.Project{}) {
-		c.init(cCtx)
+		err := c.init(cCtx)
+		if err != nil {
+			return nil, err
+		}
 	}
-	return &c.project
+	return &c.project, nil
 }
 
 func (c CLI) Run(args []string) error {
@@ -106,17 +117,6 @@ func (c CLI) Run(args []string) error {
 		Before: func(ctx *cli.Context) error {
 			if err := c.loadFlagsFromConfig(ctx); err != nil {
 				return err
-			}
-
-			projectDirectory := ctx.String(projectDirectoryFlag)
-			absProjectDirectory, err := filepath.Abs(projectDirectory)
-
-			if err != nil {
-				return err
-			}
-
-			if ctx.String(appNameFlag) == "" {
-				ctx.Set(appNameFlag, path.Base(absProjectDirectory))
 			}
 
 			if err := c.checkRequiredFlags(ctx, []string{}); err != nil {
