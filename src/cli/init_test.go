@@ -56,7 +56,7 @@ func TestInitConfig(t *testing.T) {
 	}
 
 	cli.Writer = new(bytes.Buffer)
-	if err = cli.Run([]string{"kka", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config"}); err != nil {
+	if err = cli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config"}); err != nil {
 		t.Error(err)
 	}
 	compareConfig(t, "FromFile", cli.Writer)
@@ -64,14 +64,14 @@ func TestInitConfig(t *testing.T) {
 	// Environment Variable wins over config
 	os.Setenv("KKA_APP_NAME", "FromEnv")
 	cli.Writer = new(bytes.Buffer)
-	if err = cli.Run([]string{"kka", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config"}); err != nil {
+	if err = cli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config"}); err != nil {
 		t.Error(err)
 	}
 	compareConfig(t, "FromEnv", cli.Writer)
 
 	// Command line argument wins over config and Environment variable
 	cli.Writer = new(bytes.Buffer)
-	if err = cli.Run([]string{"kka", fmt.Sprintf("--config-file=%s", f.Name()), "--app-name=FromParam", "init", "config"}); err != nil {
+	if err = cli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "--app-name=FromParam", "init", "config"}); err != nil {
 		t.Error(err)
 	}
 	compareConfig(t, "FromParam", cli.Writer)

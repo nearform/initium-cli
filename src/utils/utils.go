@@ -11,7 +11,7 @@ var alphanumericRegex = regexp.MustCompile(`[a-z0-9]`)
 // and must start and end with an alphanumeric character (e.g. 'my-name',  or '123-abc', regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?')
 // https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#dns-label-names
 func EncodeRFC1123(label string) string {
-	validLabel := "kka-"
+	validLabel := "initium-"
 
 	for _, r := range strings.ToLower(label) {
 		if alphanumericRegex.MatchString(string(r)) {

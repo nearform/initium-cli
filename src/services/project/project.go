@@ -101,7 +101,7 @@ func ProjectInit(options InitOptions, resources fs.FS) ([]string, error) {
 			return returnData, err
 		}
 
-		destinationFile := path.Join(options.DestinationFolder, fmt.Sprintf("kka_%s.yaml", tmpl))
+		destinationFile := path.Join(options.DestinationFolder, fmt.Sprintf("initium_%s.yaml", tmpl))
 
 		if err := os.MkdirAll(options.DestinationFolder, os.ModePerm); err != nil {
 			return returnData, fmt.Errorf("error: %v", err)

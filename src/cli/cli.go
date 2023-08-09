@@ -101,8 +101,8 @@ func (c *CLI) getProject(cCtx *cli.Context) (*project.Project, error) {
 
 func (c CLI) Run(args []string) error {
 	app := &cli.App{
-		Name:  "k8s kurated addons",
-		Usage: "kka-cli",
+		Name:  "initium",
+		Usage: "CLI of the Initium project",
 		Flags: c.CommandFlags(App),
 		Commands: []*cli.Command{
 			c.BuildCMD(),

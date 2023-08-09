@@ -194,7 +194,6 @@ func (c CLI) checkRequiredFlags(ctx *cli.Context, ignoredFlags []string) error {
 func (c CLI) loadFlagsFromConfig(ctx *cli.Context) error {
 	config := make(map[interface{}]interface{})
 	cfgFile := ctx.String(configFileFlag)
-
 	//if the default config file doesn't exist we can ignore the rest and return nil
 	_, err := os.Stat(cfgFile)
 	if err != nil && errors.Is(err, os.ErrNotExist) && cfgFile == defaults.ConfigFile {
