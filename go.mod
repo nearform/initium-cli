@@ -7,7 +7,6 @@ require (
 	github.com/docker/docker v23.0.1+incompatible
 	github.com/go-git/go-git/v5 v5.7.0
 	github.com/moby/term v0.0.0-20221205130635-1aeaba878587
-	github.com/nearform/k8s-kurated-addons-cli v0.0.0-20230808135356-7f588534fbf2
 	github.com/urfave/cli/v2 v2.25.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.27.1

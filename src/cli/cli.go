@@ -7,13 +7,13 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
+	"github.com/nearform/initium-cli/src/services/project"
 	"k8s.io/utils/strings/slices"
 
 	"github.com/charmbracelet/log"
-	"github.com/nearform/k8s-kurated-addons-cli/src/services/docker"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
+	"github.com/nearform/initium-cli/src/services/docker"
+	"github.com/nearform/initium-cli/src/utils/defaults"
+	"github.com/nearform/initium-cli/src/utils/logger"
 	"github.com/urfave/cli/v2"
 )
 

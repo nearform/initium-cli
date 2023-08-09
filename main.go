@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/charmbracelet/log"
-	"github.com/nearform/k8s-kurated-addons-cli/src/cli"
+	"github.com/nearform/initium-cli/src/cli"
 )
 
 //go:embed assets

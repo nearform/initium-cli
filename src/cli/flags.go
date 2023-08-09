@@ -7,8 +7,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/nearform/k8s-kurated-addons-cli/src/services/git"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
+	"github.com/nearform/initium-cli/src/services/git"
+	"github.com/nearform/initium-cli/src/utils/defaults"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
 	"k8s.io/utils/strings/slices"

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
+	"github.com/nearform/initium-cli/src/utils/defaults"
 )
 
 var projects = map[ProjectType]map[string]string{

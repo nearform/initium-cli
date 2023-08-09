@@ -3,7 +3,7 @@ package cli
 import (
 	"path"
 
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
+	"github.com/nearform/initium-cli/src/utils/logger"
 	"github.com/urfave/cli/v2"
 )
 
