@@ -15,7 +15,7 @@ func main() {
 	cli := cli.CLI{
 		Resources: resources,
 		Logger: log.NewWithOptions(os.Stderr, log.Options{
-			Level:           log.ParseLevel(os.Getenv("KKA_LOG_LEVEL")),
+			Level:           log.ParseLevel(os.Getenv("INITIUM_LOG_LEVEL")),
 			ReportCaller:    true,
 			ReportTimestamp: true,
 		}),
