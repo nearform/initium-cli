@@ -47,7 +47,7 @@
   "prConcurrentLimit": 0,
   "rebaseWhen": "auto",
   "repositories": [
-    "nearform/k8s-kurated-addons-cli"
+    "nearform/initium-cli"
   ],
   "username": "nearform-renovate-app[bot]",
   "regexManagers": [

@@ -5,3 +5,4 @@ Dockerfile.initium
 *.init_test*
 initium_onmain.yaml
 initium_onbranch.yaml
+dist/
