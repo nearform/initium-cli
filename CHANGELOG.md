@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.2](https://github.com/nearform/initium-cli/compare/v0.0.1...v0.0.2) (2023-08-10)
+
+
+### Bug Fixes
+
+* update release-please.yaml ([#68](https://github.com/nearform/initium-cli/issues/68)) ([b06c556](https://github.com/nearform/initium-cli/commit/b06c556b9b393172d49945130569dd749c3af672))
+
 ## 0.0.1 (2023-08-10)
 
 
