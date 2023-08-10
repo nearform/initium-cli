@@ -7,8 +7,8 @@ import (
 	"path"
 	"testing"
 
-	"github.com/nearform/k8s-kurated-addons-cli/src/services/docker"
-	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
+	"github.com/nearform/initium-cli/src/services/docker"
+	"github.com/nearform/initium-cli/src/services/project"
 )
 
 var root = "../../../"

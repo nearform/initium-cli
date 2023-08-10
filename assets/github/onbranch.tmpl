@@ -1,4 +1,4 @@
-# This file is generate by https://github.com/nearform/k8s-kurated-addons-cli
+# This file is generate by https://github.com/nearform/initium-cli
 name: Deploy on PR
 
 on:
@@ -20,11 +20,11 @@ jobs:
         with:
           args: onbranch --clean
         env:
-          KKA_REGISTRY_USER: {{ `${{ github.actor }}` }}
-          KKA_REGISTRY_PASSWORD: {{ `${{ secrets.GITHUB_TOKEN }}` }}
-          KKA_CLUSTER_ENDPOINT: {{ `${{ secrets.CLUSTER_ENDPOINT }}` }}
-          KKA_CLUSTER_TOKEN: {{ `${{ secrets.CLUSTER_TOKEN }}` }}
-          KKA_CLUSTER_CA_CERT: {{ `${{ secrets.CLUSTER_CA_CERT }}` }}
+          INITIUM_REGISTRY_USER: {{ `${{ github.actor }}` }}
+          INITIUM_REGISTRY_PASSWORD: {{ `${{ secrets.GITHUB_TOKEN }}` }}
+          INITIUM_CLUSTER_ENDPOINT: {{ `${{ secrets.CLUSTER_ENDPOINT }}` }}
+          INITIUM_CLUSTER_TOKEN: {{ `${{ secrets.CLUSTER_TOKEN }}` }}
+          INITIUM_CLUSTER_CA_CERT: {{ `${{ secrets.CLUSTER_CA_CERT }}` }}
 
       - name: build and deploy application
         if: github.event.action != 'closed'
@@ -32,8 +32,8 @@ jobs:
         with:
           args: onbranch
         env:
-          KKA_REGISTRY_USER: {{ `${{ github.actor }}` }}
-          KKA_REGISTRY_PASSWORD: {{ `${{ secrets.GITHUB_TOKEN }}` }}
-          KKA_CLUSTER_ENDPOINT: {{ `${{ secrets.CLUSTER_ENDPOINT }}` }}
-          KKA_CLUSTER_TOKEN: {{ `${{ secrets.CLUSTER_TOKEN }}` }}
-          KKA_CLUSTER_CA_CERT: {{ `${{ secrets.CLUSTER_CA_CERT }}` }}
+          INITIUM_REGISTRY_USER: {{ `${{ github.actor }}` }}
+          INITIUM_REGISTRY_PASSWORD: {{ `${{ secrets.GITHUB_TOKEN }}` }}
+          INITIUM_CLUSTER_ENDPOINT: {{ `${{ secrets.CLUSTER_ENDPOINT }}` }}
+          INITIUM_CLUSTER_TOKEN: {{ `${{ secrets.CLUSTER_TOKEN }}` }}
+          INITIUM_CLUSTER_CA_CERT: {{ `${{ secrets.CLUSTER_CA_CERT }}` }}

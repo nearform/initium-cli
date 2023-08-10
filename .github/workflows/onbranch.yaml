@@ -21,6 +21,6 @@ jobs:
       - name: build and deploy on pr
         run: go run main.go onbranch --stop-on-push
         env:
-          KKA_APP_NAME: k8s-kurated-addons-cli
-          KKA_REGISTRY_USER: ${{ github.actor }}
-          KKA_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          INITIUM_APP_NAME: initium-cli
+          INITIUM_REGISTRY_USER: ${{ github.actor }}
+          INITIUM_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}

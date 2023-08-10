@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/charmbracelet/log"
-	"github.com/nearform/k8s-kurated-addons-cli/src/cli"
+	"github.com/nearform/initium-cli/src/cli"
 )
 
 //go:embed assets
@@ -15,7 +15,7 @@ func main() {
 	cli := cli.CLI{
 		Resources: resources,
 		Logger: log.NewWithOptions(os.Stderr, log.Options{
-			Level:           log.ParseLevel(os.Getenv("KKA_LOG_LEVEL")),
+			Level:           log.ParseLevel(os.Getenv("INITIUM_LOG_LEVEL")),
 			ReportCaller:    true,
 			ReportTimestamp: true,
 		}),

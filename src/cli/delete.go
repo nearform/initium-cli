@@ -1,7 +1,7 @@
 package cli
 
 import (
-	knative "github.com/nearform/k8s-kurated-addons-cli/src/services/k8s"
+	knative "github.com/nearform/initium-cli/src/services/k8s"
 	"github.com/urfave/cli/v2"
 )
 

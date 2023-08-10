@@ -1,7 +1,7 @@
 .idea/
 .vscode/
 .env
-Dockerfile.kka
+Dockerfile.initium
 *.init_test*
-kka_onmain.yaml
-kka_onbranch.yaml
+initium_onmain.yaml
+initium_onbranch.yaml

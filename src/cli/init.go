@@ -8,8 +8,8 @@ import (
 	"github.com/charmbracelet/log"
 	"k8s.io/utils/strings/slices"
 
-	"github.com/nearform/k8s-kurated-addons-cli/src/services/k8s"
-	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
+	"github.com/nearform/initium-cli/src/services/k8s"
+	"github.com/nearform/initium-cli/src/services/project"
 	"github.com/urfave/cli/v2"
 )
 

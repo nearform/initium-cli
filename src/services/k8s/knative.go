@@ -8,10 +8,10 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/nearform/k8s-kurated-addons-cli/src/services/docker"
-	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
+	"github.com/nearform/initium-cli/src/services/docker"
+	"github.com/nearform/initium-cli/src/services/project"
 
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
+	"github.com/nearform/initium-cli/src/utils/logger"
 
 	corev1 "k8s.io/api/core/v1"
 	apimachineryErrors "k8s.io/apimachinery/pkg/api/errors"

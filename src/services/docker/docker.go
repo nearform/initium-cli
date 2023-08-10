@@ -14,10 +14,10 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"
 
-	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
+	"github.com/nearform/initium-cli/src/services/project"
 
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
+	"github.com/nearform/initium-cli/src/utils/defaults"
+	"github.com/nearform/initium-cli/src/utils/logger"
 )
 
 type DockerService struct {

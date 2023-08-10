@@ -7,8 +7,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/nearform/k8s-kurated-addons-cli/src/services/git"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
+	"github.com/nearform/initium-cli/src/services/git"
+	"github.com/nearform/initium-cli/src/utils/defaults"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
 	"k8s.io/utils/strings/slices"
@@ -59,32 +59,32 @@ func init() {
 		Build: []cli.Flag{
 			&cli.StringFlag{
 				Name:     runtimeVersionFlag,
-				EnvVars:  []string{"KKA_RUNTIME_VERSION"},
+				EnvVars:  []string{"INITIUM_RUNTIME_VERSION"},
 				Category: "build",
 			},
 		},
 		Kubernetes: []cli.Flag{
 			&cli.StringFlag{
 				Name:     endpointFlag,
-				EnvVars:  []string{"KKA_CLUSTER_ENDPOINT"},
+				EnvVars:  []string{"INITIUM_CLUSTER_ENDPOINT"},
 				Required: true,
 				Category: "deploy",
 			},
 			&cli.StringFlag{
 				Name:     tokenFlag,
-				EnvVars:  []string{"KKA_CLUSTER_TOKEN"},
+				EnvVars:  []string{"INITIUM_CLUSTER_TOKEN"},
 				Required: true,
 				Category: "deploy",
 			},
 			&cli.StringFlag{
 				Name:     caCRTFlag,
-				EnvVars:  []string{"KKA_CLUSTER_CA_CERT"},
+				EnvVars:  []string{"INITIUM_CLUSTER_CA_CERT"},
 				Required: true,
 				Category: "deploy",
 			},
 			&cli.StringFlag{
 				Name:     namespaceFlag,
-				EnvVars:  []string{"KKA_NAMESPACE"},
+				EnvVars:  []string{"INITIUM_NAMESPACE"},
 				Required: true,
 				Category: "deploy",
 			},
@@ -92,13 +92,13 @@ func init() {
 		Registry: []cli.Flag{
 			&cli.StringFlag{
 				Name:     registryUserFlag,
-				EnvVars:  []string{"KKA_REGISTRY_USER"},
+				EnvVars:  []string{"INITIUM_REGISTRY_USER"},
 				Required: true,
 				Category: "registry",
 			},
 			&cli.StringFlag{
 				Name:     registryPasswordFlag,
-				EnvVars:  []string{"KKA_REGISTRY_PASSWORD"},
+				EnvVars:  []string{"INITIUM_REGISTRY_PASSWORD"},
 				Required: true,
 				Category: "registry",
 			},
@@ -122,37 +122,37 @@ func init() {
 				Name:     appNameFlag,
 				Usage:    "The name of the app",
 				Required: true,
-				EnvVars:  []string{"KKA_APP_NAME"},
+				EnvVars:  []string{"INITIUM_APP_NAME"},
 			},
 			&cli.StringFlag{
 				Name:    appVersionFlag,
 				Usage:   "The version of your application",
 				Value:   defaults.AppVersion,
-				EnvVars: []string{"KKA_VERSION"},
+				EnvVars: []string{"INITIUM_VERSION"},
 			},
 			&cli.StringFlag{
 				Name:    projectDirectoryFlag,
 				Usage:   "The directory in which your Dockerfile lives",
 				Value:   defaults.ProjectDirectory,
-				EnvVars: []string{"KKA_PROJECT_DIRECTORY"},
+				EnvVars: []string{"INITIUM_PROJECT_DIRECTORY"},
 			},
 			&cli.StringFlag{
 				Name:     repoNameFlag,
 				Usage:    "The base address of the container repository",
 				Value:    registry,
 				Required: registry == "",
-				EnvVars:  []string{"KKA_REPO_NAME"},
+				EnvVars:  []string{"INITIUM_REPO_NAME"},
 			},
 			&cli.StringFlag{
 				Name:    dockerFileNameFlag,
 				Usage:   "The name of the Dockerfile",
-				EnvVars: []string{"KKA_DOCKERFILE_NAME"},
+				EnvVars: []string{"INITIUM_DOCKERFILE_NAME"},
 			},
 			&cli.StringFlag{
 				Name:    configFileFlag,
 				Usage:   "read parameters from config",
 				Value:   defaults.ConfigFile,
-				EnvVars: []string{"KKA_CONFIG_FILE"},
+				EnvVars: []string{"INITIUM_CONFIG_FILE"},
 			},
 		},
 	}
@@ -194,7 +194,6 @@ func (c CLI) checkRequiredFlags(ctx *cli.Context, ignoredFlags []string) error {
 func (c CLI) loadFlagsFromConfig(ctx *cli.Context) error {
 	config := make(map[interface{}]interface{})
 	cfgFile := ctx.String(configFileFlag)
-
 	//if the default config file doesn't exist we can ignore the rest and return nil
 	_, err := os.Stat(cfgFile)
 	if err != nil && errors.Is(err, os.ErrNotExist) && cfgFile == defaults.ConfigFile {

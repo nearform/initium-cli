@@ -33,13 +33,13 @@ func TestInitConfig(t *testing.T) {
 	cli := CLI{
 		Writer: new(bytes.Buffer),
 		Logger: log.NewWithOptions(os.Stderr, log.Options{
-			Level:           log.ParseLevel(os.Getenv("KKA_LOG_LEVEL")),
+			Level:           log.ParseLevel(os.Getenv("INITIUM_LOG_LEVEL")),
 			ReportCaller:    true,
 			ReportTimestamp: true,
 		}),
 	}
 
-	os.Setenv("KKA_REPO_NAME", "ghcr.io/nearform")
+	os.Setenv("INITIUM_REPO_NAME", "ghcr.io/nearform")
 
 	// Config file is read correctly
 
@@ -56,22 +56,22 @@ func TestInitConfig(t *testing.T) {
 	}
 
 	cli.Writer = new(bytes.Buffer)
-	if err = cli.Run([]string{"kka", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config"}); err != nil {
+	if err = cli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config"}); err != nil {
 		t.Error(err)
 	}
 	compareConfig(t, "FromFile", cli.Writer)
 
 	// Environment Variable wins over config
-	os.Setenv("KKA_APP_NAME", "FromEnv")
+	os.Setenv("INITIUM_APP_NAME", "FromEnv")
 	cli.Writer = new(bytes.Buffer)
-	if err = cli.Run([]string{"kka", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config"}); err != nil {
+	if err = cli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config"}); err != nil {
 		t.Error(err)
 	}
 	compareConfig(t, "FromEnv", cli.Writer)
 
 	// Command line argument wins over config and Environment variable
 	cli.Writer = new(bytes.Buffer)
-	if err = cli.Run([]string{"kka", fmt.Sprintf("--config-file=%s", f.Name()), "--app-name=FromParam", "init", "config"}); err != nil {
+	if err = cli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "--app-name=FromParam", "init", "config"}); err != nil {
 		t.Error(err)
 	}
 	compareConfig(t, "FromParam", cli.Writer)

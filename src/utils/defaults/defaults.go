@@ -5,9 +5,9 @@ const (
 	RepoName            string = "ghcr.io/nearform"
 	GithubActionFolder  string = ".github/workflows"
 	GithubDefaultBranch string = "main"
-	ConfigFile          string = ".kka"
+	ConfigFile          string = ".initium.yaml"
 	AppVersion          string = "latest"
-	GeneratedDockerFile string = "Dockerfile.kka"
+	GeneratedDockerFile string = "Dockerfile.initium"
 )
 
 // renovate: datasource=docker depName=node

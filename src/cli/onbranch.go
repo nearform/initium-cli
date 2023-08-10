@@ -5,7 +5,7 @@ import (
 	"os"
 
 	git "github.com/go-git/go-git/v5"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils"
+	"github.com/nearform/initium-cli/src/utils"
 	"github.com/urfave/cli/v2"
 )
 

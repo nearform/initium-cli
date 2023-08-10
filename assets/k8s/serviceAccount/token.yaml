@@ -2,6 +2,6 @@ apiVersion: v1
 kind: Secret
 type: kubernetes.io/service-account-token
 metadata:
-  name: kka-cli-token
+  name: initium-cli-token
   annotations:
-    kubernetes.io/service-account.name: "kka-cli-bot"
+    kubernetes.io/service-account.name: "initium-cli-sa"
