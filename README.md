@@ -17,14 +17,6 @@ All with a nice development workflow in mind like ephemeral environment for your
     - [Rancher Desktop](https://rancherdesktop.io/) ( cross-platform, FOSS )
     - [lima](https://github.com/lima-vm/lima) + [nerdctl](https://github.com/containerd/nerdctl) ( macOS only )
 
-
-### Run from code
-
-1. Run `go run main.go --project-directory example build`
-2. Run `docker run ghcr.io/nearform/initium-cli:latest`
-3. You should see the `KKA-CLI from NearForm` output in your console
-4. Remove the image `docker image rmi -f ghcr.io/nearform/k8s-kurated-addons-cli:latest`
-
 ### Build the executable
 
 In order to build the executable you simply need to run 

@@ -1,20 +1,20 @@
 # Quick Start Guide
 
-#### k8s-kurated-addons-cli
+#### initium-cli
 
 This is a guide to help developers start using this repository. Even though it's based on a cluster spawned by k8s-kurated-addons, as long as the destination cluster has knative, the CLI will work.
 
 ### Prerequisites
 
 - The project's dependencies as described in [the README](README.md)
-- `tilt` (if using `k8s-kurated-addons` to bring up the cluster)
+- `tilt` (if using `initium-platform` to bring up the cluster)
 
 ### Using the software
 
 Follow the steps:
 
 1. Install kka-cli (run `make build` and copy the executable to PATH)
-2. If you want to use `k8s-kurated-addons`, clone it and run `make`
+2. If you want to use `initium-platform`, clone it and run `make`
     * this will bring up a cluster using kind (kubernetes in Docker)
 3. Wait for the cluster to stabilize
     * it's easier to spot checking `tilt` and `argocd` (they will show everything green)
@@ -22,12 +22,12 @@ Follow the steps:
 5. Clone the new repo
 6. Get argocd-password, enable and access the argocd port forward from Tilt
 7. Create a new branch from main / master in the repo
-8. Run `kka-cli --app-name <app name> init config > .kka`
+8. Run `initium --app-name <app name> init config > .kka`
     * the app name needs to be unique since it will be used by knative to expose its service
     * it’s going to be on the domain GitHub Actions will output
     * if the organization name or GitHub account has uppercase characters, you will need to edit the `.kka` file and change the repo-name to a fully lowercase string
-9. Run `kka-cli init github`
-10. Run `kka-cli init service-account | kubectl apply -f -` to create the service account
+9. Run `initium init github`
+10. Run `initium init service-account | kubectl apply -f -` to create the service account
 11. Run the following script:
 ```
 export KKA_LB_ENDPOINT="$(kubectl get service -n istio-ingress istio-ingressgateway -o go-template='{{(index .status.loadBalancer.ingress 0).ip}}'):80"

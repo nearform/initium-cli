@@ -16,7 +16,7 @@ jobs:
 
       - name: delete application
         if: github.event.action == 'closed'
-        uses: docker://ghcr.io/nearform/k8s-kurated-addons-cli:latest
+        uses: docker://ghcr.io/nearform/initium-cli:latest
         with:
           args: onbranch --clean
         env:
@@ -28,7 +28,7 @@ jobs:
 
       - name: build and deploy application
         if: github.event.action != 'closed'
-        uses: docker://ghcr.io/nearform/k8s-kurated-addons-cli:latest
+        uses: docker://ghcr.io/nearform/initium-cli:latest
         with:
           args: onbranch
         env:
