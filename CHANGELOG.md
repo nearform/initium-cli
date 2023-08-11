@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.0](https://github.com/nearform/initium-cli/compare/v0.0.1...v0.1.0) (2023-08-11)
+
+
+### Features
+
+* use app token to generate relases from release-please ([#75](https://github.com/nearform/initium-cli/issues/75)) ([bc82eda](https://github.com/nearform/initium-cli/commit/bc82eda1b3767f2244b58d2982e3cf8da2059166))
+
+
+### Bug Fixes
+
+* update release-please.yaml ([#68](https://github.com/nearform/initium-cli/issues/68)) ([b06c556](https://github.com/nearform/initium-cli/commit/b06c556b9b393172d49945130569dd749c3af672))
+* update to latest github-app-token action ([#76](https://github.com/nearform/initium-cli/issues/76)) ([539722f](https://github.com/nearform/initium-cli/commit/539722f5b82240ceae69aa307ace5ac9f40183df))
+
 ## 0.0.1 (2023-08-10)
 
 
