@@ -139,7 +139,7 @@ func init() {
 			&cli.StringFlag{
 				Name:     repoNameFlag,
 				Aliases:  []string{"repo-name"}, // keep compatibility with old version of the config
-				Usage:    "The base address of the container repository",
+				Usage:    "The base address of the container registry",
 				Value:    registry,
 				Required: registry == "",
 				EnvVars:  []string{"INITIUM_CONTAINER_REGISTRY", "INITIUM_REPO_NAME"}, // INITIUM_REPO_NAME to keep compatibility with older config
