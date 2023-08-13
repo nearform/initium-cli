@@ -8,6 +8,7 @@ import (
 	"path"
 	"text/template"
 
+	"github.com/nearform/initium-cli/src/services/git"
 	"github.com/nearform/initium-cli/src/utils/defaults"
 )
 
@@ -34,6 +35,15 @@ type InitOptions struct {
 	Repository        string
 	AppName           string
 	ProjectDirectory  string
+}
+
+func GuessAppName() *string {
+	var name string
+	name, err := git.GetRepoName()
+	if err != nil {
+		return nil
+	}
+	return &name
 }
 
 func New(name string, directory string, runtimeVersion string, version string, resources fs.FS) Project {

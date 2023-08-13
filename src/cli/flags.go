@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/nearform/initium-cli/src/services/git"
+	"github.com/nearform/initium-cli/src/services/project"
 	"github.com/nearform/initium-cli/src/utils/defaults"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
@@ -53,6 +54,13 @@ func init() {
 	org, err := git.GetGithubOrg()
 	if err == nil {
 		registry = fmt.Sprintf("ghcr.io/%s", org)
+	}
+
+	appName := ""
+	guess := project.GuessAppName()
+
+	if guess != nil {
+		appName = *guess
 	}
 
 	defaultFlags := map[FlagsType]([]cli.Flag){
@@ -121,7 +129,8 @@ func init() {
 			&cli.StringFlag{
 				Name:     appNameFlag,
 				Usage:    "The name of the app",
-				Required: true,
+				Value:    appName,
+				Required: appName == "",
 				EnvVars:  []string{"INITIUM_APP_NAME"},
 			},
 			&cli.StringFlag{
