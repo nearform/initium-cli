@@ -151,6 +151,7 @@ func init() {
 			&cli.StringFlag{
 				Name:    configFileFlag,
 				Usage:   "read parameters from config",
+				Hidden:  true,
 				Value:   defaults.ConfigFile,
 				EnvVars: []string{"INITIUM_CONFIG_FILE"},
 			},

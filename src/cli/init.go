@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"sort"
 
 	"github.com/charmbracelet/log"
@@ -10,7 +11,12 @@ import (
 
 	"github.com/nearform/initium-cli/src/services/k8s"
 	"github.com/nearform/initium-cli/src/services/project"
+	"github.com/nearform/initium-cli/src/utils/defaults"
 	"github.com/urfave/cli/v2"
+)
+
+const (
+	persistFlag = "persist"
 )
 
 func (c CLI) InitGithubCMD(cCtx *cli.Context) error {
@@ -57,6 +63,7 @@ func (c CLI) InitConfigCMD(ctx *cli.Context) error {
 	}
 	sort.Sort(cli.FlagsByName(f))
 
+	config := ""
 	for _, flag := range f {
 		stringFlag := flag.(*cli.StringFlag)
 		if slices.Contains(excludedFlags, stringFlag.Name) {
@@ -68,11 +75,25 @@ func (c CLI) InitConfigCMD(ctx *cli.Context) error {
 			value = stringFlag.Value
 		}
 
+		next := ""
 		if value == "" {
-			fmt.Fprintf(c.Writer, "%s: null\n", stringFlag.Name)
+			next = fmt.Sprintf("%s: null\n", stringFlag.Name)
 		} else {
-			fmt.Fprintf(c.Writer, "%s: %s\n", stringFlag.Name, value)
+			next = fmt.Sprintf("%s: %s\n", stringFlag.Name, value)
 		}
+
+		config = config + next
+	}
+
+	if ctx.Bool(persistFlag) {
+		f, err := os.OpenFile(filepath.Join(ctx.String(projectDirectoryFlag), defaults.ConfigFile), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+		if err != nil {
+			return err
+		}
+		defer f.Close()
+		f.WriteString(config)
+	} else {
+		fmt.Fprint(c.Writer, config)
 	}
 
 	return nil
@@ -95,8 +116,15 @@ func (c CLI) InitCMD() *cli.Command {
 				Before: c.baseBeforeFunc,
 			},
 			{
-				Name:   "config",
-				Usage:  "create a config file with all available flags set to null",
+				Name:  "config",
+				Usage: "create a config file with all available flags set to null",
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:  persistFlag,
+						Value: false,
+						Usage: fmt.Sprintf("will write the file content in %s", defaults.ConfigFile),
+					},
+				},
 				Action: c.InitConfigCMD,
 				Before: c.baseBeforeFunc,
 			},
