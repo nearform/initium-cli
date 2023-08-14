@@ -104,6 +104,9 @@ func (c CLI) InitServiceAccountCMD(ctx *cli.Context) error {
 }
 
 func (c CLI) InitCMD() *cli.Command {
+	githubFlags := []cli.Flag{}
+	githubFlags = append(githubFlags, c.CommandFlags(InitGithub)...)
+	githubFlags = append(githubFlags, c.CommandFlags(Shared)...)
 	return &cli.Command{
 		Name:  "init",
 		Usage: "create configuration for the cli [EXPERIMENTAL]",
@@ -111,7 +114,7 @@ func (c CLI) InitCMD() *cli.Command {
 			{
 				Name:   "github",
 				Usage:  "create a github pipeline yaml file",
-				Flags:  c.CommandFlags(InitGithub),
+				Flags:  githubFlags,
 				Action: c.InitGithubCMD,
 				Before: c.baseBeforeFunc,
 			},

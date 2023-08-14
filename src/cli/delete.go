@@ -22,10 +22,14 @@ func (c *CLI) Delete(cCtx *cli.Context) error {
 }
 
 func (c *CLI) DeleteCMD() *cli.Command {
+	flags := []cli.Flag{}
+	flags = append(flags, c.CommandFlags(Kubernetes)...)
+	flags = append(flags, c.CommandFlags(Shared)...)
+
 	return &cli.Command{
 		Name:   "delete",
 		Usage:  "delete the knative service",
-		Flags:  c.CommandFlags(Kubernetes),
+		Flags:  flags,
 		Action: c.Delete,
 		Before: c.baseBeforeFunc,
 	}

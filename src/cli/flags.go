@@ -23,6 +23,7 @@ const (
 	Registry   FlagsType = "registry"
 	InitGithub FlagsType = "init-github"
 	App        FlagsType = "app"
+	Shared     FlagsType = "shared"
 )
 
 const (
@@ -127,6 +128,20 @@ func init() {
 		},
 		App: []cli.Flag{
 			&cli.StringFlag{
+				Name:    projectDirectoryFlag,
+				Usage:   "The directory in which your Dockerfile lives",
+				Value:   defaults.ProjectDirectory,
+				EnvVars: []string{"INITIUM_PROJECT_DIRECTORY"},
+			},
+			&cli.StringFlag{
+				Name:    configFileFlag,
+				Usage:   "read parameters from config",
+				Value:   defaults.ConfigFile,
+				EnvVars: []string{"INITIUM_CONFIG_FILE"},
+			},
+		},
+		Shared: []cli.Flag{
+			&cli.StringFlag{
 				Name:     appNameFlag,
 				Usage:    "The name of the app",
 				Value:    appName,
@@ -140,12 +155,6 @@ func init() {
 				EnvVars: []string{"INITIUM_VERSION"},
 			},
 			&cli.StringFlag{
-				Name:    projectDirectoryFlag,
-				Usage:   "The directory in which your Dockerfile lives",
-				Value:   defaults.ProjectDirectory,
-				EnvVars: []string{"INITIUM_PROJECT_DIRECTORY"},
-			},
-			&cli.StringFlag{
 				Name:     repoNameFlag,
 				Aliases:  []string{"repo-name"}, // keep compatibility with old version of the config
 				Usage:    "The base address of the container registry",
@@ -157,13 +166,6 @@ func init() {
 				Name:    dockerFileNameFlag,
 				Usage:   "The name of the Dockerfile",
 				EnvVars: []string{"INITIUM_DOCKERFILE_NAME"},
-			},
-			&cli.StringFlag{
-				Name:    configFileFlag,
-				Usage:   "read parameters from config",
-				Hidden:  true,
-				Value:   defaults.ConfigFile,
-				EnvVars: []string{"INITIUM_CONFIG_FILE"},
 			},
 		},
 	}

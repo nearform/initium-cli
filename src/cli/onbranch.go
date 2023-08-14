@@ -33,6 +33,8 @@ func (c CLI) OnBranchCMD() *cli.Command {
 	flags = append(flags, c.CommandFlags(Kubernetes)...)
 	flags = append(flags, c.CommandFlags(Build)...)
 	flags = append(flags, c.CommandFlags(Registry)...)
+	flags = append(flags, c.CommandFlags(Shared)...)
+
 	flags = append(flags, []cli.Flag{
 		&cli.BoolFlag{
 			Name:  stopOnBuildFlag,

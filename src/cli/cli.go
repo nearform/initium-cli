@@ -43,6 +43,12 @@ func (c *CLI) init(cCtx *cli.Context) error {
 	version := cCtx.String(appVersionFlag)
 	projectDirectory := cCtx.String(projectDirectoryFlag)
 	absProjectDirectory, err := filepath.Abs(cCtx.String(projectDirectoryFlag))
+	registry := cCtx.String(repoNameFlag)
+	dockerFileName := cCtx.String(dockerFileNameFlag)
+
+	if dockerFileName == "" {
+		dockerFileName = defaults.GeneratedDockerFile
+	}
 
 	if err != nil {
 		c.Logger.Warnf("could not get abs of %s", projectDirectory)
@@ -67,15 +73,10 @@ func (c *CLI) init(cCtx *cli.Context) error {
 	}
 
 	dockerImage := docker.DockerImage{
-		Registry:  cCtx.String(repoNameFlag),
+		Registry:  registry,
 		Name:      dockerImageName,
 		Directory: absProjectDirectory,
 		Tag:       version,
-	}
-
-	dockerFileName := cCtx.String(dockerFileNameFlag)
-	if dockerFileName == "" {
-		dockerFileName = defaults.GeneratedDockerFile
 	}
 
 	dockerService, err := docker.New(project, dockerImage, dockerFileName)
