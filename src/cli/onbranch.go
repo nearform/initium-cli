@@ -29,11 +29,12 @@ func (c CLI) buildPushDeploy(cCtx *cli.Context) error {
 }
 
 func (c CLI) OnBranchCMD() *cli.Command {
-	flags := []cli.Flag{}
-	flags = append(flags, c.CommandFlags(Kubernetes)...)
-	flags = append(flags, c.CommandFlags(Build)...)
-	flags = append(flags, c.CommandFlags(Registry)...)
-	flags = append(flags, c.CommandFlags(Shared)...)
+	flags := c.CommandFlags([]FlagsType{
+		Kubernetes,
+		Build,
+		Registry,
+		Shared,
+	})
 
 	flags = append(flags, []cli.Flag{
 		&cli.BoolFlag{

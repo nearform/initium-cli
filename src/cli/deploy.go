@@ -24,14 +24,10 @@ func (c *CLI) Deploy(cCtx *cli.Context) error {
 }
 
 func (c CLI) DeployCMD() *cli.Command {
-	flags := []cli.Flag{}
-	flags = append(flags, c.CommandFlags(Kubernetes)...)
-	flags = append(flags, c.CommandFlags(Shared)...)
-
 	return &cli.Command{
 		Name:   "deploy",
 		Usage:  "deploy the application as a knative service",
-		Flags:  flags,
+		Flags:  c.CommandFlags([]FlagsType{Kubernetes, Shared}),
 		Action: c.Deploy,
 		Before: c.baseBeforeFunc,
 	}

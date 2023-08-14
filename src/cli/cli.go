@@ -104,7 +104,7 @@ func (c CLI) Run(args []string) error {
 	app := &cli.App{
 		Name:  "initium",
 		Usage: "CLI of the Initium project",
-		Flags: c.CommandFlags(App),
+		Flags: c.CommandFlags([]FlagsType{App}),
 		Commands: []*cli.Command{
 			c.BuildCMD(),
 			c.PushCMD(),

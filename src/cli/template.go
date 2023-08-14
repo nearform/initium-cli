@@ -23,7 +23,7 @@ func (c *CLI) TemplateCMD() *cli.Command {
 	return &cli.Command{
 		Name:   "template",
 		Usage:  "output the docker file used for this project",
-		Flags:  c.CommandFlags(Build),
+		Flags:  c.CommandFlags([]FlagsType{Build}),
 		Action: c.template,
 		Before: c.baseBeforeFunc,
 	}

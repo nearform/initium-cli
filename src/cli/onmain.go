@@ -6,11 +6,12 @@ import (
 )
 
 func (c *CLI) OnMainCMD() *cli.Command {
-	flags := []cli.Flag{}
-	flags = append(flags, c.CommandFlags(Kubernetes)...)
-	flags = append(flags, c.CommandFlags(Build)...)
-	flags = append(flags, c.CommandFlags(Registry)...)
-	flags = append(flags, c.CommandFlags(Shared)...)
+	flags := c.CommandFlags([]FlagsType{
+		Kubernetes,
+		Build,
+		Registry,
+		Shared,
+	})
 	flags = append(flags, []cli.Flag{
 		&cli.BoolFlag{
 			Name:  stopOnBuildFlag,

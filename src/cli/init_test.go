@@ -75,7 +75,7 @@ func TestInitConfig(t *testing.T) {
 
 	// Command line argument wins over config and Environment variable
 	cli.Writer = new(bytes.Buffer)
-	if err = cli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "--app-name=FromParam", "init", "config"}); err != nil {
+	if err = cli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config", "--app-name=FromParam"}); err != nil {
 		t.Error(err)
 	}
 	compareConfig(t, "FromParam", registry, cli.Writer)

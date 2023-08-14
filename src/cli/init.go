@@ -104,9 +104,13 @@ func (c CLI) InitServiceAccountCMD(ctx *cli.Context) error {
 }
 
 func (c CLI) InitCMD() *cli.Command {
-	githubFlags := []cli.Flag{}
-	githubFlags = append(githubFlags, c.CommandFlags(InitGithub)...)
-	githubFlags = append(githubFlags, c.CommandFlags(Shared)...)
+	configFlags := c.CommandFlags([]FlagsType{Shared})
+	configFlags = append(configFlags, &cli.BoolFlag{
+		Name:  persistFlag,
+		Value: false,
+		Usage: fmt.Sprintf("will write the file content in %s", defaults.ConfigFile),
+	})
+
 	return &cli.Command{
 		Name:  "init",
 		Usage: "create configuration for the cli [EXPERIMENTAL]",
@@ -114,20 +118,14 @@ func (c CLI) InitCMD() *cli.Command {
 			{
 				Name:   "github",
 				Usage:  "create a github pipeline yaml file",
-				Flags:  githubFlags,
+				Flags:  c.CommandFlags([]FlagsType{InitGithub, Shared}),
 				Action: c.InitGithubCMD,
 				Before: c.baseBeforeFunc,
 			},
 			{
-				Name:  "config",
-				Usage: "create a config file with all available flags set to null",
-				Flags: []cli.Flag{
-					&cli.BoolFlag{
-						Name:  persistFlag,
-						Value: false,
-						Usage: fmt.Sprintf("will write the file content in %s", defaults.ConfigFile),
-					},
-				},
+				Name:   "config",
+				Usage:  "create a config file with all available flags set to null",
+				Flags:  configFlags,
 				Action: c.InitConfigCMD,
 				Before: c.baseBeforeFunc,
 			},

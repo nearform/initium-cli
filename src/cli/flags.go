@@ -238,6 +238,10 @@ func (c CLI) loadFlagsFromConfig(ctx *cli.Context) error {
 	return nil
 }
 
-func (c CLI) CommandFlags(command FlagsType) []cli.Flag {
-	return flags[command]
+func (c CLI) CommandFlags(commands []FlagsType) []cli.Flag {
+	result := []cli.Flag{}
+	for _, command := range commands {
+		result = append(result, flags[command]...)
+	}
+	return result
 }

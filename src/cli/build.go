@@ -18,14 +18,10 @@ func (c *CLI) Build(cCtx *cli.Context) error {
 }
 
 func (c CLI) BuildCMD() *cli.Command {
-	flags := []cli.Flag{}
-	flags = append(flags, c.CommandFlags(Build)...)
-	flags = append(flags, c.CommandFlags(Shared)...)
-
 	return &cli.Command{
 		Name:   "build",
 		Usage:  "build a container image from the project directory",
-		Flags:  flags,
+		Flags:  c.CommandFlags([]FlagsType{Build, Shared}),
 		Action: c.Build,
 		Before: c.baseBeforeFunc,
 	}

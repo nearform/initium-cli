@@ -15,14 +15,10 @@ func (c *CLI) Push(cCtx *cli.Context) error {
 }
 
 func (c *CLI) PushCMD() *cli.Command {
-	flags := []cli.Flag{}
-	flags = append(flags, c.CommandFlags(Registry)...)
-	flags = append(flags, c.CommandFlags(Shared)...)
-
 	return &cli.Command{
 		Name:   "push",
 		Usage:  "push the container image to a registry",
-		Flags:  flags,
+		Flags:  c.CommandFlags([]FlagsType{Registry, Shared}),
 		Action: c.Push,
 		Before: c.baseBeforeFunc,
 	}
