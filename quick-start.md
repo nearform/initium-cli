@@ -22,7 +22,7 @@ Follow the steps:
 5. Clone the new repo
 6. Get argocd-password, enable and access the argocd port forward from Tilt
 7. Create a new branch from main / master in the repo
-8. Run `initium --app-name <app name> init config > .kka`
+8. Run `initium init config > .initium.yaml`
     * the app name needs to be unique since it will be used by knative to expose its service
     * it’s going to be on the domain GitHub Actions will output
     * if the organization name or GitHub account has uppercase characters, you will need to edit the `.kka` file and change the repo-name to a fully lowercase string
@@ -35,14 +35,14 @@ export KKA_CLUSTER_ENDPOINT=$(kubectl config view -o jsonpath='{.clusters[?(@.na
 export KKA_CLUSTER_TOKEN=$(kubectl get secrets kka-cli-token -o jsonpath="{.data.token}" | base64 -d)
 export KKA_CLUSTER_CA_CERT=$(kubectl get secrets kka-cli-token -o jsonpath="{.data.ca\.crt}" | base64 -d)
 ```
-12. `echo` the variables set above and set `CLUSTER_CA_CERT`, `CLUSTER_ENDPOINT` and `CLUSTER_TOKEN` as [GitHub Actions secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository) in the new repo (or in the GitHub organization itself), using the values returned
+1.  `echo` the variables set above and set `CLUSTER_CA_CERT`, `CLUSTER_ENDPOINT` and `CLUSTER_TOKEN` as [GitHub Actions secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets#creating-encrypted-secrets-for-a-repository) in the new repo (or in the GitHub organization itself), using the values returned
     * The `CLUSTER_ENDPOINT` value should be in the URL:port format
     * to access the cluster from the github action you'll need to expose it via ngrok, grab the port from the `KKA_CLUSTER_ENDPOINT` variable and run `ngrok tcp --region=us <port>`
-13. Write the JS / Go code for your repository, exposing a port, and push it to GitHub
-14. Open a pull request
-15. A workflow should be running in GitHub Actions, building an image (even if there’s no Dockerfile in the repo), pushing the image to the registry, and deploying the service to the cluster
-16. Run `kubectl get ksvc -A` to see the application running in your cluster
-17. Run `curl -H “Host: <app URL shown in the action logs>” $KKA_LB_ENDPOINT`
+2.  Write the JS / Go code for your repository, exposing a port, and push it to GitHub
+3.  Open a pull request
+4.  A workflow should be running in GitHub Actions, building an image (even if there’s no Dockerfile in the repo), pushing the image to the registry, and deploying the service to the cluster
+5.  Run `kubectl get ksvc -A` to see the application running in your cluster
+6.  Run `curl -H “Host: <app URL shown in the action logs>” $KKA_LB_ENDPOINT`
 18. You're all set!
 
 The next steps are optional.
