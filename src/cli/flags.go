@@ -36,7 +36,7 @@ const (
 	appNameFlag           string = "app-name"
 	appVersionFlag        string = "app-version"
 	projectDirectoryFlag  string = "project-directory"
-	repoNameFlag          string = "repo-name"
+	repoNameFlag          string = "container-registry"
 	dockerFileNameFlag    string = "dockerfile-name"
 	configFileFlag        string = "config-file"
 	namespaceFlag         string = "namespace"
@@ -138,10 +138,11 @@ func init() {
 			},
 			&cli.StringFlag{
 				Name:     repoNameFlag,
-				Usage:    "The base address of the container repository",
+				Aliases:  []string{"repo-name"}, // keep compatibility with old version of the config
+				Usage:    "The base address of the container registry",
 				Value:    registry,
 				Required: registry == "",
-				EnvVars:  []string{"INITIUM_REPO_NAME"},
+				EnvVars:  []string{"INITIUM_CONTAINER_REGISTRY", "INITIUM_REPO_NAME"}, // INITIUM_REPO_NAME to keep compatibility with older config
 			},
 			&cli.StringFlag{
 				Name:    dockerFileNameFlag,
@@ -211,12 +212,14 @@ func (c CLI) loadFlagsFromConfig(ctx *cli.Context) error {
 	}
 
 	for _, v := range ctx.Command.Flags {
-		name := v.Names()[0]
-		c.Logger.Debugf("%s is set to %s", name, ctx.String(name))
-		if name != "help" && !ctx.IsSet(name) {
-			if config[name] != nil {
-				c.Logger.Debugf("Loading %s as %s", name, config[name])
-				ctx.Set(name, config[name].(string))
+		mainName := v.Names()[0]
+		for _, name := range v.Names() {
+			c.Logger.Debugf("%s is set to %s", name, ctx.String(name))
+			if name != "help" && !ctx.IsSet(mainName) {
+				if config[name] != nil {
+					c.Logger.Debugf("Loading %s as %s", name, config[name])
+					ctx.Set(mainName, config[name].(string))
+				}
 			}
 		}
 	}
