@@ -98,14 +98,14 @@ func TestRepoNameRetrocompatibiliy(t *testing.T) {
 	}
 
 	cli.Writer = new(bytes.Buffer)
-	if err = cli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "--app-name=FromParam", "init", "config"}); err != nil {
+	if err = cli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config", "--app-name=FromParam"}); err != nil {
 		t.Error(err)
 	}
 	compareConfig(t, "FromParam", "FromFile", cli.Writer)
 
 	//Override from parameter
 	cli.Writer = new(bytes.Buffer)
-	if err = cli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "--app-name=FromParam", "--container-registry=ghcr.io/nearform", "init", "config"}); err != nil {
+	if err = cli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config", "--app-name=FromParam", "--container-registry=ghcr.io/nearform"}); err != nil {
 		t.Error(err)
 	}
 	compareConfig(t, "FromParam", "ghcr.io/nearform", cli.Writer)
