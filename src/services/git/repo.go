@@ -8,6 +8,11 @@ import (
 	git "github.com/go-git/go-git/v5"
 )
 
+const (
+	httpgithubprefix = "https://github.com/"
+	gitgithubprefix  = "git@github.com:"
+)
+
 func initRepo() (*git.Repository, error) {
 	wd, err := os.Getwd()
 
@@ -38,7 +43,7 @@ func GetHash() (string, error) {
 	return headRef.Hash().String(), nil
 }
 
-func GetGithubOrg() (string, error) {
+func getGithubRemote() (string, error) {
 	repo, err := initRepo()
 
 	if err != nil {
@@ -53,25 +58,37 @@ func GetGithubOrg() (string, error) {
 	for _, remote := range c.Remotes {
 		for _, url := range remote.URLs {
 			// HTTPS (https://github.com/organization/repo.git)
-			if strings.HasPrefix(url, "https://github.com/") {
-				splitURL := strings.Split(url, "/")
-				if len(splitURL) > 3 {
-					return splitURL[3], nil
-				}
+			if strings.HasPrefix(url, httpgithubprefix) {
+				return strings.Replace(url, httpgithubprefix, "", 1), nil
 			}
 			// SSH (git@github.com:organization/repo.git)
-			if strings.HasPrefix(url, "git@github.com:") {
-				splitURL := strings.Split(url, ":")
-				if len(splitURL) > 1 {
-					splitPath := strings.Split(splitURL[1], "/")
-					if len(splitPath) > 1 {
-						return splitPath[0], nil
-					}
-				}
+			if strings.HasPrefix(url, gitgithubprefix) {
+				return strings.Replace(url, gitgithubprefix, "", 1), nil
 			}
 		}
-
 	}
 
-	return "", fmt.Errorf("cannot find any remote with github.com")
+	return "", fmt.Errorf("no github remote found")
+}
+
+func GetRepoName() (string, error) {
+	remote, err := getGithubRemote()
+
+	if err != nil {
+		return "", err
+	}
+
+	splitRemote := strings.Split(remote, "/")
+	return strings.Replace(splitRemote[1], ".git", "", 1), nil
+}
+
+func GetGithubOrg() (string, error) {
+	remote, err := getGithubRemote()
+
+	if err != nil {
+		return "", err
+	}
+
+	splitRemote := strings.Split(remote, "/")
+	return splitRemote[0], nil
 }

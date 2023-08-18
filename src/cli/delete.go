@@ -25,7 +25,7 @@ func (c *CLI) DeleteCMD() *cli.Command {
 	return &cli.Command{
 		Name:   "delete",
 		Usage:  "delete the knative service",
-		Flags:  c.CommandFlags(Kubernetes),
+		Flags:  c.CommandFlags([]FlagsType{Kubernetes, Shared}),
 		Action: c.Delete,
 		Before: c.baseBeforeFunc,
 	}

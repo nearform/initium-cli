@@ -6,10 +6,12 @@ import (
 )
 
 func (c *CLI) OnMainCMD() *cli.Command {
-	flags := []cli.Flag{}
-	flags = append(flags, c.CommandFlags(Kubernetes)...)
-	flags = append(flags, c.CommandFlags(Build)...)
-	flags = append(flags, c.CommandFlags(Registry)...)
+	flags := c.CommandFlags([]FlagsType{
+		Kubernetes,
+		Build,
+		Registry,
+		Shared,
+	})
 	flags = append(flags, []cli.Flag{
 		&cli.BoolFlag{
 			Name:  stopOnBuildFlag,
@@ -20,6 +22,7 @@ func (c *CLI) OnMainCMD() *cli.Command {
 			Value: false,
 		},
 	}...)
+
 	return &cli.Command{
 		Name:   "onmain",
 		Usage:  "deploy the application as a knative service",

@@ -18,7 +18,7 @@ func (c *CLI) PushCMD() *cli.Command {
 	return &cli.Command{
 		Name:   "push",
 		Usage:  "push the container image to a registry",
-		Flags:  c.CommandFlags(Registry),
+		Flags:  c.CommandFlags([]FlagsType{Registry, Shared}),
 		Action: c.Push,
 		Before: c.baseBeforeFunc,
 	}

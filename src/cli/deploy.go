@@ -27,7 +27,7 @@ func (c CLI) DeployCMD() *cli.Command {
 	return &cli.Command{
 		Name:   "deploy",
 		Usage:  "deploy the application as a knative service",
-		Flags:  c.CommandFlags(Kubernetes),
+		Flags:  c.CommandFlags([]FlagsType{Kubernetes, Shared}),
 		Action: c.Deploy,
 		Before: c.baseBeforeFunc,
 	}

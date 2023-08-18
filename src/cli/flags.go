@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/nearform/initium-cli/src/services/git"
+	"github.com/nearform/initium-cli/src/services/project"
 	"github.com/nearform/initium-cli/src/utils/defaults"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
@@ -22,6 +23,7 @@ const (
 	Registry   FlagsType = "registry"
 	InitGithub FlagsType = "init-github"
 	App        FlagsType = "app"
+	Shared     FlagsType = "shared"
 )
 
 const (
@@ -53,6 +55,13 @@ func init() {
 	org, err := git.GetGithubOrg()
 	if err == nil {
 		registry = fmt.Sprintf("ghcr.io/%s", org)
+	}
+
+	appName := ""
+	guess := project.GuessAppName()
+
+	if guess != nil {
+		appName = *guess
 	}
 
 	defaultFlags := map[FlagsType]([]cli.Flag){
@@ -119,9 +128,24 @@ func init() {
 		},
 		App: []cli.Flag{
 			&cli.StringFlag{
+				Name:    projectDirectoryFlag,
+				Usage:   "The directory in which your Dockerfile lives",
+				Value:   defaults.ProjectDirectory,
+				EnvVars: []string{"INITIUM_PROJECT_DIRECTORY"},
+			},
+			&cli.StringFlag{
+				Name:    configFileFlag,
+				Usage:   "read parameters from config",
+				Value:   defaults.ConfigFile,
+				EnvVars: []string{"INITIUM_CONFIG_FILE"},
+			},
+		},
+		Shared: []cli.Flag{
+			&cli.StringFlag{
 				Name:     appNameFlag,
 				Usage:    "The name of the app",
-				Required: true,
+				Value:    appName,
+				Required: appName == "",
 				EnvVars:  []string{"INITIUM_APP_NAME"},
 			},
 			&cli.StringFlag{
@@ -129,12 +153,6 @@ func init() {
 				Usage:   "The version of your application",
 				Value:   defaults.AppVersion,
 				EnvVars: []string{"INITIUM_VERSION"},
-			},
-			&cli.StringFlag{
-				Name:    projectDirectoryFlag,
-				Usage:   "The directory in which your Dockerfile lives",
-				Value:   defaults.ProjectDirectory,
-				EnvVars: []string{"INITIUM_PROJECT_DIRECTORY"},
 			},
 			&cli.StringFlag{
 				Name:     repoNameFlag,
@@ -148,13 +166,6 @@ func init() {
 				Name:    dockerFileNameFlag,
 				Usage:   "The name of the Dockerfile",
 				EnvVars: []string{"INITIUM_DOCKERFILE_NAME"},
-			},
-			&cli.StringFlag{
-				Name:    configFileFlag,
-				Usage:   "read parameters from config",
-				Hidden:  true,
-				Value:   defaults.ConfigFile,
-				EnvVars: []string{"INITIUM_CONFIG_FILE"},
 			},
 		},
 	}
@@ -227,6 +238,10 @@ func (c CLI) loadFlagsFromConfig(ctx *cli.Context) error {
 	return nil
 }
 
-func (c CLI) CommandFlags(command FlagsType) []cli.Flag {
-	return flags[command]
+func (c CLI) CommandFlags(commands []FlagsType) []cli.Flag {
+	result := []cli.Flag{}
+	for _, command := range commands {
+		result = append(result, flags[command]...)
+	}
+	return result
 }

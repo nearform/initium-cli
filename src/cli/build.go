@@ -21,7 +21,7 @@ func (c CLI) BuildCMD() *cli.Command {
 	return &cli.Command{
 		Name:   "build",
 		Usage:  "build a container image from the project directory",
-		Flags:  c.CommandFlags(Build),
+		Flags:  c.CommandFlags([]FlagsType{Build, Shared}),
 		Action: c.Build,
 		Before: c.baseBeforeFunc,
 	}
