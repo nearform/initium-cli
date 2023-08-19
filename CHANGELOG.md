@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.0](https://github.com/nearform/initium-cli/compare/v0.1.0...v0.2.0) (2023-08-18)
+
+
+### Features
+
+* add option to persist configuration ([#80](https://github.com/nearform/initium-cli/issues/80)) ([6c9f3ed](https://github.com/nearform/initium-cli/commit/6c9f3ed5ae7f9cd05a3f5a75610bab12f5bf57bf))
+
+
+### Bug Fixes
+
+* move from repo-name to container-registry ([#79](https://github.com/nearform/initium-cli/issues/79)) ([cebfa95](https://github.com/nearform/initium-cli/commit/cebfa954d362d9651596ed415abe53f6a428fc17))
+* remove outdated quick-start ([#82](https://github.com/nearform/initium-cli/issues/82)) ([d3180a8](https://github.com/nearform/initium-cli/commit/d3180a833ac340223b33816c0ba42b5c1711ac89))
+
 ## [0.1.0](https://github.com/nearform/initium-cli/compare/v0.0.1...v0.1.0) (2023-08-11)
 
 
