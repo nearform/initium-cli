@@ -1,16 +1,16 @@
 package k8s
 
 import (
-	"embed"
 	"fmt"
+	"io/fs"
 	"path"
 )
 
-func GetServiceAccount(resources embed.FS) error {
+func GetServiceAccount(resources fs.FS) error {
 	k8sTemplatesPath := path.Join("assets", "k8s", "serviceAccount")
 
 	for _, v := range []string{"cluster-role", "role-binding", "service-account", "token"} {
-		filecontent, err := resources.ReadFile(path.Join(k8sTemplatesPath, v+".yaml"))
+		filecontent, err := fs.ReadFile(resources, path.Join(k8sTemplatesPath, v+".yaml"))
 		if err != nil {
 			return err
 		}

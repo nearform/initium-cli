@@ -5,7 +5,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func (c *CLI) OnMainCMD() *cli.Command {
+func (c *icli) OnMainCMD() *cli.Command {
 	flags := c.CommandFlags([]FlagsType{
 		Kubernetes,
 		Build,

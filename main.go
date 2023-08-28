@@ -12,17 +12,9 @@ import (
 var resources embed.FS
 
 func main() {
-	cli := cli.CLI{
-		Resources: resources,
-		Logger: log.NewWithOptions(os.Stderr, log.Options{
-			Level:           log.ParseLevel(os.Getenv("INITIUM_LOG_LEVEL")),
-			ReportCaller:    true,
-			ReportTimestamp: true,
-		}),
-		Writer: os.Stdout,
-	}
+	icli := cli.New(resources)
 
-	if err := cli.Run(os.Args); err != nil {
+	if err := icli.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
 }

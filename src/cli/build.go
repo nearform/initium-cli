@@ -7,7 +7,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func (c *CLI) Build(cCtx *cli.Context) error {
+func (c *icli) Build(cCtx *cli.Context) error {
 	project, err := c.getProject(cCtx)
 	if err != nil {
 		return err
@@ -17,7 +17,7 @@ func (c *CLI) Build(cCtx *cli.Context) error {
 	return c.DockerService.Build()
 }
 
-func (c CLI) BuildCMD() *cli.Command {
+func (c icli) BuildCMD() *cli.Command {
 	return &cli.Command{
 		Name:   "build",
 		Usage:  "build a container image from the project directory",
