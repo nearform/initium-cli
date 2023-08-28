@@ -46,11 +46,12 @@ const (
 	stopOnPushFlag        string = "stop-on-push"
 )
 
-var requiredFlags []string
-var flags map[FlagsType]([]cli.Flag)
+type flags struct {
+	requiredFlags []string
+	all           map[FlagsType]([]cli.Flag)
+}
 
-// This function is executed when the module is loaded
-func init() {
+func InitFlags() flags {
 	registry := ""
 	org, err := git.GetGithubOrg()
 	if err == nil {
@@ -64,130 +65,134 @@ func init() {
 		appName = *guess
 	}
 
-	defaultFlags := map[FlagsType]([]cli.Flag){
-		Build: []cli.Flag{
-			&cli.StringFlag{
-				Name:     runtimeVersionFlag,
-				EnvVars:  []string{"INITIUM_RUNTIME_VERSION"},
-				Category: "build",
+	f := flags{
+		requiredFlags: []string{},
+		all: map[FlagsType]([]cli.Flag){
+			Build: []cli.Flag{
+				&cli.StringFlag{
+					Name:     runtimeVersionFlag,
+					EnvVars:  []string{"INITIUM_RUNTIME_VERSION"},
+					Category: "build",
+				},
 			},
-		},
-		Kubernetes: []cli.Flag{
-			&cli.StringFlag{
-				Name:     endpointFlag,
-				EnvVars:  []string{"INITIUM_CLUSTER_ENDPOINT"},
-				Required: true,
-				Category: "deploy",
+			Kubernetes: []cli.Flag{
+				&cli.StringFlag{
+					Name:     endpointFlag,
+					EnvVars:  []string{"INITIUM_CLUSTER_ENDPOINT"},
+					Required: true,
+					Category: "deploy",
+				},
+				&cli.StringFlag{
+					Name:     tokenFlag,
+					EnvVars:  []string{"INITIUM_CLUSTER_TOKEN"},
+					Required: true,
+					Category: "deploy",
+				},
+				&cli.StringFlag{
+					Name:     caCRTFlag,
+					EnvVars:  []string{"INITIUM_CLUSTER_CA_CERT"},
+					Required: true,
+					Category: "deploy",
+				},
+				&cli.StringFlag{
+					Name:     namespaceFlag,
+					EnvVars:  []string{"INITIUM_NAMESPACE"},
+					Required: true,
+					Category: "deploy",
+				},
 			},
-			&cli.StringFlag{
-				Name:     tokenFlag,
-				EnvVars:  []string{"INITIUM_CLUSTER_TOKEN"},
-				Required: true,
-				Category: "deploy",
+			Registry: []cli.Flag{
+				&cli.StringFlag{
+					Name:     registryUserFlag,
+					EnvVars:  []string{"INITIUM_REGISTRY_USER"},
+					Required: true,
+					Category: "registry",
+				},
+				&cli.StringFlag{
+					Name:     registryPasswordFlag,
+					EnvVars:  []string{"INITIUM_REGISTRY_PASSWORD"},
+					Required: true,
+					Category: "registry",
+				},
 			},
-			&cli.StringFlag{
-				Name:     caCRTFlag,
-				EnvVars:  []string{"INITIUM_CLUSTER_CA_CERT"},
-				Required: true,
-				Category: "deploy",
+			InitGithub: []cli.Flag{
+				&cli.StringFlag{
+					Name:     destinationFolderFlag,
+					Usage:    "Define a destination folder to place your pipeline file",
+					Category: "init",
+					Value:    defaults.GithubActionFolder,
+				},
+				&cli.StringFlag{
+					Name:     defaultBranchFlag,
+					Usage:    "Define the default branch in your repo",
+					Category: "init",
+					Value:    defaults.GithubDefaultBranch,
+				},
 			},
-			&cli.StringFlag{
-				Name:     namespaceFlag,
-				EnvVars:  []string{"INITIUM_NAMESPACE"},
-				Required: true,
-				Category: "deploy",
+			App: []cli.Flag{
+				&cli.StringFlag{
+					Name:    projectDirectoryFlag,
+					Usage:   "The directory in which your Dockerfile lives",
+					Value:   defaults.ProjectDirectory,
+					EnvVars: []string{"INITIUM_PROJECT_DIRECTORY"},
+				},
+				&cli.StringFlag{
+					Name:    configFileFlag,
+					Usage:   "read parameters from config",
+					Value:   defaults.ConfigFile,
+					EnvVars: []string{"INITIUM_CONFIG_FILE"},
+				},
 			},
-		},
-		Registry: []cli.Flag{
-			&cli.StringFlag{
-				Name:     registryUserFlag,
-				EnvVars:  []string{"INITIUM_REGISTRY_USER"},
-				Required: true,
-				Category: "registry",
-			},
-			&cli.StringFlag{
-				Name:     registryPasswordFlag,
-				EnvVars:  []string{"INITIUM_REGISTRY_PASSWORD"},
-				Required: true,
-				Category: "registry",
-			},
-		},
-		InitGithub: []cli.Flag{
-			&cli.StringFlag{
-				Name:     destinationFolderFlag,
-				Usage:    "Define a destination folder to place your pipeline file",
-				Category: "init",
-				Value:    defaults.GithubActionFolder,
-			},
-			&cli.StringFlag{
-				Name:     defaultBranchFlag,
-				Usage:    "Define the default branch in your repo",
-				Category: "init",
-				Value:    defaults.GithubDefaultBranch,
-			},
-		},
-		App: []cli.Flag{
-			&cli.StringFlag{
-				Name:    projectDirectoryFlag,
-				Usage:   "The directory in which your Dockerfile lives",
-				Value:   defaults.ProjectDirectory,
-				EnvVars: []string{"INITIUM_PROJECT_DIRECTORY"},
-			},
-			&cli.StringFlag{
-				Name:    configFileFlag,
-				Usage:   "read parameters from config",
-				Value:   defaults.ConfigFile,
-				EnvVars: []string{"INITIUM_CONFIG_FILE"},
-			},
-		},
-		Shared: []cli.Flag{
-			&cli.StringFlag{
-				Name:     appNameFlag,
-				Usage:    "The name of the app",
-				Value:    appName,
-				Required: appName == "",
-				EnvVars:  []string{"INITIUM_APP_NAME"},
-			},
-			&cli.StringFlag{
-				Name:    appVersionFlag,
-				Usage:   "The version of your application",
-				Value:   defaults.AppVersion,
-				EnvVars: []string{"INITIUM_VERSION"},
-			},
-			&cli.StringFlag{
-				Name:     repoNameFlag,
-				Aliases:  []string{"repo-name"}, // keep compatibility with old version of the config
-				Usage:    "The base address of the container registry",
-				Value:    registry,
-				Required: registry == "",
-				EnvVars:  []string{"INITIUM_CONTAINER_REGISTRY", "INITIUM_REPO_NAME"}, // INITIUM_REPO_NAME to keep compatibility with older config
-			},
-			&cli.StringFlag{
-				Name:    dockerFileNameFlag,
-				Usage:   "The name of the Dockerfile",
-				EnvVars: []string{"INITIUM_DOCKERFILE_NAME"},
+			Shared: []cli.Flag{
+				&cli.StringFlag{
+					Name:     appNameFlag,
+					Usage:    "The name of the app",
+					Value:    appName,
+					Required: appName == "",
+					EnvVars:  []string{"INITIUM_APP_NAME"},
+				},
+				&cli.StringFlag{
+					Name:    appVersionFlag,
+					Usage:   "The version of your application",
+					Value:   defaults.AppVersion,
+					EnvVars: []string{"INITIUM_VERSION"},
+				},
+				&cli.StringFlag{
+					Name:     repoNameFlag,
+					Aliases:  []string{"repo-name"}, // keep compatibility with old version of the config
+					Usage:    "The base address of the container registry",
+					Value:    registry,
+					Required: registry == "",
+					EnvVars:  []string{"INITIUM_CONTAINER_REGISTRY", "INITIUM_REPO_NAME"}, // INITIUM_REPO_NAME to keep compatibility with older config
+				},
+				&cli.StringFlag{
+					Name:    dockerFileNameFlag,
+					Usage:   "The name of the Dockerfile",
+					EnvVars: []string{"INITIUM_DOCKERFILE_NAME"},
+				},
 			},
 		},
 	}
 
 	// TODO: urfave has an issue with required flags and altsrc https://github.com/urfave/cli/issues/1725
 	// this is an hack to go around that issue, we should remove it once urfave v3 is released
-	for _, vs := range defaultFlags {
+	for _, vs := range f.all {
 		for _, flag := range vs {
 			stringFlag := flag.(*cli.StringFlag)
 			if stringFlag.Required {
-				requiredFlags = append(requiredFlags, stringFlag.Name)
+				f.requiredFlags = append(f.requiredFlags, stringFlag.Name)
 				stringFlag.Required = false
 			}
 
 		}
 	}
 
-	flags = defaultFlags
+	return f
 }
 
-func (c CLI) checkRequiredFlags(ctx *cli.Context, ignoredFlags []string) error {
+func (c icli) checkRequiredFlags(ctx *cli.Context, ignoredFlags []string) error {
 	missingFlags := []string{}
+	requiredFlags := c.flags.requiredFlags
 
 	for _, v := range ctx.Command.Flags {
 		name := v.Names()[0]
@@ -204,7 +209,7 @@ func (c CLI) checkRequiredFlags(ctx *cli.Context, ignoredFlags []string) error {
 	return nil
 }
 
-func (c CLI) loadFlagsFromConfig(ctx *cli.Context) error {
+func (c icli) loadFlagsFromConfig(ctx *cli.Context) error {
 	config := make(map[interface{}]interface{})
 	cfgFile := ctx.String(configFileFlag)
 	//if the default config file doesn't exist we can ignore the rest and return nil
@@ -238,10 +243,13 @@ func (c CLI) loadFlagsFromConfig(ctx *cli.Context) error {
 	return nil
 }
 
-func (c CLI) CommandFlags(commands []FlagsType) []cli.Flag {
+func (c icli) CommandFlags(commands []FlagsType) []cli.Flag {
+	f := c.flags.all
 	result := []cli.Flag{}
+
 	for _, command := range commands {
-		result = append(result, flags[command]...)
+		result = append(result, f[command]...)
 	}
+
 	return result
 }

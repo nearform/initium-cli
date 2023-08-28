@@ -9,7 +9,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func (c CLI) buildPushDeploy(cCtx *cli.Context) error {
+func (c icli) buildPushDeploy(cCtx *cli.Context) error {
 	err := c.Build(cCtx)
 	if err != nil {
 		return fmt.Errorf("building %v", err)
@@ -28,7 +28,7 @@ func (c CLI) buildPushDeploy(cCtx *cli.Context) error {
 	return c.Deploy(cCtx)
 }
 
-func (c CLI) OnBranchCMD() *cli.Command {
+func (c icli) OnBranchCMD() *cli.Command {
 	flags := c.CommandFlags([]FlagsType{
 		Kubernetes,
 		Build,
@@ -48,6 +48,9 @@ func (c CLI) OnBranchCMD() *cli.Command {
 		&cli.BoolFlag{
 			Name:  "clean",
 			Value: false,
+		},
+		&cli.StringFlag{
+			Name: "branchName",
 		},
 	}...)
 	return &cli.Command{

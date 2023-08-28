@@ -1,8 +1,9 @@
 package cli
 
 import (
-	"embed"
 	"io"
+	"io/fs"
+
 	"os"
 	"path/filepath"
 	"sort"
@@ -17,17 +18,39 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-type CLI struct {
-	Resources     embed.FS
+type icli struct {
+	Resources     fs.FS
 	CWD           string
 	DockerService docker.DockerService
 	Logger        *log.Logger
 	project       project.Project
 	dockerImage   docker.DockerImage
+	flags         flags
 	Writer        io.Writer
 }
 
-func (c CLI) baseBeforeFunc(ctx *cli.Context) error {
+func NewWithOptions(resources fs.FS, logger *log.Logger, writer io.Writer) icli {
+	return icli{
+		Resources: resources,
+		Logger:    logger,
+		Writer:    writer,
+		flags:     InitFlags(),
+	}
+}
+
+func New(resources fs.FS) icli {
+	return NewWithOptions(
+		resources,
+		log.NewWithOptions(os.Stderr, log.Options{
+			Level:           log.ParseLevel(os.Getenv("INITIUM_LOG_LEVEL")),
+			ReportCaller:    true,
+			ReportTimestamp: true,
+		}),
+		os.Stdout,
+	)
+}
+
+func (c icli) baseBeforeFunc(ctx *cli.Context) error {
 	if err := c.loadFlagsFromConfig(ctx); err != nil {
 		return err
 	}
@@ -38,7 +61,7 @@ func (c CLI) baseBeforeFunc(ctx *cli.Context) error {
 	return nil
 }
 
-func (c *CLI) init(cCtx *cli.Context) error {
+func (c *icli) init(cCtx *cli.Context) error {
 	appName := cCtx.String(appNameFlag)
 	version := cCtx.String(appVersionFlag)
 	projectDirectory := cCtx.String(projectDirectoryFlag)
@@ -90,7 +113,7 @@ func (c *CLI) init(cCtx *cli.Context) error {
 	return nil
 }
 
-func (c *CLI) getProject(cCtx *cli.Context) (*project.Project, error) {
+func (c *icli) getProject(cCtx *cli.Context) (*project.Project, error) {
 	if (c.project == project.Project{}) {
 		err := c.init(cCtx)
 		if err != nil {
@@ -100,10 +123,10 @@ func (c *CLI) getProject(cCtx *cli.Context) (*project.Project, error) {
 	return &c.project, nil
 }
 
-func (c CLI) Run(args []string) error {
+func (c icli) Run(args []string) error {
 	app := &cli.App{
 		Name:  "initium",
-		Usage: "CLI of the Initium project",
+		Usage: "icli of the Initium project",
 		Flags: c.CommandFlags([]FlagsType{App}),
 		Commands: []*cli.Command{
 			c.BuildCMD(),

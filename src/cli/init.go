@@ -19,7 +19,7 @@ const (
 	persistFlag = "persist"
 )
 
-func (c CLI) InitGithubCMD(cCtx *cli.Context) error {
+func (c icli) InitGithubCMD(cCtx *cli.Context) error {
 	logger := log.New(os.Stderr)
 	logger.SetLevel(log.DebugLevel)
 	registry := cCtx.String(repoNameFlag)
@@ -45,7 +45,7 @@ func (c CLI) InitGithubCMD(cCtx *cli.Context) error {
 	return nil
 }
 
-func (c CLI) InitConfigCMD(ctx *cli.Context) error {
+func (c icli) InitConfigCMD(ctx *cli.Context) error {
 	excludedFlags := []string{
 		"help",
 		appVersionFlag,
@@ -57,10 +57,12 @@ func (c CLI) InitConfigCMD(ctx *cli.Context) error {
 		registryPasswordFlag,
 		caCRTFlag,
 	}
+
 	f := []cli.Flag{}
-	for _, vs := range flags {
+	for _, vs := range c.flags.all {
 		f = append(f, vs...)
 	}
+
 	sort.Sort(cli.FlagsByName(f))
 
 	config := ""
@@ -99,11 +101,11 @@ func (c CLI) InitConfigCMD(ctx *cli.Context) error {
 	return nil
 }
 
-func (c CLI) InitServiceAccountCMD(ctx *cli.Context) error {
+func (c icli) InitServiceAccountCMD(ctx *cli.Context) error {
 	return k8s.GetServiceAccount(c.Resources)
 }
 
-func (c CLI) InitCMD() *cli.Command {
+func (c icli) InitCMD() *cli.Command {
 	configFlags := c.CommandFlags([]FlagsType{Shared})
 	configFlags = append(configFlags, &cli.BoolFlag{
 		Name:  persistFlag,

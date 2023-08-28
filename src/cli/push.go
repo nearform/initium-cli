@@ -5,7 +5,7 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-func (c *CLI) Push(cCtx *cli.Context) error {
+func (c *icli) Push(cCtx *cli.Context) error {
 	c.init(cCtx)
 	c.DockerService.AuthConfig = types.AuthConfig{
 		Username: cCtx.String(registryUserFlag),
@@ -14,7 +14,7 @@ func (c *CLI) Push(cCtx *cli.Context) error {
 	return c.DockerService.Push()
 }
 
-func (c *CLI) PushCMD() *cli.Command {
+func (c *icli) PushCMD() *cli.Command {
 	return &cli.Command{
 		Name:   "push",
 		Usage:  "push the container image to a registry",
