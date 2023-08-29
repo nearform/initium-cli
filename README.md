@@ -56,7 +56,7 @@ Following we have a matrix related to which technologies our cli is currently co
 |---------------------|:------------------:|:-----------:|
 | Node                | :white_check_mark: |             |
 | GoLang              | :white_check_mark: |             |
-| Python              | :negative_squared_cross_mark:                | Coming Soon |
+| Python              | :x:                | Coming Soon |
 | Java                | :x:                | Coming Soon |
 | C#                  | :x:                | Coming Soon |
 
