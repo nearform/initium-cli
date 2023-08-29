@@ -47,3 +47,30 @@ export INITIUM_CLUSTER_ENDPOINT=$(kubectl config view -o jsonpath='{.clusters[?(
 export INITIUM_CLUSTER_TOKEN=$(kubectl get secrets initium-cli-token -o jsonpath="{.data.token}" | base64 -d)
 export INITIUM_CLUSTER_CA_CERT=$(kubectl get secrets initium-cli-token -o jsonpath="{.data.ca\.crt}" | base64 -d)
 ```
+
+### Supported Technologies
+
+Following we have a matrix related to which technologies our cli is currently compatible with. 
+
+| Technologies        | Supported          | Comments    |
+|---------------------|:------------------:|:-----------:|
+| Node                | :heavy_check_mark: |             |
+| GoLang              | :heavy_check_mark: |             |
+| Python              | :x:                | Coming Soon |
+| Java                | :x:                | Coming Soon |
+| C#                  | :x:                | Coming Soon |
+
+
+### CI Integrations
+
+The matrix below gives an overview of the integration status of our CLI with all major CI platforms.
+
+| CI Systems          | Compatibility      | Comments    |
+|---------------------|:------------------:|:-----------:|
+| GitHub Actions      | :heavy_check_mark: |             |
+| Gitlab CI           | :x:                | Coming Soon |
+| Bitbucket Pipelines | :x:                | Coming Soon |
+| CircleCI            | :x:                | Coming Soon |
+| Azure Devops        | :x:                | Coming Soon |
+| Travis CI           | :x:                | Coming Soon |
+| Jenkins             | :x:                | Coming Soon |
