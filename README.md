@@ -54,9 +54,9 @@ Following we have a matrix related to which technologies our cli is currently co
 
 | Technologies        | Supported          | Comments    |
 |---------------------|:------------------:|:-----------:|
-| Node                | :heavy_check_mark: |             |
-| GoLang              | :heavy_check_mark: |             |
-| Python              | :x:                | Coming Soon |
+| Node                | :white_check_mark: |             |
+| GoLang              | :white_check_mark: |             |
+| Python              | :negative_squared_cross_mark:                | Coming Soon |
 | Java                | :x:                | Coming Soon |
 | C#                  | :x:                | Coming Soon |
 
@@ -67,7 +67,7 @@ The matrix below gives an overview of the integration status of our CLI with all
 
 | CI Systems          | Compatibility      | Comments    |
 |---------------------|:------------------:|:-----------:|
-| GitHub Actions      | :heavy_check_mark: |             |
+| GitHub Actions      | :white_check_mark: |             |
 | Gitlab CI           | :x:                | Coming Soon |
 | Bitbucket Pipelines | :x:                | Coming Soon |
 | CircleCI            | :x:                | Coming Soon |
