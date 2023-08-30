@@ -87,6 +87,10 @@ func (c icli) OnBranchCMD() *cli.Command {
 
 			branchName := head.Name().Short()
 
+			if ctx.String("branchName") != "" {
+				branchName = ctx.String("branchName")
+			}
+
 			ctx.Set(appVersionFlag, utils.EncodeRFC1123(branchName))
 			ctx.Set(namespaceFlag, utils.EncodeRFC1123(branchName))
 

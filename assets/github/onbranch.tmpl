@@ -7,6 +7,7 @@ on:
 
 jobs:
   on_pr:
+    if: github.event.action != 'closed'
     concurrency: {{ `${{ github.head_ref }}` }}
     runs-on: ubuntu-latest
     steps:
@@ -14,20 +15,7 @@ jobs:
         with:
           ref: {{ `${{ github.head_ref }}` }}
 
-      - name: delete application
-        if: github.event.action == 'closed'
-        uses: docker://ghcr.io/nearform/initium-cli:latest
-        with:
-          args: onbranch --clean
-        env:
-          INITIUM_REGISTRY_USER: {{ `${{ github.actor }}` }}
-          INITIUM_REGISTRY_PASSWORD: {{ `${{ secrets.GITHUB_TOKEN }}` }}
-          INITIUM_CLUSTER_ENDPOINT: {{ `${{ secrets.CLUSTER_ENDPOINT }}` }}
-          INITIUM_CLUSTER_TOKEN: {{ `${{ secrets.CLUSTER_TOKEN }}` }}
-          INITIUM_CLUSTER_CA_CERT: {{ `${{ secrets.CLUSTER_CA_CERT }}` }}
-
       - name: build and deploy application
-        if: github.event.action != 'closed'
         uses: docker://ghcr.io/nearform/initium-cli:latest
         with:
           args: onbranch
@@ -37,3 +25,21 @@ jobs:
           INITIUM_CLUSTER_ENDPOINT: {{ `${{ secrets.CLUSTER_ENDPOINT }}` }}
           INITIUM_CLUSTER_TOKEN: {{ `${{ secrets.CLUSTER_TOKEN }}` }}
           INITIUM_CLUSTER_CA_CERT: {{ `${{ secrets.CLUSTER_CA_CERT }}` }}
+
+  closed_pr:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+    
+      - name: delete application
+        uses: docker://ghcr.io/nearform/initium-cli:latest
+        with:
+          args: onbranch --clean --branchName {{ `${{ github.event.pull_request.head.ref }}` }}
+        env:
+          INITIUM_REGISTRY_USER: {{ `${{ github.actor }}` }}
+          INITIUM_REGISTRY_PASSWORD: {{ `${{ secrets.GITHUB_TOKEN }}` }}
+          INITIUM_CLUSTER_ENDPOINT: {{ `${{ secrets.CLUSTER_ENDPOINT }}` }}
+          INITIUM_CLUSTER_TOKEN: {{ `${{ secrets.CLUSTER_TOKEN }}` }}
+          INITIUM_CLUSTER_CA_CERT: {{ `${{ secrets.CLUSTER_CA_CERT }}` }}
+
