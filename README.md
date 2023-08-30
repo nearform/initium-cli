@@ -57,14 +57,16 @@ Following we have a matrix related to which application runtime our CLI is curre
 | [Nodejs](https://github.com/nearform/initium-cli/blob/main/assets/docker/Dockerfile.node.tmpl) | :white_check_mark: |
 | [GoLang](https://github.com/nearform/initium-cli/blob/main/assets/docker/Dockerfile.go.tmpl) | :white_check_mark: |
 | Python               | Coming Soon        |
+| More will be added...|                    |
 
 
 ### CI Integrations
 
 The matrix below gives an overview of the integration status of our CLI with CI platforms. CLI is able to create automatically `build` and `deploy` pipelines in order to enable CICD process for the application it is used with. Related template files are being used to cover different process steps. 
 
-| CI Systems          | Supported          |
-|---------------------|:------------------:|
+| CI Systems           | Supported          |
+|----------------------|:------------------:|
 | [GitHub Actions](https://github.com/nearform/initium-cli/tree/main/assets/github) | :white_check_mark: |
-| Gitlab CI           | Coming Soon        |
-| Azure Devops        | Coming Soon        |
+| Gitlab CI            | Coming Soon        |
+| Azure Devops         | Coming Soon        |
+| More will be added...|                    |
