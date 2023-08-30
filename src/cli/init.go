@@ -22,15 +22,11 @@ const (
 func (c CLI) InitGithubCMD(cCtx *cli.Context) error {
 	logger := log.New(os.Stderr)
 	logger.SetLevel(log.DebugLevel)
-	registry := cCtx.String(repoNameFlag)
 
 	options := project.InitOptions{
 		PipelineType:      cCtx.Command.Name,
 		DestinationFolder: cCtx.String(destinationFolderFlag),
 		DefaultBranch:     cCtx.String(defaultBranchFlag),
-		AppName:           cCtx.String(appNameFlag),
-		Repository:        registry,
-		ProjectDirectory:  cCtx.String(projectDirectoryFlag),
 	}
 	data, err := project.ProjectInit(options, c.Resources)
 
@@ -118,7 +114,7 @@ func (c CLI) InitCMD() *cli.Command {
 			{
 				Name:   "github",
 				Usage:  "create a github pipeline yaml file",
-				Flags:  c.CommandFlags([]FlagsType{InitGithub, Shared}),
+				Flags:  c.CommandFlags([]FlagsType{InitGithub}),
 				Action: c.InitGithubCMD,
 				Before: c.baseBeforeFunc,
 			},
