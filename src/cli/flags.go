@@ -42,6 +42,7 @@ const (
 	dockerFileNameFlag    string = "dockerfile-name"
 	configFileFlag        string = "config-file"
 	namespaceFlag         string = "namespace"
+	registrySecretFlag    string = "registry-secret"
 	stopOnBuildFlag       string = "stop-on-build"
 	stopOnPushFlag        string = "stop-on-push"
 )
@@ -98,6 +99,12 @@ func InitFlags() flags {
 					Name:     namespaceFlag,
 					EnvVars:  []string{"INITIUM_NAMESPACE"},
 					Required: true,
+					Category: "deploy",
+				},
+				&cli.StringFlag{
+					Name:     registrySecretFlag,
+					EnvVars:  []string{"INITIUM_REGISTRY_SECRET"},
+					Required: false,
 					Category: "deploy",
 				},
 			},

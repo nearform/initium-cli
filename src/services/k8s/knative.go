@@ -45,9 +45,15 @@ func loadManifest(project *project.Project, dockerImage docker.DockerImage) (*se
 		return nil, fmt.Errorf("error reading the knative service yaml: %v", err)
 	}
 
+	templateParams := map[string]interface{}{
+		"Name": dockerImage.Name,
+		"RemoteTag": dockerImage.RemoteTag(),
+		"RegistrySecret": project.RegistrySecret,
+	}
+
 	output := &bytes.Buffer{}
 	// TODO replace map[string]string{} with proper values
-	if err = template.Execute(output, dockerImage); err != nil {
+	if err = template.Execute(output, templateParams); err != nil {
 		return nil, err
 	}
 
