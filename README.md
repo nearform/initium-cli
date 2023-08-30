@@ -48,29 +48,23 @@ export INITIUM_CLUSTER_TOKEN=$(kubectl get secrets initium-cli-token -o jsonpath
 export INITIUM_CLUSTER_CA_CERT=$(kubectl get secrets initium-cli-token -o jsonpath="{.data.ca\.crt}" | base64 -d)
 ```
 
-### Supported Technologies
+### Supported Application Runtimes
 
-Following we have a matrix related to which technologies our cli is currently compatible with. 
+Following we have a matrix related to which application runtimes our CLI is currently compatible with. For each one of them a Dockerfile template is being used in order to provide an easy way to build and deploy the application to a Kubernetes cluster. 
 
-| Technologies        | Supported          | Comments    |
-|---------------------|:------------------:|:-----------:|
-| Node                | :white_check_mark: |             |
-| GoLang              | :white_check_mark: |             |
-| Python              | :x:                | Coming Soon |
-| Java                | :x:                | Coming Soon |
-| C#                  | :x:                | Coming Soon |
+| Technologies        | Supported          |
+|---------------------|:------------------:|
+| [Nodejs](https://github.com/nearform/initium-cli/blob/main/assets/docker/Dockerfile.node.tmpl) | :white_check_mark: |
+| [GoLang](https://github.com/nearform/initium-cli/blob/main/assets/docker/Dockerfile.go.tmpl) | :white_check_mark: |
+| Python              | Coming Soon        |
 
 
 ### CI Integrations
 
-The matrix below gives an overview of the integration status of our CLI with all major CI platforms.
+The matrix below gives an overview of the integration status of our CLI with all major CI platforms. CLI is able to create automatically `build` and `deploy` pipelines in order to enable CICD process for the application it is used with. Related template files are being used to cover different process steps. 
 
-| CI Systems          | Compatibility      | Comments    |
-|---------------------|:------------------:|:-----------:|
-| GitHub Actions      | :white_check_mark: |             |
-| Gitlab CI           | :x:                | Coming Soon |
-| Bitbucket Pipelines | :x:                | Coming Soon |
-| CircleCI            | :x:                | Coming Soon |
-| Azure Devops        | :x:                | Coming Soon |
-| Travis CI           | :x:                | Coming Soon |
-| Jenkins             | :x:                | Coming Soon |
+| CI Systems          | Supported          |
+|---------------------|:------------------:|
+| [GitHub Actions](https://github.com/nearform/initium-cli/tree/main/assets/github) | :white_check_mark: |
+| Gitlab CI           | Coming Soon        |
+| Azure Devops        | Coming Soon        |
