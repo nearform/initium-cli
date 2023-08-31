@@ -47,3 +47,26 @@ export INITIUM_CLUSTER_ENDPOINT=$(kubectl config view -o jsonpath='{.clusters[?(
 export INITIUM_CLUSTER_TOKEN=$(kubectl get secrets initium-cli-token -o jsonpath="{.data.token}" | base64 -d)
 export INITIUM_CLUSTER_CA_CERT=$(kubectl get secrets initium-cli-token -o jsonpath="{.data.ca\.crt}" | base64 -d)
 ```
+
+### Supported Application Runtimes
+
+Following we have a matrix related to which application runtime our CLI is currently compatible with. For each one of them a Dockerfile template is being used in order to provide an easy way to build and deploy the application to a Kubernetes cluster. 
+
+| Application Runtimes | Supported          |
+|----------------------|:------------------:|
+| [Nodejs](https://github.com/nearform/initium-cli/blob/main/assets/docker/Dockerfile.node.tmpl) | :white_check_mark: |
+| [GoLang](https://github.com/nearform/initium-cli/blob/main/assets/docker/Dockerfile.go.tmpl) | :white_check_mark: |
+| Python               | Coming Soon        |
+| More will be added...|                    |
+
+
+### CI Integrations
+
+The matrix below gives an overview of the integration status of our CLI with CI platforms. CLI is able to create automatically `build` and `deploy` pipelines in order to enable CICD process for the application it is used with. Related template files are being used to cover different process steps. 
+
+| CI Systems           | Supported          |
+|----------------------|:------------------:|
+| [GitHub Actions](https://github.com/nearform/initium-cli/tree/main/assets/github) | :white_check_mark: |
+| Gitlab CI            | Coming Soon        |
+| Azure Devops         | Coming Soon        |
+| More will be added...|                    |
