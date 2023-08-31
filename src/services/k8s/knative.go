@@ -8,10 +8,9 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/charmbracelet/log"
 	"github.com/nearform/initium-cli/src/services/docker"
 	"github.com/nearform/initium-cli/src/services/project"
-
-	"github.com/nearform/initium-cli/src/utils/logger"
 
 	corev1 "k8s.io/api/core/v1"
 	apimachineryErrors "k8s.io/apimachinery/pkg/api/errors"
@@ -73,7 +72,7 @@ func loadManifest(project *project.Project, dockerImage docker.DockerImage) (*se
 }
 
 func Apply(namespace string, config *rest.Config, project *project.Project, dockerImage docker.DockerImage) error {
-	logger.PrintInfo("Deploying Knative service to " + config.Host)
+	log.Info("Deploying Knative service", "host", config.Host, "name", project.Name, "namespace", namespace)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
 
@@ -140,7 +139,7 @@ func Apply(namespace string, config *rest.Config, project *project.Project, dock
 }
 
 func Clean(namespace string, config *rest.Config, project *project.Project) error {
-	logger.PrintInfo("Deleting Knative service from " + config.Host)
+	log.Info("Deleting Knative service", "host", config.Host, "name", project.Name, "namespace", namespace)
 	ctx := context.Background()
 
 	// Create a new Knative Serving client
@@ -154,6 +153,6 @@ func Clean(namespace string, config *rest.Config, project *project.Project) erro
 		return fmt.Errorf("deleting the service: %v", err)
 	}
 
-	logger.PrintInfo("Deleted Knative service " + project.Name)
+	log.Info("The Knative service was successfully deleted", "host", config.Host, "name", project.Name, "namespace", namespace)
 	return nil
 }
