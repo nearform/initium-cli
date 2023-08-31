@@ -67,7 +67,7 @@ func (c *icli) init(cCtx *cli.Context) error {
 	projectDirectory := cCtx.String(projectDirectoryFlag)
 	absProjectDirectory, err := filepath.Abs(cCtx.String(projectDirectoryFlag))
 	registry := cCtx.String(repoNameFlag)
-	registrySecret := cCtx.String(registrySecretFlag)
+	imagePullSecrets := cCtx.String(imagePullSecretsFlag)
 	dockerFileName := cCtx.String(dockerFileNameFlag)
 
 	if dockerFileName == "" {
@@ -84,7 +84,7 @@ func (c *icli) init(cCtx *cli.Context) error {
 		projectDirectory,
 		cCtx.String(runtimeVersionFlag),
 		version,
-		registrySecret,
+		imagePullSecrets,
 		c.Resources,
 	)
 
