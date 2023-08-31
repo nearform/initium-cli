@@ -19,6 +19,7 @@ cluster-endpoint: null
 container-registry: %s
 default-branch: main
 dockerfile-name: null
+image-pull-secrets: null
 registry-user: null
 runtime-version: null
 `,
