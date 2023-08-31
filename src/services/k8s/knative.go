@@ -48,7 +48,7 @@ func loadManifest(project *project.Project, dockerImage docker.DockerImage) (*se
 	templateParams := map[string]interface{}{
 		"Name": dockerImage.Name,
 		"RemoteTag": dockerImage.RemoteTag(),
-		"RegistrySecret": project.RegistrySecret,
+		"ImagePullSecrets": project.ImagePullSecrets,
 	}
 
 	output := &bytes.Buffer{}

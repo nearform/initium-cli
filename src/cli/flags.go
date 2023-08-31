@@ -42,7 +42,7 @@ const (
 	dockerFileNameFlag    string = "dockerfile-name"
 	configFileFlag        string = "config-file"
 	namespaceFlag         string = "namespace"
-	registrySecretFlag    string = "registry-secret"
+	imagePullSecretsFlag  string = "image-pull-secrets"
 	stopOnBuildFlag       string = "stop-on-build"
 	stopOnPushFlag        string = "stop-on-push"
 )
@@ -102,7 +102,7 @@ func InitFlags() flags {
 					Category: "deploy",
 				},
 				&cli.StringFlag{
-					Name:     registrySecretFlag,
+					Name:     imagePullSecretsFlag,
 					EnvVars:  []string{"INITIUM_REGISTRY_SECRET"},
 					Required: false,
 					Category: "deploy",
