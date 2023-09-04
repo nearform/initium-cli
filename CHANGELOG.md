@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.3.0](https://github.com/nearform/initium-cli/compare/v0.2.0...v0.3.0) (2023-09-04)
+
+
+### Features
+
+* get smarter at detecting app name ([#87](https://github.com/nearform/initium-cli/issues/87)) ([4fbe947](https://github.com/nearform/initium-cli/commit/4fbe947e9478d9452eac29495339cbee8ef5ea67))
+
+
+### Bug Fixes
+
+* avoid running closed PR action immediately after reopen ([#98](https://github.com/nearform/initium-cli/issues/98)) ([107b505](https://github.com/nearform/initium-cli/commit/107b505c943bf3c487d04c720f0ff0ac8e6576da))
+* the init github command does not require the shared flags ([#93](https://github.com/nearform/initium-cli/issues/93)) ([6c9a32c](https://github.com/nearform/initium-cli/commit/6c9a32cfc682b5a081a84eb93c2d3550730720e8))
+
 ## [0.2.0](https://github.com/nearform/initium-cli/compare/v0.1.0...v0.2.0) (2023-08-18)
 
 
