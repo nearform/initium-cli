@@ -26,3 +26,5 @@ jobs:
           token: ${{ steps.get_installation_token.outputs.token }}
           bump-minor-pre-major: true
           package-name: release-please-action
+          extra-files: |
+            package.json
