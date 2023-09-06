@@ -70,8 +70,10 @@ func (proj *Project) detectType() (ProjectType, error) {
 func (proj *Project) matchType() (ProjectType, error) {
 	switch proj.Language {
 	case "node":
+		proj.DefaultRuntimeVersion = defaults.DefaultNodeRuntimeVersion
 		return NodeProject, nil
 	case "go":
+		proj.DefaultRuntimeVersion = defaults.DefaultGoRuntimeVersion
 		return GoProject, nil
 	default:
 		return "", fmt.Errorf("cannot detect project type %s", proj.Language)
