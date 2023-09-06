@@ -1,5 +1,5 @@
 {
-  "name": "initium-cli",
+  "name": "initium",
   "binaryName": "initium-cli",
   "version": "0.3.0",
   "description": "A single static binary that can run on any CI to build your code and deploy it in a single step.",
