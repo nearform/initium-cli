@@ -139,7 +139,7 @@ func InitFlags() flags {
 				},
 				&cli.StringFlag{
 					Name:    projectLanguageFlag,
-					Usage:   "The project language (nodejs, golang)",
+					Usage:   "The project language (node, go)",
 					Value:   defaults.ProjectLanguage,
 					EnvVars: []string{"INITIUM_PROJECT_LANGUAGE"},
 				},
