@@ -4,7 +4,8 @@
   "description": "A single static binary that can run on any CI to build your code and deploy it in a single step.",
   "main": "initium-cli",
   "scripts": {
-    "postinstall": "node scripts/npm-install.js"
+    "postinstall": "node scripts/npm-install.js",
+    "test": "exit 0"
   },
   "bin": "./scripts/npx-run.js",
   "repository": {
