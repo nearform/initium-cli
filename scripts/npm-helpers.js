@@ -27,7 +27,7 @@ const platformMap = {
 
 class InitiumExecutable {
   constructor() {
-    this.name = packageMetadata.name;
+    this.name = packageMetadata.binaryName;
     this.organization = 'nearform';
     this.version = packageMetadata.version;
     this.releaseFileExtension = os.platform === 'win32' ? 'zip' : 'tar.gz';
