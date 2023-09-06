@@ -1,20 +1,21 @@
 const os = require('os');
 const path = require('path');
 const tar = require('tar');
-const zlib = require('zlib');
 const spawnSync = require('child_process').spawnSync;
 const semver = require('semver');
 const packageMetadata = require('../package.json');
 const { default: axios } = require('axios');
 const { existsSync, mkdirSync, createWriteStream } = require('fs');
-const { unzip } = require('unzipper');
+const unzipper = require('unzipper');
 const { pipeline } = require('stream/promises');
+const { Readable } = require('stream');
 
 // Maps the architectures between Nodejs and GitHub release binaries
 const architectureMap = {
   'ia32': 'i386',
   'x64': 'x86_64',
-  'arm': 'arm64'
+  'arm': 'arm64',
+  'arm64': 'arm64'
 };
 
 // Maps the platforms between Nodejs and GitHub release binaries
@@ -27,20 +28,22 @@ const platformMap = {
 class InitiumExecutable {
   constructor() {
     this.name = packageMetadata.name;
+    this.organization = 'nearform';
     this.version = packageMetadata.version;
     this.releaseFileExtension = os.platform === 'win32' ? 'zip' : 'tar.gz';
-    this.releaseUrl = `${packageMetadata.repository.url}/releases/download/v${this.version}/${this.name}_${platformMap[os.platform]}_${architectureMap[os.arch]}.${this.releaseFileExtension}`;
-    this.executableExtension = os.platform === 'win32' ? '.exe' : ''
-    this.installDirectory = path.join(__dirname, 'node_modules', '.bin');
+    this.releaseFileNameFull = `${this.name}_${platformMap[os.platform]}_${architectureMap[os.arch]}.${this.releaseFileExtension}`;
+    this.releaseUrl = `${packageMetadata.repository.url}/releases/download/v${this.version}/${this.releaseFileNameFull}`;
+    this.executableExtension = os.platform === 'win32' ? '.exe' : '';
+    this.relativeInstallDirectory = path.join('node_modules', '.bin');
+    this.installDirectory = path.join(process.cwd(), this.relativeInstallDirectory);
     this.executablePath = `${path.join(this.installDirectory, this.name)}${this.executableExtension}`
   }
 
   async checkForUpdates() {
-    const latestReleaseResponse = await axios(`https://api.github.com/repos/nearform/${this.name}/releases/latest`);
-    console.log(latestReleaseResponse.data);
-    const latestVersion = latestReleaseResponse.data['tag_name'].replace('v', '');
-    if (semver.gt(latestVersion), this.version) {
-      console.log(`There's a new version available!\n\nCurrent version: ${this.version}\nLatest version: ${latestVersion}\n\nConsider upgrading using npm update.`);
+    const latestReleaseResponse = await axios(`https://api.github.com/repos/${this.organization}/${this.name}/releases/latest`);
+    const latestVersion = latestReleaseResponse.data.tag_name.replace('v', '');
+    if (semver.gt(latestVersion, this.version)) {
+      console.log(`There is a new ${this.name} version available!\n\nCurrent version: ${this.version}\nLatest version: ${latestVersion}\n\nConsider upgrading using npm update.\n`);
     }
   }
 
@@ -52,16 +55,20 @@ class InitiumExecutable {
     }
     if (!existsSync(this.executablePath)) {
       mkdirSync(this.installDirectory, { recursive: true });
-      const executableData = await axios(this.releaseUrl, { responseType: "stream" });
       try {
+        const releaseFileData = await axios(this.releaseUrl, { responseType: 'arraybuffer' });
+        const releaseFileDataReadable = Readable.from(Buffer.from(releaseFileData.data));
         if (this.releaseFileExtension === 'tar.gz') {
-          const gzUnzip = zlib.createUnzip();
-          const tarUnzip = tar.Extract();
-          const fileOutput = createWriteStream(this.executablePath);
-          await pipeline(executableData, gzUnzip, tarUnzip, fileOutput);
+          await pipeline(
+            releaseFileDataReadable,
+            tar.x({ cwd: this.installDirectory }, [`${this.name}${this.executableExtension}`])
+          );
         } else {
-          const fileOutput = createWriteStream(this.executablePath);
-          await pipeline(executableData, unzip, fileOutput);
+          await pipeline(
+            releaseFileDataReadable,
+            unzipper.ParseOne(`${this.name}${this.executableExtension}`),
+            createWriteStream(path.join(this.installDirectory, `${this.name}${this.executableExtension}`))
+          )
         }
       } catch (error) {
         console.error(`Error when extracting file: ${error}`);
@@ -84,7 +91,7 @@ class InitiumExecutable {
       const result = spawnSync(this.executablePath, args, options);
 
       if (result.error) {
-        error(result.error);
+        throw new Error(result.error);
       }
 
       process.exit(result.status);
