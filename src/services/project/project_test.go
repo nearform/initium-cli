@@ -72,6 +72,7 @@ func TestCorrectRuntime(t *testing.T) {
 	proj_runtime := Project{
 		Name:           "test",
 		Directory:      path.Join(root, projects["node"]["directory"]),
+		Language:       "auto",
 		Resources:      os.DirFS(root),
 		RuntimeVersion: "30",
 	}
