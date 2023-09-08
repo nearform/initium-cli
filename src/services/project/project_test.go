@@ -24,7 +24,13 @@ func TestDetectType(t *testing.T) {
 		test_proj_type := Project{Name: string(project_type),
 			Directory: path.Join(root, props["directory"])}
 
-		proj_type, err := test_proj_type.detectType()
+		var proj_type ProjectType
+		var err error
+		if test_proj_type.Language == "auto" {
+			proj_type, err = test_proj_type.detectType()
+		} else {
+			proj_type, err = test_proj_type.matchType()
+		}
 
 		// if we cannot autodetect a project we will return an error
 		if project_type == "invalid" && err != nil {

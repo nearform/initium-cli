@@ -1,6 +1,6 @@
 name: Deploy on main
 
-on: 
+on:
   push:
     branches:
       - main
@@ -22,3 +22,4 @@ jobs:
           INITIUM_APP_NAME: initium-cli
           INITIUM_REGISTRY_USER: ${{ github.actor }}
           INITIUM_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          INITIUM_PROJECT_LANGUAGE: go
