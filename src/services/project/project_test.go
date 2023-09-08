@@ -52,6 +52,7 @@ func TestLoadDockerfile(t *testing.T) {
 	for project_type, props := range projects {
 		proj_dockerfile := Project{Name: string(project_type),
 			Directory: path.Join(root, props["directory"]),
+			Language:  "auto",
 			Resources: os.DirFS(root),
 		}
 		_, err := proj_dockerfile.loadDockerfile()
