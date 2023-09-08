@@ -22,7 +22,8 @@ func TestDetectType(t *testing.T) {
 
 	for project_type, props := range projects {
 		test_proj_type := Project{Name: string(project_type),
-			Directory: path.Join(root, props["directory"])}
+			Directory: path.Join(root, props["directory"]),
+			Language:  "auto"}
 
 		var proj_type ProjectType
 		var err error
