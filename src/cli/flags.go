@@ -38,7 +38,6 @@ const (
 	appNameFlag           string = "app-name"
 	appVersionFlag        string = "app-version"
 	projectDirectoryFlag  string = "project-directory"
-	projectLanguageFlag   string = "project-language"
 	repoNameFlag          string = "container-registry"
 	dockerFileNameFlag    string = "dockerfile-name"
 	configFileFlag        string = "config-file"
@@ -136,12 +135,6 @@ func InitFlags() flags {
 					Usage:   "The directory in which your Dockerfile lives",
 					Value:   defaults.ProjectDirectory,
 					EnvVars: []string{"INITIUM_PROJECT_DIRECTORY"},
-				},
-				&cli.StringFlag{
-					Name:    projectLanguageFlag,
-					Usage:   "The project language (node, go)",
-					Value:   defaults.ProjectLanguage,
-					EnvVars: []string{"INITIUM_PROJECT_LANGUAGE"},
 				},
 				&cli.StringFlag{
 					Name:    configFileFlag,

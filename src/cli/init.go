@@ -47,7 +47,6 @@ func (c icli) InitConfigCMD(ctx *cli.Context) error {
 		appVersionFlag,
 		namespaceFlag,
 		configFileFlag,
-		projectLanguageFlag,
 		projectDirectoryFlag,
 		destinationFolderFlag,
 		tokenFlag,

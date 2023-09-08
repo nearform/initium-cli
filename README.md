@@ -9,7 +9,7 @@ All with a nice development workflow in mind like ephemeral environment for your
 The CLI is currently published on [NPM](https://www.npmjs.com/package/initium). You can run it using
 
 ```
-npx initium-cli
+npx initium
 ```
 
 That will install the Initium CLI in your folder's `node_modules`.

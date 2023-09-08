@@ -22,7 +22,6 @@ const (
 type Project struct {
 	Name                  string
 	Version               string
-	Language              string
 	Directory             string
 	RuntimeVersion        string
 	DefaultRuntimeVersion string
@@ -44,10 +43,9 @@ func GuessAppName() *string {
 	return &name
 }
 
-func New(name string, language string, directory string, runtimeVersion string, version string, resources fs.FS) Project {
+func New(name string, directory string, runtimeVersion string, version string, resources fs.FS) Project {
 	return Project{
 		Name:           name,
-		Language:       language,
 		Directory:      directory,
 		RuntimeVersion: runtimeVersion,
 		Resources:      resources,
@@ -67,27 +65,8 @@ func (proj *Project) detectType() (ProjectType, error) {
 	}
 }
 
-func (proj *Project) matchType() (ProjectType, error) {
-	switch proj.Language {
-	case "node":
-		proj.DefaultRuntimeVersion = defaults.DefaultNodeRuntimeVersion
-		return NodeProject, nil
-	case "go":
-		proj.DefaultRuntimeVersion = defaults.DefaultGoRuntimeVersion
-		return GoProject, nil
-	default:
-		return "", fmt.Errorf("cannot detect project type %s", proj.Language)
-	}
-}
-
 func (proj Project) loadDockerfile() ([]byte, error) {
-	var projectType ProjectType
-	var err error
-	if proj.Language == "auto" {
-		projectType, err = proj.detectType()
-	} else {
-		projectType, err = proj.matchType()
-	}
+	projectType, err := proj.detectType()
 	if err != nil {
 		return []byte{}, err
 	}
