@@ -12,6 +12,6 @@ RUN npm run build --if-present
 RUN npm test
 
 FROM gcr.io/distroless/nodejs20-debian11
-COPY --from=build-env /app /src
-WORKDIR /src
+COPY --from=build-env /app /app
+WORKDIR /app
 ENTRYPOINT ["index.js"]
