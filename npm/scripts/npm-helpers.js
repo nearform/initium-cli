@@ -29,9 +29,10 @@ class InitiumExecutable {
   constructor() {
     this.name = packageMetadata.binaryName;
     this.organization = 'nearform';
+    this.sourceRepo = packageMetadata.main;
     this.version = packageMetadata.version;
     this.releaseFileExtension = os.platform === 'win32' ? 'zip' : 'tar.gz';
-    this.releaseFileNameFull = `${this.name}_${platformMap[os.platform]}_${architectureMap[os.arch]}.${this.releaseFileExtension}`;
+    this.releaseFileNameFull = `${this.sourceRepo}_${platformMap[os.platform]}_${architectureMap[os.arch]}.${this.releaseFileExtension}`;
     this.releaseUrl = `${packageMetadata.repository.url}/releases/download/v${this.version}/${this.releaseFileNameFull}`;
     this.executableExtension = os.platform === 'win32' ? '.exe' : '';
     this.relativeInstallDirectory = path.join('node_modules', '.bin');
@@ -40,7 +41,9 @@ class InitiumExecutable {
   }
 
   async checkForUpdates() {
-    const latestReleaseResponse = await axios(`https://api.github.com/repos/${this.organization}/${this.name}/releases/latest`);
+    let releases = `https://api.github.com/repos/${this.organization}/${this.sourceRepo}/releases/latest`
+    console.log(`Fetching releases from ${releases}`)
+    const latestReleaseResponse = await axios(releases);
     const latestVersion = latestReleaseResponse.data.tag_name.replace('v', '');
     if (semver.gt(latestVersion, this.version)) {
       console.log(`There is a new ${this.name} version available!\n\nCurrent version: ${this.version}\nLatest version: ${latestVersion}\n\nConsider upgrading using npm update.\n`);
@@ -56,6 +59,7 @@ class InitiumExecutable {
     if (!existsSync(this.executablePath)) {
       mkdirSync(this.installDirectory, { recursive: true });
       try {
+        console.log(`Fetching release from ${this.releaseUrl}`)
         const releaseFileData = await axios(this.releaseUrl, { responseType: 'arraybuffer' });
         const releaseFileDataReadable = Readable.from(Buffer.from(releaseFileData.data));
         if (this.releaseFileExtension === 'tar.gz') {
