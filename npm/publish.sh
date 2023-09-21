@@ -16,5 +16,4 @@ OTP=$(curl -s \
 -f https://optic-zf3votdk5a-ew.a.run.app/api/generate/$OPTIC_TOKEN)
 
 echo "Publish package ${PACKAGE_NAME}:${PACKAGE_VERSION}"
-
 npm publish --otp ${OTP} --access public --provenance
