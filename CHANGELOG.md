@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/nearform/initium-cli/compare/v0.4.0...v0.5.0) (2023-09-21)
+
+
+### Features
+
+* allow release please to publish to npm ([5129767](https://github.com/nearform/initium-cli/commit/51297674339ff204afc71d6f6ee2ed38027fa9fa))
+
 ## [0.4.0](https://github.com/nearform/initium-cli/compare/v0.3.0...v0.4.0) (2023-09-21)
 
 
