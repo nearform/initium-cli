@@ -33,7 +33,7 @@ jobs:
       - name: Get commit author
         id: commit_author
         run: |
-          author=$(gh pr list --search ${{ github.sha }} --state merged --json mergedBy --jq '.[0].mergedBy.login'
+          author=$(gh pr list --search ${{ github.sha }} --state merged --json mergedBy --jq '.[0].mergedBy.login')
           echo "author=${author}" >> $$GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ steps.get_installation_token.outputs.token }}
