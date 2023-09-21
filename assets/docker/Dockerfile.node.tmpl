@@ -14,4 +14,4 @@ RUN npm test
 FROM gcr.io/distroless/nodejs20-debian11
 COPY --from=build-env /app /app
 WORKDIR /app
-ENTRYPOINT ["index.js"]
+CMD ["index.js"]
