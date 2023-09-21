@@ -21,7 +21,7 @@ jobs:
           private_key: ${{ secrets.RELEASE_PLEASE_APP_PRIVATE_KEY }}
 
       - uses: google-github-actions/release-please-action@v3
-        id: release_please
+        id: release
         with:
           release-type: go
           token: ${{ steps.get_installation_token.outputs.token }}
@@ -30,6 +30,12 @@ jobs:
           extra-files: |
             npm/package.json
 
+      # The logic below handles the npm publication:
+      - uses: actions/checkout@v2
+        # these if statements ensure that a publication only occurs when
+        # a new release is created:
+        if: ${{ steps.release.outputs.release_created }}
+
       - name: Get commit author
         id: commit_author
         run: |
@@ -37,12 +43,14 @@ jobs:
           echo "author=${author}" >> $$GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ steps.get_installation_token.outputs.token }}
+        if: ${{ steps.release.outputs.release_created }}
 
       - uses: actions/setup-node@v3
         # This sets up the .npmrc file for publishing to npm
         with:
           node-version: "18.x"
           registry-url: "https://registry.npmjs.org"
+        if: ${{ steps.release.outputs.release_created }}
       
       # we want the good pipefail behaviour https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell
       - shell: bash
@@ -52,3 +60,4 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets[format('NPM_TOKEN_{0}', steps.commit_author.outputs.author)] || secrets.NPM_TOKEN }}
           OPTIC_TOKEN: ${{ secrets[format('OPTIC_TOKEN_{0}', steps.commit_author.outputs.author)] || secrets.OPTIC_TOKEN }}
+        if: ${{ steps.release.outputs.release_created }}
