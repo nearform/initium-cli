@@ -1,0 +1,33 @@
+{
+  "name": "initium",
+  "binaryName": "initium",
+  "repositoryName": "initium-cli",
+  "version": "0.3.0",
+  "description": "A single static binary that can run on any CI to build your code and deploy it in a single step.",
+  "scripts": {
+    "postinstall": "node scripts/npm-install.js",
+    "test": "exit 0"
+  },
+  "bin": "./scripts/npx-run.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nearform/initium-cli"
+  },
+  "keywords": [
+    "initium",
+    "kubernetes"
+  ],
+  "author": "Nearform",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nearform/initium-cli/issues"
+  },
+  "homepage": "https://github.com/nearform/initium-cli",
+  "dependencies": {
+    "axios": "^1.5.0",
+    "npm": "^10.1.0",
+    "semver": "^7.5.4",
+    "tar": "^6.2.0",
+    "unzipper": "^0.10.14"
+  }
+}

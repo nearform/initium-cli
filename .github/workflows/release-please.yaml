@@ -21,8 +21,34 @@ jobs:
           private_key: ${{ secrets.RELEASE_PLEASE_APP_PRIVATE_KEY }}
 
       - uses: google-github-actions/release-please-action@v3
+        id: release_please
         with:
           release-type: go
           token: ${{ steps.get_installation_token.outputs.token }}
           bump-minor-pre-major: true
           package-name: release-please-action
+          extra-files: |
+            npm/package.json
+
+      - name: Get commit author
+        id: commit_author
+        run: |
+          author=$(gh pr list --search ${{ github.sha }} --state merged --json mergedBy --jq '.[0].mergedBy.login'
+          echo "author=${author}" >> $$GITHUB_OUTPUT
+        env:
+          GITHUB_TOKEN: ${{ steps.get_installation_token.outputs.token }}
+
+      - uses: actions/setup-node@v3
+        # This sets up the .npmrc file for publishing to npm
+        with:
+          node-version: "18.x"
+          registry-url: "https://registry.npmjs.org"
+      
+      # we want the good pipefail behaviour https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell
+      - shell: bash
+        run: |
+          cd npm
+          ./publish.sh
+        env:
+          NPM_TOKEN: ${{ secrets[format('NPM_TOKEN_{0}', steps.commit_author.outputs.author)] || secrets.NPM_TOKEN }}
+          OPTIC_TOKEN: ${{ secrets[format('OPTIC_TOKEN_{0}', steps.commit_author.outputs.author)] || secrets.OPTIC_TOKEN }}

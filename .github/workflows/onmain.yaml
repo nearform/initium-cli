@@ -1,6 +1,6 @@
 name: Deploy on main
 
-on: 
+on:
   push:
     branches:
       - main

@@ -4,6 +4,18 @@ A single static binary that can run on any CI to build your code and deploy it i
 
 All with a nice development workflow in mind like ephemeral environment for your PRs.
 
+### Running the CLI
+
+The CLI is currently published on [NPM](https://www.npmjs.com/package/initium). You can run it using
+
+```
+npx initium
+```
+
+That will install the Initium CLI in your folder's `node_modules`.
+
+We recommend you not to try installing the CLI globally if you don't use a Node.js version manager (like `nvm`), as you can run into permission errors.
+
 ### Pre-requisites
 
 1. GoLang
