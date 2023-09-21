@@ -27,9 +27,10 @@ const platformMap = {
 
 class InitiumExecutable {
   constructor() {
-    this.name = packageMetadata.binaryName;
+    this.name = packageMetadata.name;
+    this.binaryName = packageMetadata.binaryName;
     this.organization = 'nearform';
-    this.sourceRepo = packageMetadata.main;
+    this.sourceRepo = packageMetadata.repositoryName;
     this.version = packageMetadata.version;
     this.releaseFileExtension = os.platform === 'win32' ? 'zip' : 'tar.gz';
     this.releaseFileNameFull = `${this.sourceRepo}_${platformMap[os.platform]}_${architectureMap[os.arch]}.${this.releaseFileExtension}`;
@@ -37,16 +38,16 @@ class InitiumExecutable {
     this.executableExtension = os.platform === 'win32' ? '.exe' : '';
     this.relativeInstallDirectory = path.join('node_modules', '.bin');
     this.installDirectory = path.join(process.cwd(), this.relativeInstallDirectory);
-    this.executablePath = `${path.join(this.installDirectory, this.name)}${this.executableExtension}`
+    this.executablePath = `${path.join(this.installDirectory, this.binaryName)}${this.executableExtension}`
   }
 
   async checkForUpdates() {
     let releases = `https://api.github.com/repos/${this.organization}/${this.sourceRepo}/releases/latest`
-    console.log(`Fetching releases from ${releases}`)
     const latestReleaseResponse = await axios(releases);
     const latestVersion = latestReleaseResponse.data.tag_name.replace('v', '');
+
     if (semver.gt(latestVersion, this.version)) {
-      console.log(`There is a new ${this.name} version available!\n\nCurrent version: ${this.version}\nLatest version: ${latestVersion}\n\nConsider upgrading using npm update.\n`);
+      console.error(`There is a new ${this.name} version available!\n\nCurrent version: ${this.version}\nLatest version: ${latestVersion}\n\nConsider upgrading using npm update.\n`);
     }
   }
 
@@ -59,19 +60,21 @@ class InitiumExecutable {
     if (!existsSync(this.executablePath)) {
       mkdirSync(this.installDirectory, { recursive: true });
       try {
-        console.log(`Fetching release from ${this.releaseUrl}`)
+        console.warn(`Fetching release from ${this.releaseUrl}`)
         const releaseFileData = await axios(this.releaseUrl, { responseType: 'arraybuffer' });
         const releaseFileDataReadable = Readable.from(Buffer.from(releaseFileData.data));
+        const executableName = `${this.binaryName}${this.executableExtension}`
+        console.warn(`Extracting ${executableName} into ${this.installDirectory}`)
         if (this.releaseFileExtension === 'tar.gz') {
           await pipeline(
             releaseFileDataReadable,
-            tar.x({ cwd: this.installDirectory }, [`${this.name}${this.executableExtension}`])
+            tar.x({ cwd: this.installDirectory }, [executableName])
           );
         } else {
           await pipeline(
             releaseFileDataReadable,
-            unzipper.ParseOne(`${this.name}${this.executableExtension}`),
-            createWriteStream(path.join(this.installDirectory, `${this.name}${this.executableExtension}`))
+            unzipper.ParseOne(executableName),
+            createWriteStream(path.join(this.installDirectory, executableName))
           )
         }
       } catch (error) {
@@ -80,7 +83,7 @@ class InitiumExecutable {
       }
     } else {
       if (!runOnly) {
-        console.log(`${this.name} has already been installed. Run it with npx ${this.name}.`);
+        console.warn(`${this.name} has already been installed. Run it with npx ${this.name}.`);
       }
     }
   }
