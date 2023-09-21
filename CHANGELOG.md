@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.0](https://github.com/nearform/initium-cli/compare/v0.3.0...v0.4.0) (2023-09-21)
+
+
+### Features
+
+* change released binary name to initium ([#107](https://github.com/nearform/initium-cli/issues/107)) ([798a813](https://github.com/nearform/initium-cli/commit/798a813687a4c5356016b02dbfc292a65a5f772d))
+
+
+### Bug Fixes
+
+* execute publish steps only on release ([#110](https://github.com/nearform/initium-cli/issues/110)) ([abb4439](https://github.com/nearform/initium-cli/commit/abb4439d6638fca609316fa6b0fd621135cf75e6))
+* release-please action failing for missing `)` ([#109](https://github.com/nearform/initium-cli/issues/109)) ([b12c919](https://github.com/nearform/initium-cli/commit/b12c919c241fcedb2594979cff666d63176a080d))
+
 ## [0.3.0](https://github.com/nearform/initium-cli/compare/v0.2.0...v0.3.0) (2023-09-04)
 
 
