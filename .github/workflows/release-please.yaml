@@ -23,24 +23,18 @@ jobs:
       - uses: google-github-actions/release-please-action@v3
         id: release
         with:
-          release-type: go
+          command: manifest
           token: ${{ steps.get_installation_token.outputs.token }}
-          bump-minor-pre-major: true
-          package-name: release-please-action
-          extra-files: |
-            npm/package.json
 
-      # The logic below handles the npm publication:
+      # The logic below handles the npm publication
       - uses: actions/checkout@v2
-        # these if statements ensure that a publication only occurs when
-        # a new release is created:
         if: ${{ steps.release.outputs.release_created }}
 
       - name: Get commit author
         id: commit_author
         run: |
           author=$(gh pr list --search ${{ github.sha }} --state merged --json mergedBy --jq '.[0].mergedBy.login')
-          echo "author=${author}" >> $$GITHUB_OUTPUT
+          echo "author=${author}" >> $GITHUB_OUTPUT
         env:
           GITHUB_TOKEN: ${{ steps.get_installation_token.outputs.token }}
         if: ${{ steps.release.outputs.release_created }}
