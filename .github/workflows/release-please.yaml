@@ -3,37 +3,50 @@ on:
     branches:
       - main
 
-permissions:
-  contents: write
-  pull-requests: write
-
 name: release-please
 
 jobs:
   release-please:
+    permissions:
+      pull-requests: write
+      contents: write
+      id-token: write
     runs-on: ubuntu-latest
     steps:
-      - uses: tibdex/github-app-token@v1.7.0
-        id: get_installation_token
-        with:
-          app_id: ${{ secrets.RELEASE_PLEASE_APP_ID }}
-          installation_id: ${{ secrets.RELEASE_PLEASE_APP_INSTALLATION_ID }}
-          private_key: ${{ secrets.RELEASE_PLEASE_APP_PRIVATE_KEY }}
-
+## Build a release based on the release-please-config.json file
       - uses: google-github-actions/release-please-action@v3
         id: release
         with:
           command: manifest
-          token: ${{ steps.get_installation_token.outputs.token }}
 
-      # The logic below handles the npm publication
-      - uses: actions/checkout@v2
+## Build go binary and add it to the release
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
         if: ${{ steps.release.outputs.release_created }}
 
-      # The logic below handles the npm publication:
+      - name: fetch tags
+        shell: bash
+        run: git fetch --force --tags
+        if: ${{ steps.release.outputs.release_created }}
+
+      - uses: actions/setup-go@v4
+        with:
+          go-version: stable
+        if: ${{ steps.release.outputs.release_created }}
+
+      - name: Build go binaries
+        uses: goreleaser/goreleaser-action@v4
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ steps.release.outputs.release_created }}
+
+## Publish the release to npm
       - uses: actions/checkout@v2
-        # these if statements ensure that a publication only occurs when
-        # a new release is created:
         if: ${{ steps.release.outputs.release_created }}
 
       - name: Get commit author
@@ -52,8 +65,8 @@ jobs:
           registry-url: "https://registry.npmjs.org"
         if: ${{ steps.release.outputs.release_created }}
       
-      # we want the good pipefail behaviour https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsshell
-      - shell: bash
+      - name: Run npm publish
+        shell: bash
         run: |
           cd npm
           ./publish.sh
