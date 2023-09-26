@@ -13,21 +13,16 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     steps:
-## Build a release based on the release-please-config.json file
+      ## Build a release based on the release-please-config.json file
       - uses: google-github-actions/release-please-action@v3
         id: release
         with:
           command: manifest
 
-## Build go binary and add it to the release
-      - uses: actions/checkout@v3
+      ## Build go binary and add it to the release
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-        if: ${{ steps.release.outputs.release_created }}
-
-      - name: fetch tags
-        shell: bash
-        run: git fetch --force --tags
         if: ${{ steps.release.outputs.release_created }}
 
       - uses: actions/setup-go@v4
@@ -36,7 +31,7 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
 
       - name: Build go binaries
-        uses: goreleaser/goreleaser-action@v4
+        uses: goreleaser/goreleaser-action@v5
         with:
           distribution: goreleaser
           version: latest
@@ -45,8 +40,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         if: ${{ steps.release.outputs.release_created }}
 
-## Publish the release to npm
-      - uses: actions/checkout@v2
+      ## Publish the release to npm
+      - uses: actions/checkout@v4
         if: ${{ steps.release.outputs.release_created }}
 
       - name: Get commit author
@@ -64,7 +59,7 @@ jobs:
           node-version: "18.x"
           registry-url: "https://registry.npmjs.org"
         if: ${{ steps.release.outputs.release_created }}
-      
+
       - name: Run npm publish
         shell: bash
         run: |
