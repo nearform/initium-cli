@@ -1,16 +1,16 @@
 package k8s
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"path"
+	"strings"
 	"text/template"
 	"time"
-    "strings"
-	"bufio"
-	"os"
-	
+
 	"github.com/charmbracelet/log"
 	"github.com/nearform/initium-cli/src/services/docker"
 	"github.com/nearform/initium-cli/src/services/project"
@@ -109,11 +109,11 @@ func Apply(namespace string, config *rest.Config, project *project.Project, dock
 	}
 
 	if _, err := os.Stat(".env"); err != nil {
-        if os.IsNotExist(err) {
+		if os.IsNotExist(err) {
 			log.Info("No environment variables file (.env) to Load!")
-        } else {
-            log.Fatalf("Error checking .env file: %v", err)
-        } 
+		} else {
+			log.Fatalf("Error checking .env file: %v", err)
+		}
 	} else {
 		log.Info("Environment variables file (.env) found! Loading..")
 		file, err := os.Open(".env")
@@ -124,7 +124,7 @@ func Apply(namespace string, config *rest.Config, project *project.Project, dock
 
 		scanner := bufio.NewScanner(file)
 		envVariables := make(map[string]string)
-		
+
 		checkFormat := func(line string) bool {
 			parts := strings.SplitN(line, "=", 2)
 			return len(parts) == 2
@@ -132,11 +132,11 @@ func Apply(namespace string, config *rest.Config, project *project.Project, dock
 
 		for scanner.Scan() {
 			line := scanner.Text()
-				if checkFormat(line) {
+			if checkFormat(line) {
 				parts := strings.SplitN(line, "=", 2)
 				key := strings.TrimSpace(parts[0])
 				value := strings.TrimSpace(parts[1])
-					envVariables[key] = value
+				envVariables[key] = value
 			} else {
 				log.Warnf("Environment variables file (.env) line won't be processed due to invalid format: %s. Accepted: KEY=value", line)
 			}
@@ -161,7 +161,7 @@ func Apply(namespace string, config *rest.Config, project *project.Project, dock
 			log.Warnf("Environment file (.env) is empty, Nothing to load!")
 		}
 	}
-	
+
 	service, err := servingClient.Services(serviceManifest.ObjectMeta.Namespace).Get(ctx, serviceManifest.ObjectMeta.Name, metav1.GetOptions{})
 	var deployedService *servingv1.Service
 	if err != nil {
