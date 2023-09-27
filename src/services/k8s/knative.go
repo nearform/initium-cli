@@ -74,6 +74,62 @@ func loadManifest(project *project.Project, dockerImage docker.DockerImage) (*se
 	return service, nil
 }
 
+func loadEnvFile(envFile string) ([]corev1.EnvVar, error) {
+	var envVarList []corev1.EnvVar
+	if _, err := os.Stat(envFile); err != nil {
+		if os.IsNotExist(err) {
+			log.Info("No environment variables file (.env) to Load!")
+		} else {
+			return nil, fmt.Errorf("Error checking .env file: %v", err)
+		}
+	} else {
+		log.Info("Environment variables file (.env) found! Loading..")
+		file, err := os.Open(envFile)
+		if err != nil {
+			return nil, fmt.Errorf("Error opening .env file: %v", err)
+		}
+		defer file.Close()
+
+		scanner := bufio.NewScanner(file)
+		envVariables := make(map[string]string)
+
+		checkFormat := func(line string) bool {
+			parts := strings.SplitN(line, "=", 2)
+			return len(parts) == 2
+		}
+
+		for scanner.Scan() {
+			line := scanner.Text()
+			if checkFormat(line) {
+				parts := strings.SplitN(line, "=", 2)
+				key := strings.TrimSpace(parts[0])
+				value := strings.TrimSpace(parts[1])
+				envVariables[key] = value
+			} else {
+				log.Warnf("Environment variables file (.env) line won't be processed due to invalid format: %s. Accepted: KEY=value", line)
+			}
+		}
+
+		if err := scanner.Err(); err != nil {
+			return nil, fmt.Errorf("Error reading environment variables file (.env): %v", err)
+		}
+
+		if len(envVariables) > 0 {
+			for key, value := range envVariables {
+				envVar := corev1.EnvVar{
+					Name:  key,
+					Value: value,
+				}
+				envVarList = append(envVarList, envVar)
+			}
+			log.Info("Environment variables file (.env) content is now loaded!")
+		} else {
+			log.Warnf("Environment file (.env) is empty, Nothing to load!")
+		}
+	}
+	return envVarList, nil
+}
+
 func Apply(namespace string, config *rest.Config, project *project.Project, dockerImage docker.DockerImage) error {
 	log.Info("Deploying Knative service", "host", config.Host, "name", project.Name, "namespace", namespace)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
@@ -108,59 +164,8 @@ func Apply(namespace string, config *rest.Config, project *project.Project, dock
 		return fmt.Errorf("cannot create namespace %s, failed with %v", serviceManifest.ObjectMeta.Namespace, err)
 	}
 
-	if _, err := os.Stat(".env"); err != nil {
-		if os.IsNotExist(err) {
-			log.Info("No environment variables file (.env) to Load!")
-		} else {
-			log.Fatalf("Error checking .env file: %v", err)
-		}
-	} else {
-		log.Info("Environment variables file (.env) found! Loading..")
-		file, err := os.Open(".env")
-		if err != nil {
-			log.Fatalf("Error opening .env file: %v", err)
-		}
-		defer file.Close()
-
-		scanner := bufio.NewScanner(file)
-		envVariables := make(map[string]string)
-
-		checkFormat := func(line string) bool {
-			parts := strings.SplitN(line, "=", 2)
-			return len(parts) == 2
-		}
-
-		for scanner.Scan() {
-			line := scanner.Text()
-			if checkFormat(line) {
-				parts := strings.SplitN(line, "=", 2)
-				key := strings.TrimSpace(parts[0])
-				value := strings.TrimSpace(parts[1])
-				envVariables[key] = value
-			} else {
-				log.Warnf("Environment variables file (.env) line won't be processed due to invalid format: %s. Accepted: KEY=value", line)
-			}
-		}
-
-		if err := scanner.Err(); err != nil {
-			log.Errorf("Error reading environment variables file (.env): %v", err)
-		}
-
-		if len(envVariables) > 0 {
-			var envVarList []corev1.EnvVar
-			for key, value := range envVariables {
-				envVar := corev1.EnvVar{
-					Name:  key,
-					Value: value,
-				}
-				envVarList = append(envVarList, envVar)
-			}
-			serviceManifest.Spec.Template.Spec.Containers[0].Env = append(serviceManifest.Spec.Template.Spec.Containers[0].Env, envVarList...)
-			log.Info("Environment variables file (.env) content is now loaded!")
-		} else {
-			log.Warnf("Environment file (.env) is empty, Nothing to load!")
-		}
-	}
+	envVarList, err := loadEnvFile(".env")
+	serviceManifest.Spec.Template.Spec.Containers[0].Env = append(serviceManifest.Spec.Template.Spec.Containers[0].Env, envVarList...)
 
 	service, err := servingClient.Services(serviceManifest.ObjectMeta.Namespace).Get(ctx, serviceManifest.ObjectMeta.Name, metav1.GetOptions{})
 	var deployedService *servingv1.Service

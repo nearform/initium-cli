@@ -9,11 +9,6 @@ import (
 
 	"github.com/nearform/initium-cli/src/services/docker"
 	"github.com/nearform/initium-cli/src/services/project"
-
-	"github.com/charmbracelet/log"
-	"bufio"
-	"strings"
-	corev1 "k8s.io/api/core/v1"
 )
 
 var root = "../../../"
@@ -80,67 +75,18 @@ func TestLoadManifest(t *testing.T) {
 }
 
 func TestLoadEnvVars(t *testing.T) {
-	validateEnv := func(envFile string) error {
-		if _, err := os.Stat(envFile); err != nil {
-			if os.IsNotExist(err) {
-				log.Info("No environment variables file (.env) to Load!")
-			} else {
-				log.Fatalf("Error checking .env file: %v", err)
-			}
-		} else {
-			log.Info("Environment variables file (.env) found! Loading..")
-			file, err := os.Open(".env")
-			if err != nil {
-				log.Fatalf("Error opening .env file: %v", err)
-			}
-			defer file.Close()
 
-			scanner := bufio.NewScanner(file)
-			envVariables := make(map[string]string)
-
-			checkFormat := func(line string) bool {
-				parts := strings.SplitN(line, "=", 2)
-				return len(parts) == 2
-			}
-
-			for scanner.Scan() {
-				line := scanner.Text()
-				if checkFormat(line) {
-					parts := strings.SplitN(line, "=", 2)
-					key := strings.TrimSpace(parts[0])
-					value := strings.TrimSpace(parts[1])
-					envVariables[key] = value
-				} else {
-					log.Warnf("Environment variables file (.env) line won't be processed due to invalid format: %s. Accepted: KEY=value", line)
-				}
-			}
-
-			if err := scanner.Err(); err != nil {
-				log.Errorf("Error reading environment variables file (.env): %v", err)
-			}
-
-			if len(envVariables) > 0 {
-				var envVarList []corev1.EnvVar
-				for key, value := range envVariables {
-					envVar := corev1.EnvVar{
-						Name:  key,
-						Value: value,
-					}
-					envVarList = append(envVarList, envVar)
-				}
-				//serviceManifest.Spec.Template.Spec.Containers[0].Env = append(serviceManifest.Spec.Template.Spec.Containers[0].Env, envVarList...)
-				log.Info("Environment variables file (.env) content is now loaded!")
-			} else {
-				log.Warnf("Environment file (.env) is empty, Nothing to load!")
-			}
-		}
-		return nil
-	}
-
-	err := validateEnv("./example/.env.sample")
+	fmt.Println("Testing .env sample with mixed accepted & invalid lines")
+	_, err := loadEnvFile(path.Join(root, "example/.env.sample"))
 
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Error: %v", err))
 	}
 
+	fmt.Println("Testing non existing .env sample file")
+	_, err = loadEnvFile(path.Join(root, "example/.env.non-exist"))
+
+	if err != nil {
+		t.Fatalf(fmt.Sprintf("Error: %v", err))
+	}
 }
