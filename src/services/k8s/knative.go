@@ -78,15 +78,15 @@ func loadEnvFile(envFile string) ([]corev1.EnvVar, error) {
 	var envVarList []corev1.EnvVar
 	if _, err := os.Stat(envFile); err != nil {
 		if os.IsNotExist(err) {
-			log.Info("No environment variables file (.env) to Load!")
+			log.Info("No environment variables file to Load!")
 		} else {
-			return nil, fmt.Errorf("Error checking .env file: %v", err)
+			return nil, fmt.Errorf("Error checking %v file: %v", envFile, err)
 		}
 	} else {
-		log.Info("Environment variables file (.env) found! Loading..")
+		log.Info(fmt.Sprintf("Environment variables file %s found! Loading..", envFile))
 		file, err := os.Open(envFile)
 		if err != nil {
-			return nil, fmt.Errorf("Error opening .env file: %v", err)
+			return nil, fmt.Errorf("Error opening %v file: %v", envFile, err)
 		}
 		defer file.Close()
 
@@ -106,12 +106,12 @@ func loadEnvFile(envFile string) ([]corev1.EnvVar, error) {
 				value := strings.TrimSpace(parts[1])
 				envVariables[key] = value
 			} else {
-				log.Warnf("Environment variables file (.env) line won't be processed due to invalid format: %s. Accepted: KEY=value", line)
+				log.Warnf("Environment variables file %v line won't be processed due to invalid format: %s. Accepted: KEY=value", envFile, line)
 			}
 		}
 
 		if err := scanner.Err(); err != nil {
-			return nil, fmt.Errorf("Error reading environment variables file (.env): %v", err)
+			return nil, fmt.Errorf("Error reading environment variables file %v: %v", envFile, err)
 		}
 
 		if len(envVariables) > 0 {
@@ -122,15 +122,15 @@ func loadEnvFile(envFile string) ([]corev1.EnvVar, error) {
 				}
 				envVarList = append(envVarList, envVar)
 			}
-			log.Info("Environment variables file (.env) content is now loaded!")
+			log.Info(fmt.Sprintf("Environment variables file %v content is now loaded!", envFile))
 		} else {
-			log.Warnf("Environment file (.env) is empty, Nothing to load!")
+			log.Warnf("Environment file %v is empty, Nothing to load!", envFile)
 		}
 	}
 	return envVarList, nil
 }
 
-func Apply(namespace string, config *rest.Config, project *project.Project, dockerImage docker.DockerImage) error {
+func Apply(namespace string, config *rest.Config, project *project.Project, dockerImage docker.DockerImage, envFile string) error {
 	log.Info("Deploying Knative service", "host", config.Host, "name", project.Name, "namespace", namespace)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
@@ -164,7 +164,7 @@ func Apply(namespace string, config *rest.Config, project *project.Project, dock
 		return fmt.Errorf("cannot create namespace %s, failed with %v", serviceManifest.ObjectMeta.Namespace, err)
 	}
 
-	envVarList, err := loadEnvFile(".env")
+	envVarList, err := loadEnvFile(envFile)
 	serviceManifest.Spec.Template.Spec.Containers[0].Env = append(serviceManifest.Spec.Template.Spec.Containers[0].Env, envVarList...)
 
 	service, err := servingClient.Services(serviceManifest.ObjectMeta.Namespace).Get(ctx, serviceManifest.ObjectMeta.Name, metav1.GetOptions{})
