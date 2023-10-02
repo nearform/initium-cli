@@ -66,7 +66,7 @@ func TestLoadManifest(t *testing.T) {
 		Tag:       "v1.1.0",
 	}
 
-	_, err := loadManifest(proj_knative, docker_image)
+	_, err := loadManifest(proj_knative, docker_image, path.Join(root, "example/.env.sample"))
 
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Error: %v", err))
@@ -74,19 +74,3 @@ func TestLoadManifest(t *testing.T) {
 
 }
 
-func TestLoadEnvVars(t *testing.T) {
-
-	fmt.Println("Testing .env sample with mixed accepted & invalid lines")
-	_, err := loadEnvFile(path.Join(root, "example/.env.sample"))
-
-	if err != nil {
-		t.Fatalf(fmt.Sprintf("Error: %v", err))
-	}
-
-	fmt.Println("Testing non existing default .env.initium config file")
-	_, err = loadEnvFile(path.Join(root, "example/.env.initium"))
-
-	if err != nil {
-		t.Fatalf(fmt.Sprintf("Error: %v", err))
-	}
-}

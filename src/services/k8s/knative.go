@@ -14,6 +14,7 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/nearform/initium-cli/src/services/docker"
 	"github.com/nearform/initium-cli/src/services/project"
+	"github.com/nearform/initium-cli/src/utils/defaults"
 
 	corev1 "k8s.io/api/core/v1"
 	apimachineryErrors "k8s.io/apimachinery/pkg/api/errors"
@@ -40,7 +41,7 @@ func Config(endpoint string, token string, caCrt []byte) (*rest.Config, error) {
 	}, nil
 }
 
-func loadManifest(project *project.Project, dockerImage docker.DockerImage) (*servingv1.Service, error) {
+func loadManifest(project *project.Project, dockerImage docker.DockerImage, envFile string) (*servingv1.Service, error) {
 	knativeTemplate := path.Join("assets", "knative", "service.yaml.tmpl")
 	template, err := template.ParseFS(project.Resources, knativeTemplate)
 	if err != nil {
@@ -71,13 +72,20 @@ func loadManifest(project *project.Project, dockerImage docker.DockerImage) (*se
 		return nil, fmt.Errorf("decoded object is not a Knative Service: %v", obj)
 	}
 
+	envVarList, err := loadEnvFile(envFile)
+	if err != nil {
+		return nil, err
+	}
+
+	service.Spec.Template.Spec.Containers[0].Env = append(service.Spec.Template.Spec.Containers[0].Env, envVarList...)
+
 	return service, nil
 }
 
 func loadEnvFile(envFile string) ([]corev1.EnvVar, error) {
 	var envVarList []corev1.EnvVar
 	if _, err := os.Stat(envFile); err != nil {
-		if (os.IsNotExist(err)) && (path.Base(envFile) == ".env.initium") {
+		if (os.IsNotExist(err)) && (path.Base(envFile) == defaults.EnvVarFile) {
 			log.Info("No environment variables file .env.initium to Load!")
 		} else {
 			return nil, fmt.Errorf("Error loading %v file: %v", envFile, err)
@@ -135,7 +143,7 @@ func Apply(namespace string, config *rest.Config, project *project.Project, dock
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
 
-	serviceManifest, err := loadManifest(project, dockerImage)
+	serviceManifest, err := loadManifest(project, dockerImage, envFile)
 	if err != nil {
 		return err
 	}
@@ -163,13 +171,6 @@ func Apply(namespace string, config *rest.Config, project *project.Project, dock
 	if err != nil && !apimachineryErrors.IsAlreadyExists(err) {
 		return fmt.Errorf("cannot create namespace %s, failed with %v", serviceManifest.ObjectMeta.Namespace, err)
 	}
-
-	envVarList, err := loadEnvFile(envFile)
-	if err != nil {
-		return err
-	}
-
-	serviceManifest.Spec.Template.Spec.Containers[0].Env = append(serviceManifest.Spec.Template.Spec.Containers[0].Env, envVarList...)
 
 	service, err := servingClient.Services(serviceManifest.ObjectMeta.Namespace).Get(ctx, serviceManifest.ObjectMeta.Name, metav1.GetOptions{})
 	var deployedService *servingv1.Service
