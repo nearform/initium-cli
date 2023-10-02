@@ -23,6 +23,11 @@ import (
 	servingv1client "knative.dev/serving/pkg/client/clientset/versioned/typed/serving/v1"
 )
 
+const (
+	UpdateShaAnnotationName       = "initium.nearform.com/updateSha"
+	UpdateTimestampAnnotationName = "initium.nearform.com/updateTimestamp"
+)
+
 func Config(endpoint string, token string, caCrt []byte) (*rest.Config, error) {
 	if _, err := certutil.NewPoolFromBytes(caCrt); err != nil {
 		return nil, fmt.Errorf("Expected to load root CA from bytes, but got err: %v", err)
@@ -37,7 +42,7 @@ func Config(endpoint string, token string, caCrt []byte) (*rest.Config, error) {
 	}, nil
 }
 
-func loadManifest(project *project.Project, dockerImage docker.DockerImage) (*servingv1.Service, error) {
+func loadManifest(namespace string, commitSha string, project *project.Project, dockerImage docker.DockerImage) (*servingv1.Service, error) {
 	knativeTemplate := path.Join("assets", "knative", "service.yaml.tmpl")
 	template, err := template.ParseFS(project.Resources, knativeTemplate)
 	if err != nil {
@@ -68,15 +73,22 @@ func loadManifest(project *project.Project, dockerImage docker.DockerImage) (*se
 		return nil, fmt.Errorf("decoded object is not a Knative Service: %v", obj)
 	}
 
+	service.ObjectMeta.Namespace = namespace
+	service.ObjectMeta.Name = project.Name
+	service.Spec.Template.ObjectMeta.Annotations = map[string]string{
+		UpdateShaAnnotationName:       commitSha,
+		UpdateTimestampAnnotationName: time.Now().Format(time.RFC3339),
+	}
+
 	return service, nil
 }
 
-func Apply(namespace string, config *rest.Config, project *project.Project, dockerImage docker.DockerImage) error {
+func Apply(namespace string, commitSha string, config *rest.Config, project *project.Project, dockerImage docker.DockerImage) error {
 	log.Info("Deploying Knative service", "host", config.Host, "name", project.Name, "namespace", namespace)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
 
-	serviceManifest, err := loadManifest(project, dockerImage)
+	serviceManifest, err := loadManifest(namespace, commitSha, project, dockerImage)
 	if err != nil {
 		return err
 	}
@@ -86,9 +98,6 @@ func Apply(namespace string, config *rest.Config, project *project.Project, dock
 	if err != nil {
 		return fmt.Errorf("Error creating the knative client %v", err)
 	}
-
-	serviceManifest.ObjectMeta.Namespace = namespace
-	serviceManifest.ObjectMeta.Name = project.Name
 
 	client, err := kubernetes.NewForConfig(config)
 	if err != nil {
