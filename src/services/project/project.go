@@ -1,60 +1,137 @@
 package project
 
 import (
-	"embed"
+	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io/fs"
 	"os"
 	"path"
+	"text/template"
+
+	"github.com/nearform/initium-cli/src/services/git"
+	"github.com/nearform/initium-cli/src/utils/defaults"
+)
+
+type ProjectType string
+
+const (
+	NodeProject ProjectType = "node"
+	GoProject   ProjectType = "go"
 )
 
 type Project struct {
-	Name      string
-	Directory string
+	Name                  string
+	Version               string
+	Directory             string
+	RuntimeVersion        string
+	DefaultRuntimeVersion string
+	Resources             fs.FS
 }
 
-func New(projectName string, projectDirectory string) Project {
+type InitOptions struct {
+	DestinationFolder string
+	DefaultBranch     string
+	PipelineType      string
+}
+
+func GuessAppName() *string {
+	var name string
+	name, err := git.GetRepoName()
+	if err != nil {
+		return nil
+	}
+	return &name
+}
+
+func New(name string, directory string, runtimeVersion string, version string, resources fs.FS) Project {
 	return Project{
-		Name:      projectName,
-		Directory: projectDirectory,
+		Name:           name,
+		Directory:      directory,
+		RuntimeVersion: runtimeVersion,
+		Resources:      resources,
+		Version:        version,
 	}
 }
 
-func (proj Project) detectType() (string, error) {
+func (proj *Project) detectType() (ProjectType, error) {
 	if _, err := os.Stat(path.Join(proj.Directory, "package.json")); err == nil {
-		return "node", nil
+		proj.DefaultRuntimeVersion = defaults.DefaultNodeRuntimeVersion
+		return NodeProject, nil
+	} else if _, err := os.Stat(path.Join(proj.Directory, "go.mod")); err == nil {
+		proj.DefaultRuntimeVersion = defaults.DefaultGoRuntimeVersion
+		return GoProject, nil
 	} else {
-		return "", fmt.Errorf("Cannot detect project type %v", err)
+		return "", fmt.Errorf("cannot detect project type %v", err)
 	}
 }
 
-func (proj Project) loadDockerfile(resources embed.FS) ([]byte, error) {
+func (proj Project) loadDockerfile() ([]byte, error) {
 	projectType, err := proj.detectType()
 	if err != nil {
 		return []byte{}, err
 	}
-	dockerfileTemplate := path.Join(".", "dockerfiles", "Dockerfile."+projectType)
-	return resources.ReadFile(dockerfileTemplate)
+
+	dockerfileTemplate := path.Join("assets", "docker", fmt.Sprintf("Dockerfile.%s.tmpl", projectType))
+	template, err := template.ParseFS(proj.Resources, dockerfileTemplate)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	output := &bytes.Buffer{}
+	if err = template.Execute(output, proj); err != nil {
+		return []byte{}, err
+	}
+	return output.Bytes(), nil
 }
 
-// TODO: there is no need to persist this file, we could add it to the tar context from memory or a temp dir
-func (proj Project) AddDockerFile(resources embed.FS) error {
-	content, err := proj.loadDockerfile(resources)
+func (proj Project) Dockerfile() ([]byte, error) {
+	content, err := proj.loadDockerfile()
 	if err != nil {
-		return err
+		return []byte{}, err
 	}
 
-	err = ioutil.WriteFile(path.Join(proj.Directory, "Dockerfile.kka"), content, 0644)
-	if err != nil {
-		return fmt.Errorf("Writing Dockerfile content: %v", err)
-	}
-	return nil
+	return content, nil
 }
 
-func (proj Project) DeleteDockerFile() error {
-	err := os.Remove(path.Join(proj.Directory, "Dockerfile.kka"))
-	if err != nil {
-		return fmt.Errorf("Deleting generated dockerfile: %v", err)
+func ProjectInit(options InitOptions, resources fs.FS) ([]string, error) {
+
+	returnData := []string{}
+	for _, tmpl := range []string{"onmain", "onbranch"} {
+		template, err := template.ParseFS(resources, path.Join("assets", options.PipelineType, fmt.Sprintf("%s.tmpl", tmpl)))
+
+		if err != nil {
+			return returnData, fmt.Errorf("error: %v", err)
+		}
+
+		fileContent := &bytes.Buffer{}
+		if err = template.Execute(fileContent, options); err != nil {
+			return returnData, err
+		}
+
+		destinationFile := path.Join(options.DestinationFolder, fmt.Sprintf("initium_%s.yaml", tmpl))
+
+		if err := os.MkdirAll(options.DestinationFolder, os.ModePerm); err != nil {
+			return returnData, fmt.Errorf("error: %v", err)
+		}
+
+		// I assume that the file is in source control and the user will be able to
+		// revert the changes, I'll create an issue to make this step interactive so
+		// we can ask confirmation to override the file.
+		if err = os.WriteFile(destinationFile, fileContent.Bytes(), 0755); err != nil {
+			return returnData, fmt.Errorf("error: %v", err)
+		}
+
+		returnData = append(returnData, destinationFile)
 	}
-	return nil
+
+	return returnData, nil
+}
+
+func (proj Project) NodeInstallCommand() string {
+	installCommand := "npm i"
+
+	if _, err := os.Stat(path.Join(proj.Directory, "package-lock.json")); err == nil {
+		installCommand = "npm ci"
+	}
+	return installCommand
 }

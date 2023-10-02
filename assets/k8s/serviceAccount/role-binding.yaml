@@ -1,0 +1,12 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: initium-cli
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: initium-cli
+subjects:
+  - kind: ServiceAccount
+    name: initium-cli-sa
+    namespace: default
