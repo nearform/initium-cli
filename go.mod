@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/charmbracelet/log v0.2.2
-	github.com/docker/docker v23.0.1+incompatible
+        github.com/docker/docker v23.0.3+incompatible
 	github.com/go-git/go-git/v5 v5.7.0
 	github.com/moby/term v0.0.0-20221205130635-1aeaba878587
 	github.com/urfave/cli/v2 v2.25.0
