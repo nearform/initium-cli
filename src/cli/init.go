@@ -13,6 +13,8 @@ import (
 	"github.com/nearform/initium-cli/src/services/project"
 	"github.com/nearform/initium-cli/src/utils/defaults"
 	"github.com/urfave/cli/v2"
+
+	knative "github.com/nearform/initium-cli/src/services/k8s"
 )
 
 const (
@@ -101,6 +103,25 @@ func (c icli) InitServiceAccountCMD(ctx *cli.Context) error {
 	return k8s.GetServiceAccount(c.Resources)
 }
 
+func (c icli) InitKnativeCMD(cCtx *cli.Context) error {
+	config, err := knative.Config(
+		cCtx.String(endpointFlag),
+		cCtx.String(tokenFlag),
+		[]byte(cCtx.String(caCRTFlag)),
+	)
+
+	if err != nil {
+		return err
+	}
+
+	knativeDomain := cCtx.Args().Get(0)
+	fmt.Printf("Argument from subcommand: %s\n", knativeDomain)
+	os.Exit(1)
+	knative.DomainUpd(knativeDomain, config)
+
+	return nil
+}
+
 func (c icli) InitCMD() *cli.Command {
 	configFlags := c.CommandFlags([]FlagsType{Shared})
 	configFlags = append(configFlags, &cli.BoolFlag{
@@ -131,6 +152,12 @@ func (c icli) InitCMD() *cli.Command {
 				Name:   "service-account",
 				Usage:  "output all resources needed to create a service account",
 				Action: c.InitServiceAccountCMD,
+				Before: c.baseBeforeFunc,
+			},
+			{
+				Name:   "knative-domain",
+				Usage:  "updates knative service default domain",
+				Action: c.InitKnativeCMD,
 				Before: c.baseBeforeFunc,
 			},
 		},
