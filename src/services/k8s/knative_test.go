@@ -3,6 +3,7 @@ package k8s
 import (
 	"encoding/base64"
 	"fmt"
+	"gotest.tools/v3/assert"
 	"os"
 	"path"
 	"testing"
@@ -54,22 +55,28 @@ func TestConfig(t *testing.T) {
 }
 
 func TestLoadManifest(t *testing.T) {
-	proj_knative := &project.Project{Name: "knative_test",
+	namespace := "custom"
+	commitSha := "93f4be93"
+
+	proj := &project.Project{Name: "knative_test",
 		Directory: path.Join(root, "example"),
 		Resources: os.DirFS(root),
 	}
 
-	docker_image := docker.DockerImage{
+	dockerImage := docker.DockerImage{
 		Registry:  "example.com",
 		Directory: ".",
 		Name:      "test",
 		Tag:       "v1.1.0",
 	}
 
-	_, err := loadManifest(proj_knative, docker_image)
+	serviceManifest, err := loadManifest(namespace, commitSha, proj, dockerImage)
 
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Error: %v", err))
 	}
 
+	annotations := serviceManifest.Spec.Template.ObjectMeta.Annotations
+	assert.Assert(t, annotations[UpdateTimestampAnnotationName] != "", "Missing %s annotation", UpdateTimestampAnnotationName)
+	assert.Assert(t, annotations[UpdateShaAnnotationName] == commitSha, "Expected %s SHA, got %s", commitSha, annotations[UpdateShaAnnotationName])
 }

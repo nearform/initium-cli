@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"github.com/nearform/initium-cli/src/services/git"
 	knative "github.com/nearform/initium-cli/src/services/k8s"
 	"github.com/urfave/cli/v2"
 )
@@ -20,7 +21,12 @@ func (c *icli) Deploy(cCtx *cli.Context) error {
 		return err
 	}
 
-	return knative.Apply(cCtx.String(namespaceFlag), config, project, c.dockerImage)
+	commitSha, err := git.GetHash()
+	if err != nil {
+		return err
+	}
+
+	return knative.Apply(cCtx.String(namespaceFlag), commitSha, config, project, c.dockerImage)
 }
 
 func (c icli) DeployCMD() *cli.Command {
