@@ -8,5 +8,4 @@ RUN npm test
 FROM gcr.io/distroless/nodejs20-debian11
 COPY --from=build-env /src /src
 WORKDIR /src
-USER nonroot
 CMD ["index.js"]
