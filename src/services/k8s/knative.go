@@ -1,14 +1,19 @@
 package k8s
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"path"
+	"text/template"
 	"time"
 
-	"github.com/nearform/k8s-kurated-addons-cli/src/services/project"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
+	"github.com/charmbracelet/log"
+	"github.com/nearform/initium-cli/src/services/docker"
+	"github.com/nearform/initium-cli/src/services/project"
+
 	corev1 "k8s.io/api/core/v1"
+	apimachineryErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -32,11 +37,20 @@ func Config(endpoint string, token string, caCrt []byte) (*rest.Config, error) {
 	}, nil
 }
 
-func loadManifest(project project.Project) (*servingv1.Service, error) {
-	data, err := project.Resources.ReadFile(path.Join("assets", "knative", "service.yaml"))
+func loadManifest(project *project.Project, dockerImage docker.DockerImage) (*servingv1.Service, error) {
+	knativeTemplate := path.Join("assets", "knative", "service.yaml.tmpl")
+	template, err := template.ParseFS(project.Resources, knativeTemplate)
 	if err != nil {
 		return nil, fmt.Errorf("error reading the knative service yaml: %v", err)
 	}
+
+	output := &bytes.Buffer{}
+	// TODO replace map[string]string{} with proper values
+	if err = template.Execute(output, dockerImage); err != nil {
+		return nil, err
+	}
+
+	data := output.Bytes()
 
 	err = servingv1.AddToScheme(scheme.Scheme)
 	if err != nil {
@@ -57,56 +71,75 @@ func loadManifest(project project.Project) (*servingv1.Service, error) {
 	return service, nil
 }
 
-func Apply(config *rest.Config, project project.Project) error {
-	logger.PrintInfo("Deploying Knative service to " + config.Host)
+func Apply(namespace string, config *rest.Config, project *project.Project, dockerImage docker.DockerImage) error {
+	log.Info("Deploying Knative service", "host", config.Host, "name", project.Name, "namespace", namespace)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
+
+	serviceManifest, err := loadManifest(project, dockerImage)
+	if err != nil {
+		return err
+	}
+
 	// Create a new Knative Serving client
 	servingClient, err := servingv1client.NewForConfig(config)
 	if err != nil {
 		return fmt.Errorf("Error creating the knative client %v", err)
 	}
 
-	service, err := loadManifest(project)
-	if err != nil {
-		return err
-	}
-
-	service.ObjectMeta.Namespace = "default"
-	service.ObjectMeta.Name = project.Name
+	serviceManifest.ObjectMeta.Namespace = namespace
+	serviceManifest.ObjectMeta.Name = project.Name
 
 	client, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return fmt.Errorf("Creating Kubernetes client %v", err)
 	}
 
-	client.CoreV1().Namespaces().Create(ctx, &corev1.Namespace{
+	_, err = client.CoreV1().Namespaces().Create(ctx, &corev1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: project.Version,
+			Name: serviceManifest.ObjectMeta.Namespace,
 		},
 	}, metav1.CreateOptions{})
 
-	getService, err := servingClient.Services(service.ObjectMeta.Namespace).Get(ctx, service.ObjectMeta.Name, metav1.GetOptions{})
+	if err != nil && !apimachineryErrors.IsAlreadyExists(err) {
+		return fmt.Errorf("cannot create namespace %s, failed with %v", serviceManifest.ObjectMeta.Namespace, err)
+	}
 
+	service, err := servingClient.Services(serviceManifest.ObjectMeta.Namespace).Get(ctx, serviceManifest.ObjectMeta.Name, metav1.GetOptions{})
+	var deployedService *servingv1.Service
 	if err != nil {
-		createdService, err := servingClient.Services(service.ObjectMeta.Namespace).Create(ctx, service, metav1.CreateOptions{})
+		deployedService, err = servingClient.Services(serviceManifest.ObjectMeta.Namespace).Create(ctx, serviceManifest, metav1.CreateOptions{})
 		if err != nil {
 			return fmt.Errorf("Creating Knative service %v", err)
 		}
-		fmt.Printf("Created Knative service %q.\n", createdService.GetObjectMeta().GetName())
 	} else {
-		updatedService, err := servingClient.Services(service.ObjectMeta.Namespace).Update(ctx, getService, metav1.UpdateOptions{})
+		service.Spec = serviceManifest.Spec
+		deployedService, err = servingClient.Services(serviceManifest.ObjectMeta.Namespace).Update(ctx, service, metav1.UpdateOptions{})
 		if err != nil {
 			return fmt.Errorf("Updating Knative service %v", err)
 		}
-		fmt.Printf("Updated Knative service %q.\n", updatedService.GetObjectMeta().GetName())
+	}
+
+	fmt.Printf("Knative service %q deployed successfully in namespace %s.\n", deployedService.GetObjectMeta().GetName(), serviceManifest.ObjectMeta.Namespace)
+
+	for {
+		service, err = servingClient.Services(serviceManifest.ObjectMeta.Namespace).Get(ctx, serviceManifest.ObjectMeta.Name, metav1.GetOptions{})
+		if err != nil {
+			return err
+		}
+		if service.Status.URL != nil {
+			fmt.Printf("You can reach it via %s\n", service.Status.URL)
+			break
+		}
+
+		time.Sleep(time.Millisecond * 500)
 	}
 
 	return nil
 }
 
-func Clean(config *rest.Config, project project.Project) error {
-	logger.PrintInfo("Deleting Knative service from " + config.Host)
+func Clean(namespace string, config *rest.Config, project *project.Project) error {
+	log.Info("Deleting Knative service", "host", config.Host, "name", project.Name, "namespace", namespace)
 	ctx := context.Background()
 
 	// Create a new Knative Serving client
@@ -115,11 +148,11 @@ func Clean(config *rest.Config, project project.Project) error {
 		return fmt.Errorf("Error creating the knative client %v", err)
 	}
 
-	err = servingClient.Services(project.Version).Delete(ctx, project.Name, metav1.DeleteOptions{})
+	err = servingClient.Services(namespace).Delete(ctx, project.Name, metav1.DeleteOptions{})
 	if err != nil {
 		return fmt.Errorf("deleting the service: %v", err)
 	}
 
-	logger.PrintInfo("Deleted Knative service " + project.Name)
+	log.Info("The Knative service was successfully deleted", "host", config.Host, "name", project.Name, "namespace", namespace)
 	return nil
 }

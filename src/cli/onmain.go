@@ -1,32 +1,50 @@
 package cli
 
 import (
-	"fmt"
-
+	"github.com/nearform/initium-cli/src/utils/defaults"
 	"github.com/urfave/cli/v2"
 )
 
-func (c CLI) OnMainCMD() *cli.Command {
-	flags := []cli.Flag{}
-	flags = append(flags, Flags(Kubernetes)...)
-	flags = append(flags, Flags(Build)...)
-	flags = append(flags, Flags(Registry)...)
+func (c *icli) OnMainCMD() *cli.Command {
+	flags := c.CommandFlags([]FlagsType{
+		Kubernetes,
+		Build,
+		Registry,
+		Shared,
+	})
+	flags = append(flags, []cli.Flag{
+		&cli.BoolFlag{
+			Name:  stopOnBuildFlag,
+			Value: false,
+		},
+		&cli.BoolFlag{
+			Name:  stopOnPushFlag,
+			Value: false,
+		},
+	}...)
+
 	return &cli.Command{
-		Name:  "onmain",
-		Usage: "deploy the application as a knative service",
-		Flags: flags,
-		Action: func(cCtx *cli.Context) error {
-			err := c.Build(cCtx)
-			if err != nil {
-				return fmt.Errorf("Building %v", err)
+		Name:   "onmain",
+		Usage:  "deploy the application as a knative service",
+		Flags:  flags,
+		Action: c.buildPushDeploy,
+		Before: func(ctx *cli.Context) error {
+			if err := c.loadFlagsFromConfig(ctx); err != nil {
+				return err
 			}
 
-			err = c.Push(cCtx)
-			if err != nil {
-				return fmt.Errorf("Pushing %v", err)
+			ctx.Set(appVersionFlag, "latest")
+			ctx.Set(namespaceFlag, defaults.GithubDefaultBranch)
+
+			ignoredFlags := []string{}
+			if ctx.Bool(stopOnBuildFlag) {
+				ignoredFlags = append(ignoredFlags, []string{registryPasswordFlag, registryUserFlag}...)
+			}
+			if ctx.Bool(stopOnPushFlag) {
+				ignoredFlags = append(ignoredFlags, []string{endpointFlag, tokenFlag, caCRTFlag, namespaceFlag}...)
 			}
 
-			return c.Deploy(cCtx)
+			return c.checkRequiredFlags(ctx, ignoredFlags)
 		},
 	}
 }

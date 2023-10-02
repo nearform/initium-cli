@@ -1,41 +1,28 @@
 package cli
 
 import (
-	"fmt"
 	"path"
 
-	"github.com/nearform/k8s-kurated-addons-cli/src/services/docker"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/defaults"
-	"github.com/nearform/k8s-kurated-addons-cli/src/utils/logger"
+	"github.com/nearform/initium-cli/src/utils/logger"
 	"github.com/urfave/cli/v2"
 )
 
-func (c CLI) Build(cCtx *cli.Context) error {
-	repoName := cCtx.String("repo-name")
-	dockerFileName := cCtx.String("dockerfile-name")
-	project := c.newProject(cCtx)
-	docker, err := docker.New(project, dockerFileName, repoName)
+func (c *icli) Build(cCtx *cli.Context) error {
+	project, err := c.getProject(cCtx)
 	if err != nil {
-		return fmt.Errorf("Creating docker service: %v", err)
+		return err
 	}
 
-	logger.PrintInfo("Dockerfile Location: " + path.Join(project.Directory, docker.DockerFileName))
-	if dockerFileName == defaults.DockerfileName {
-		defer project.DeleteDockerFile()
-		err := project.AddDockerFile()
-		if err != nil {
-			return fmt.Errorf("Persisting docker file content: %v", err)
-		}
-	}
-
-	return docker.Build()
+	logger.PrintInfo("Dockerfile Location: " + path.Join(project.Directory, c.DockerService.DockerFileName))
+	return c.DockerService.Build()
 }
 
-func (c CLI) BuildCMD() *cli.Command {
+func (c icli) BuildCMD() *cli.Command {
 	return &cli.Command{
 		Name:   "build",
 		Usage:  "build a container image from the project directory",
-		Flags:  Flags(Build),
+		Flags:  c.CommandFlags([]FlagsType{Build, Shared}),
 		Action: c.Build,
+		Before: c.baseBeforeFunc,
 	}
 }

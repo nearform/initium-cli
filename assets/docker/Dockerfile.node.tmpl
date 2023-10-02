@@ -1,11 +1,11 @@
-FROM node:{{ or .RuntimeVersion "20" }} AS build-env
+FROM node:{{ or .RuntimeVersion .DefaultRuntimeVersion }} AS build-env
 COPY . /src
 WORKDIR /src
-RUN npm i
+RUN {{ .NodeInstallCommand }}
 RUN npm run build --if-present
 RUN npm test
 
-FROM gcr.io/distroless/nodejs{{ or .RuntimeVersion "20" }}-debian11
+FROM gcr.io/distroless/nodejs20-debian11
 COPY --from=build-env /src /src
 WORKDIR /src
 CMD ["index.js"]
