@@ -77,10 +77,10 @@ func loadManifest(project *project.Project, dockerImage docker.DockerImage) (*se
 func loadEnvFile(envFile string) ([]corev1.EnvVar, error) {
 	var envVarList []corev1.EnvVar
 	if _, err := os.Stat(envFile); err != nil {
-		if os.IsNotExist(err) {
-			log.Info("No environment variables file to Load!")
+		if (os.IsNotExist(err)) && (path.Base(envFile) == ".env.initium") {
+			log.Info("No environment variables file .env.initium to Load!")
 		} else {
-			return nil, fmt.Errorf("Error checking %v file: %v", envFile, err)
+			return nil, fmt.Errorf("Error loading %v file: %v", envFile, err)
 		}
 	} else {
 		log.Info(fmt.Sprintf("Environment variables file %s found! Loading..", envFile))
@@ -165,6 +165,10 @@ func Apply(namespace string, config *rest.Config, project *project.Project, dock
 	}
 
 	envVarList, err := loadEnvFile(envFile)
+	if err != nil {
+		return err
+	}
+
 	serviceManifest.Spec.Template.Spec.Containers[0].Env = append(serviceManifest.Spec.Template.Spec.Containers[0].Env, envVarList...)
 
 	service, err := servingClient.Services(serviceManifest.ObjectMeta.Namespace).Get(ctx, serviceManifest.ObjectMeta.Name, metav1.GetOptions{})

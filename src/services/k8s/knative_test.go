@@ -83,8 +83,8 @@ func TestLoadEnvVars(t *testing.T) {
 		t.Fatalf(fmt.Sprintf("Error: %v", err))
 	}
 
-	fmt.Println("Testing non existing .env sample file")
-	_, err = loadEnvFile(path.Join(root, "example/.env.non-exist"))
+	fmt.Println("Testing non existing default .env.initium config file")
+	_, err = loadEnvFile(path.Join(root, "example/.env.initium"))
 
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Error: %v", err))

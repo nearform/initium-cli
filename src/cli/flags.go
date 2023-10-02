@@ -103,7 +103,7 @@ func InitFlags() flags {
 				},
 				&cli.StringFlag{
 					Name:     envVarFileFlag,
-					Value:    ".env",
+					Value:    ".env.initium",
 					Category: "deploy",
 				},
 			},
