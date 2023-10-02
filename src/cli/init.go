@@ -11,6 +11,7 @@ import (
 
 	"github.com/nearform/initium-cli/src/services/k8s"
 	"github.com/nearform/initium-cli/src/services/project"
+	"github.com/nearform/initium-cli/src/services/versions"
 	"github.com/nearform/initium-cli/src/utils/defaults"
 	"github.com/urfave/cli/v2"
 )
@@ -82,6 +83,16 @@ func (c icli) InitConfigCMD(ctx *cli.Context) error {
 
 		config = config + next
 	}
+
+	versionFileContent, err := versions.LoadCliVersionsFileContent(c.Resources)
+	if err != nil {
+		return err
+	}
+	configFileSchemaVersion, err := versions.GetCurrentCliConfigFileSchemaVersion(versionFileContent)
+	if err != nil {
+		return err
+	}
+	config = fmt.Sprintf("%s: %s\n", versions.ConfigFileSchemaVersionFlagName, configFileSchemaVersion) + config
 
 	if ctx.Bool(persistFlag) {
 		f, err := os.OpenFile(filepath.Join(ctx.String(projectDirectoryFlag), defaults.ConfigFile), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)

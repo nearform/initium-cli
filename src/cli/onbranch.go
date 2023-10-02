@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"github.com/nearform/initium-cli/src/services/versions"
 
 	"github.com/nearform/initium-cli/src/services/git"
 	"github.com/nearform/initium-cli/src/utils"
@@ -75,6 +76,11 @@ func (c icli) OnBranchCMD() *cli.Command {
 		Before: func(ctx *cli.Context) error {
 			var err error
 			if err := c.loadFlagsFromConfig(ctx); err != nil {
+				return err
+			}
+
+			clientConfigFileName := ctx.String(configFileFlag)
+			if err := versions.CheckClientConfigFileSchemaMatchesCli(clientConfigFileName, c.Resources); err != nil {
 				return err
 			}
 

@@ -13,6 +13,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/nearform/initium-cli/src/services/docker"
+	"github.com/nearform/initium-cli/src/services/versions"
 	"github.com/nearform/initium-cli/src/utils/defaults"
 	"github.com/nearform/initium-cli/src/utils/logger"
 	"github.com/urfave/cli/v2"
@@ -58,6 +59,14 @@ func (c icli) baseBeforeFunc(ctx *cli.Context) error {
 	if err := c.checkRequiredFlags(ctx, []string{}); err != nil {
 		return err
 	}
+
+	if ctx.Command.Name != "init" && ctx.Command.Name != "help" {
+		clientConfigFileName := ctx.String(configFileFlag)
+		if err := versions.CheckClientConfigFileSchemaMatchesCli(clientConfigFileName, c.Resources); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

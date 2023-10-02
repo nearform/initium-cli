@@ -14,7 +14,9 @@ import (
 )
 
 func compareConfig(t *testing.T, appName string, registry string, writer io.Writer) {
-	configTemplate := fmt.Sprintf(`app-name: %s
+	currentConfigVersion := "v1"
+	configTemplate := fmt.Sprintf(`schema-version: %s
+app-name: %s
 cluster-endpoint: null
 container-registry: %s
 default-branch: main
@@ -22,6 +24,7 @@ dockerfile-name: null
 registry-user: null
 runtime-version: null
 `,
+		currentConfigVersion,
 		appName,
 		registry,
 	)
