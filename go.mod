@@ -9,6 +9,7 @@ require (
 	github.com/moby/term v0.0.0-20221205130635-1aeaba878587
 	github.com/urfave/cli/v2 v2.25.0
 	gopkg.in/yaml.v2 v2.4.0
+	gotest.tools/v3 v3.0.3
 	k8s.io/api v0.27.1
 	k8s.io/apimachinery v0.27.1
 	k8s.io/client-go v0.27.1
