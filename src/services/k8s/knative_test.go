@@ -70,7 +70,7 @@ func TestLoadManifest(t *testing.T) {
 		Tag:       "v1.1.0",
 	}
 
-	serviceManifest, err := loadManifest(namespace, commitSha, proj, dockerImage)
+	serviceManifest, err := loadManifest(namespace, commitSha, proj, dockerImage, path.Join(root, "example/.env.sample"))
 
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Error: %v", err))
@@ -80,3 +80,4 @@ func TestLoadManifest(t *testing.T) {
 	assert.Assert(t, annotations[UpdateTimestampAnnotationName] != "", "Missing %s annotation", UpdateTimestampAnnotationName)
 	assert.Assert(t, annotations[UpdateShaAnnotationName] == commitSha, "Expected %s SHA, got %s", commitSha, annotations[UpdateShaAnnotationName])
 }
+
