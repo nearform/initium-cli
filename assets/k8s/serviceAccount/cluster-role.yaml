@@ -15,6 +15,7 @@ rules:
       - ingresses
       - services
       - secrets
+      - configmaps
     verbs:
       - create
       - delete

@@ -13,6 +13,8 @@ import (
 	"github.com/nearform/initium-cli/src/services/project"
 	"github.com/nearform/initium-cli/src/utils/defaults"
 	"github.com/urfave/cli/v2"
+
+	knative "github.com/nearform/initium-cli/src/services/k8s"
 )
 
 const (
@@ -101,6 +103,32 @@ func (c icli) InitServiceAccountCMD(ctx *cli.Context) error {
 	return k8s.GetServiceAccount(c.Resources)
 }
 
+func (c icli) InitKnativeDomainCMD(cCtx *cli.Context) error {
+	config, err := knative.Config(
+		cCtx.String(endpointFlag),
+		cCtx.String(tokenFlag),
+		[]byte(cCtx.String(caCRTFlag)),
+	)
+
+	if err != nil {
+		return err
+	}
+
+	if cCtx.NArg() < 1 {
+		return fmt.Errorf("Knative domain argument is required!")
+	}
+
+	knativeDomain := cCtx.Args().Get(0)
+
+	err = knative.DomainUpd(knativeDomain, config)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c icli) InitCMD() *cli.Command {
 	configFlags := c.CommandFlags([]FlagsType{Shared})
 	configFlags = append(configFlags, &cli.BoolFlag{
@@ -132,6 +160,21 @@ func (c icli) InitCMD() *cli.Command {
 				Usage:  "output all resources needed to create a service account",
 				Action: c.InitServiceAccountCMD,
 				Before: c.baseBeforeFunc,
+			},
+			{
+				Name:   "knative-domain",
+				Usage:  "updates knative service default domain",
+				Flags:  c.CommandFlags([]FlagsType{Kubernetes}),
+				Action: c.InitKnativeDomainCMD,
+				Before: func(ctx *cli.Context) error {
+					if err := c.loadFlagsFromConfig(ctx); err != nil {
+						return err
+					}
+
+					ignoredFlags := []string{namespaceFlag}
+
+					return c.checkRequiredFlags(ctx, ignoredFlags)
+				},
 			},
 		},
 	}

@@ -232,3 +232,36 @@ func Clean(namespace string, config *rest.Config, project *project.Project) erro
 	log.Info("The Knative service was successfully deleted", "host", config.Host, "name", project.Name, "namespace", namespace)
 	return nil
 }
+
+func DomainUpd(kn_domain string, config *rest.Config) error {
+	// Default Knative values
+	configMapName := "config-domain"
+	namespace := "knative-serving"
+
+	log.Info("Updating Knative default domain name...", "new domain", kn_domain, "configMap", configMapName, "namespace", namespace)
+	ctx := context.Background()
+
+	client, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return fmt.Errorf("Creating Kubernetes client %v", err)
+	}
+
+	configMap, err := client.CoreV1().ConfigMaps(namespace).Get(ctx, configMapName, metav1.GetOptions{})
+
+	if err != nil {
+		return fmt.Errorf("Getting ConfigMaps: %v", err)
+	}
+
+	configMap.Data = make(map[string]string)
+
+	configMap.Data[kn_domain] = ""
+
+	_, err = client.CoreV1().ConfigMaps(namespace).Update(ctx, configMap, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+
+	log.Info("Knative default domain name was successfully updated!", "new domain", kn_domain, "configMap", configMapName, "namespace", namespace)
+
+	return nil
+}
