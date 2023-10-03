@@ -216,10 +216,7 @@ func Apply(namespace string, commitSha string, config *rest.Config, project *pro
 
 func Clean(namespace string, config *rest.Config, project *project.Project) error {
 	log.Info("Deleting Knative service", "host", config.Host, "name", project.Name, "namespace", namespace)
-	//ctx := context.Background()
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*2)
-	defer cancel()
+	ctx := context.Background()
 
 	// Create a new Knative Serving client
 	servingClient, err := servingv1client.NewForConfig(config)
