@@ -20,6 +20,7 @@ container-registry: %s
 default-branch: main
 dockerfile-name: null
 image-pull-secrets: null
+env-var-file: .env.initium
 registry-user: null
 runtime-version: null
 `,

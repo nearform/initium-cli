@@ -43,6 +43,22 @@ func GetHash() (string, error) {
 	return headRef.Hash().String(), nil
 }
 
+func GetBranchName() (string, error) {
+	repo, err := initRepo()
+
+	if err != nil {
+		return "", err
+	}
+
+	head, err := repo.Head()
+	if err != nil {
+		return "", err
+	}
+
+	branchName := head.Name().Short()
+	return branchName, nil
+}
+
 func getGithubRemote() (string, error) {
 	repo, err := initRepo()
 

@@ -1,9 +1,9 @@
 name: Build on branch
 
 on:
- push:
-   branches-ignore:
-     - "main"
+  push:
+    branches-ignore:
+      - "main"
 
 jobs:
   cli:

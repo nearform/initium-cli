@@ -1,17 +1,20 @@
 package k8s
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"path"
+	"strings"
 	"text/template"
 	"time"
 
+	"github.com/charmbracelet/log"
 	"github.com/nearform/initium-cli/src/services/docker"
 	"github.com/nearform/initium-cli/src/services/project"
-
-	"github.com/nearform/initium-cli/src/utils/logger"
+	"github.com/nearform/initium-cli/src/utils/defaults"
 
 	corev1 "k8s.io/api/core/v1"
 	apimachineryErrors "k8s.io/apimachinery/pkg/api/errors"
@@ -22,6 +25,11 @@ import (
 	certutil "k8s.io/client-go/util/cert"
 	servingv1 "knative.dev/serving/pkg/apis/serving/v1"
 	servingv1client "knative.dev/serving/pkg/client/clientset/versioned/typed/serving/v1"
+)
+
+const (
+	UpdateShaAnnotationName       = "initium.nearform.com/updateSha"
+	UpdateTimestampAnnotationName = "initium.nearform.com/updateTimestamp"
 )
 
 func Config(endpoint string, token string, caCrt []byte) (*rest.Config, error) {
@@ -38,7 +46,7 @@ func Config(endpoint string, token string, caCrt []byte) (*rest.Config, error) {
 	}, nil
 }
 
-func loadManifest(project *project.Project, dockerImage docker.DockerImage) (*servingv1.Service, error) {
+func loadManifest(namespace string, commitSha string, project *project.Project, dockerImage docker.DockerImage, envFile string) (*servingv1.Service, error) {
 	knativeTemplate := path.Join("assets", "knative", "service.yaml.tmpl")
 	template, err := template.ParseFS(project.Resources, knativeTemplate)
 	if err != nil {
@@ -75,15 +83,85 @@ func loadManifest(project *project.Project, dockerImage docker.DockerImage) (*se
 		return nil, fmt.Errorf("decoded object is not a Knative Service: %v", obj)
 	}
 
+	service.ObjectMeta.Namespace = namespace
+	service.ObjectMeta.Name = project.Name
+	service.Spec.Template.ObjectMeta.Annotations = map[string]string{
+		UpdateShaAnnotationName:       commitSha,
+		UpdateTimestampAnnotationName: time.Now().Format(time.RFC3339),
+	}
+
+	envVarList, err := loadEnvFile(envFile)
+	if err != nil {
+		return nil, err
+	}
+
+	service.Spec.Template.Spec.Containers[0].Env = append(service.Spec.Template.Spec.Containers[0].Env, envVarList...)
+
 	return service, nil
 }
 
-func Apply(namespace string, config *rest.Config, project *project.Project, dockerImage docker.DockerImage) error {
-	logger.PrintInfo("Deploying Knative service to " + config.Host)
+func loadEnvFile(envFile string) ([]corev1.EnvVar, error) {
+	var envVarList []corev1.EnvVar
+	if _, err := os.Stat(envFile); err != nil {
+		if (os.IsNotExist(err)) && (path.Base(envFile) == defaults.EnvVarFile) {
+			log.Infof("No environment variables file %s to Load!", defaults.EnvVarFile)
+		} else {
+			return nil, fmt.Errorf("Error loading %v file: %v", envFile, err)
+		}
+	} else {
+		log.Infof("Environment variables file %s found! Loading..", envFile)
+		file, err := os.Open(envFile)
+		if err != nil {
+			return nil, fmt.Errorf("Error opening %v file: %v", envFile, err)
+		}
+		defer file.Close()
+
+		scanner := bufio.NewScanner(file)
+		envVariables := make(map[string]string)
+
+		checkFormat := func(line string) bool {
+			parts := strings.SplitN(line, "=", 2)
+			return len(parts) == 2
+		}
+
+		for scanner.Scan() {
+			line := scanner.Text()
+			if checkFormat(line) {
+				parts := strings.SplitN(line, "=", 2)
+				key := strings.TrimSpace(parts[0])
+				value := strings.TrimSpace(parts[1])
+				envVariables[key] = value
+			} else {
+				log.Warnf("Environment variables file %v line won't be processed due to invalid format: %s. Accepted: KEY=value", envFile, line)
+			}
+		}
+
+		if err := scanner.Err(); err != nil {
+			return nil, fmt.Errorf("Error reading environment variables file %v: %v", envFile, err)
+		}
+
+		if len(envVariables) > 0 {
+			for key, value := range envVariables {
+				envVar := corev1.EnvVar{
+					Name:  key,
+					Value: value,
+				}
+				envVarList = append(envVarList, envVar)
+			}
+			log.Infof("Environment variables file %v content is now loaded!", envFile)
+		} else {
+			log.Warnf("Environment file %v is empty, Nothing to load!", envFile)
+		}
+	}
+	return envVarList, nil
+}
+
+func Apply(namespace string, commitSha string, config *rest.Config, project *project.Project, dockerImage docker.DockerImage, envFile string) error {
+	log.Info("Deploying Knative service", "host", config.Host, "name", project.Name, "namespace", namespace)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
 
-	serviceManifest, err := loadManifest(project, dockerImage)
+	serviceManifest, err := loadManifest(namespace, commitSha, project, dockerImage, envFile)
 	if err != nil {
 		return err
 	}
@@ -93,9 +171,6 @@ func Apply(namespace string, config *rest.Config, project *project.Project, dock
 	if err != nil {
 		return fmt.Errorf("Error creating the knative client %v", err)
 	}
-
-	serviceManifest.ObjectMeta.Namespace = namespace
-	serviceManifest.ObjectMeta.Name = project.Name
 
 	client, err := kubernetes.NewForConfig(config)
 	if err != nil {
@@ -146,7 +221,7 @@ func Apply(namespace string, config *rest.Config, project *project.Project, dock
 }
 
 func Clean(namespace string, config *rest.Config, project *project.Project) error {
-	logger.PrintInfo("Deleting Knative service from " + config.Host)
+	log.Info("Deleting Knative service", "host", config.Host, "name", project.Name, "namespace", namespace)
 	ctx := context.Background()
 
 	// Create a new Knative Serving client
@@ -160,6 +235,6 @@ func Clean(namespace string, config *rest.Config, project *project.Project) erro
 		return fmt.Errorf("deleting the service: %v", err)
 	}
 
-	logger.PrintInfo("Deleted Knative service " + project.Name)
+	log.Info("The Knative service was successfully deleted", "host", config.Host, "name", project.Name, "namespace", namespace)
 	return nil
 }

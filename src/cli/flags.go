@@ -45,6 +45,7 @@ const (
 	imagePullSecretsFlag  string = "image-pull-secrets"
 	stopOnBuildFlag       string = "stop-on-build"
 	stopOnPushFlag        string = "stop-on-push"
+	envVarFileFlag        string = "env-var-file"
 )
 
 type flags struct {
@@ -105,6 +106,11 @@ func InitFlags() flags {
 					Name:     imagePullSecretsFlag,
 					EnvVars:  []string{"INITIUM_REGISTRY_SECRET"},
 					Required: false,
+					Category: "deploy",
+				},
+				&cli.StringFlag{
+					Name:     envVarFileFlag,
+					Value:    defaults.EnvVarFile,
 					Category: "deploy",
 				},
 			},

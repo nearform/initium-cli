@@ -10,7 +10,7 @@ jobs:
   cli:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: build and deploy on {{ .DefaultBranch }}
         uses: docker://ghcr.io/nearform/initium-cli:latest
