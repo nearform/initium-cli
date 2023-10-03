@@ -170,9 +170,9 @@ func (c icli) InitCMD() *cli.Command {
 					if err := c.loadFlagsFromConfig(ctx); err != nil {
 						return err
 					}
-		
+
 					ignoredFlags := []string{namespaceFlag}
-		
+
 					return c.checkRequiredFlags(ctx, ignoredFlags)
 				},
 			},

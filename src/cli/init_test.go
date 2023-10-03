@@ -138,5 +138,4 @@ func TestKnativeDomain(t *testing.T) {
 		t.Errorf("CLI should ask for an argument (knative new domain) if not detected")
 	}
 
-
 }

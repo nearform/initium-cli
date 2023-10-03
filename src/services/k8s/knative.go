@@ -248,18 +248,18 @@ func DomainUpd(kn_domain string, config *rest.Config) error {
 
 	configMap, err := client.CoreV1().ConfigMaps(namespace).Get(ctx, configMapName, metav1.GetOptions{})
 
-    if err != nil {
-        return fmt.Errorf("Getting ConfigMaps: %v", err)
-    }
+	if err != nil {
+		return fmt.Errorf("Getting ConfigMaps: %v", err)
+	}
 
 	configMap.Data = make(map[string]string)
 
 	configMap.Data[kn_domain] = ""
 
-    _, err = client.CoreV1().ConfigMaps(namespace).Update(ctx, configMap, metav1.UpdateOptions{})
-    if err != nil {
-        return err
-    }
+	_, err = client.CoreV1().ConfigMaps(namespace).Update(ctx, configMap, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
 
 	log.Info("Knative default domain name was successfully updated!", "new domain", kn_domain, "configMap", configMapName, "namespace", namespace)
 
