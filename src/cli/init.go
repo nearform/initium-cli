@@ -103,7 +103,7 @@ func (c icli) InitServiceAccountCMD(ctx *cli.Context) error {
 	return k8s.GetServiceAccount(c.Resources)
 }
 
-func (c icli) InitKnativeCMD(cCtx *cli.Context) error {
+func (c icli) InitKnativeDomainCMD(cCtx *cli.Context) error {
 	config, err := knative.Config(
 		cCtx.String(endpointFlag),
 		cCtx.String(tokenFlag),
@@ -165,7 +165,7 @@ func (c icli) InitCMD() *cli.Command {
 				Name:   "knative-domain",
 				Usage:  "updates knative service default domain",
 				Flags:  c.CommandFlags([]FlagsType{Kubernetes}),
-				Action: c.InitKnativeCMD,
+				Action: c.InitKnativeDomainCMD,
 				Before: func(ctx *cli.Context) error {
 					if err := c.loadFlagsFromConfig(ctx); err != nil {
 						return err
