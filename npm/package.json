@@ -2,7 +2,7 @@
   "name": "initium",
   "binaryName": "initium",
   "repositoryName": "initium-cli",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "A single static binary that can run on any CI to build your code and deploy it in a single step.",
   "scripts": {
     "postinstall": "node scripts/npm-install.js",
