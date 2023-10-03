@@ -129,3 +129,14 @@ func TestAppName(t *testing.T) {
 		t.Errorf("the error message should contain %s and %s", appNameFlag, repoNameFlag)
 	}
 }
+
+func TestKnativeDomain(t *testing.T) {
+	cli := GeticliForTesting(os.DirFS("../.."))
+
+	err := cli.Run([]string{"initium", "init", "knative-domain"})
+	if err == nil {
+		t.Errorf("CLI should ask for an argument (knative new domain) if not detected")
+	}
+
+
+}
