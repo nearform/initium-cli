@@ -114,10 +114,17 @@ func (c icli) InitKnativeCMD(cCtx *cli.Context) error {
 		return err
 	}
 
+	if cCtx.NArg() < 1 {
+		return fmt.Errorf("Knative domain argument is required!")
+	}
+
 	knativeDomain := cCtx.Args().Get(0)
-	fmt.Printf("Argument from subcommand: %s\n", knativeDomain)
-	os.Exit(1)
-	knative.DomainUpd(knativeDomain, config)
+
+	err = knative.DomainUpd(knativeDomain, config)
+
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -157,8 +164,17 @@ func (c icli) InitCMD() *cli.Command {
 			{
 				Name:   "knative-domain",
 				Usage:  "updates knative service default domain",
+				Flags:  c.CommandFlags([]FlagsType{Kubernetes}),
 				Action: c.InitKnativeCMD,
-				Before: c.baseBeforeFunc,
+				Before: func(ctx *cli.Context) error {
+					if err := c.loadFlagsFromConfig(ctx); err != nil {
+						return err
+					}
+		
+					ignoredFlags := []string{namespaceFlag}
+		
+					return c.checkRequiredFlags(ctx, ignoredFlags)
+				},
 			},
 		},
 	}

@@ -216,7 +216,10 @@ func Apply(namespace string, commitSha string, config *rest.Config, project *pro
 
 func Clean(namespace string, config *rest.Config, project *project.Project) error {
 	log.Info("Deleting Knative service", "host", config.Host, "name", project.Name, "namespace", namespace)
-	ctx := context.Background()
+	//ctx := context.Background()
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*2)
+	defer cancel()
 
 	// Create a new Knative Serving client
 	servingClient, err := servingv1client.NewForConfig(config)
@@ -241,27 +244,22 @@ func DomainUpd(kn_domain string, config *rest.Config) error {
 	log.Info("Updating Knative default domain name...", "new domain", kn_domain, "configMap", configMapName, "namespace", namespace)
 	ctx := context.Background()
 
-	// Create a new Knative Serving client
-	//servingClient, err := servingv1client.NewForConfig(config)
-	//if err != nil {
-	//	return fmt.Errorf("Error creating the knative client %v", err)
-	//}
-
 	client, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return fmt.Errorf("Creating Kubernetes client %v", err)
 	}
 
-	configMaps := client.CoreV1().ConfigMaps(namespace)
+	configMap, err := client.CoreV1().ConfigMaps(namespace).Get(ctx, configMapName, metav1.GetOptions{})
 
-	configMap, err := configMaps.Get(ctx, configMapName, metav1.GetOptions{})
     if err != nil {
-        return err
+        return fmt.Errorf("Getting ConfigMaps: %v", err)
     }
 
-	configMap.Data["domain"] = kn_domain
+	configMap.Data = make(map[string]string)
 
-    _, err = configMaps.Update(ctx, configMap, metav1.UpdateOptions{})
+	configMap.Data[kn_domain] = ""
+
+    _, err = client.CoreV1().ConfigMaps(namespace).Update(ctx, configMap, metav1.UpdateOptions{})
     if err != nil {
         return err
     }
