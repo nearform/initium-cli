@@ -98,12 +98,12 @@ func loadEnvFile(envFile string) ([]corev1.EnvVar, error) {
 	var envVarList []corev1.EnvVar
 	if _, err := os.Stat(envFile); err != nil {
 		if (os.IsNotExist(err)) && (path.Base(envFile) == defaults.EnvVarFile) {
-			log.Info("No environment variables file .env.initium to Load!")
+			log.Infof("No environment variables file %s to Load!", defaults.EnvVarFile)
 		} else {
 			return nil, fmt.Errorf("Error loading %v file: %v", envFile, err)
 		}
 	} else {
-		log.Info(fmt.Sprintf("Environment variables file %s found! Loading..", envFile))
+		log.Infof("Environment variables file %s found! Loading..", envFile)
 		file, err := os.Open(envFile)
 		if err != nil {
 			return nil, fmt.Errorf("Error opening %v file: %v", envFile, err)
@@ -142,7 +142,7 @@ func loadEnvFile(envFile string) ([]corev1.EnvVar, error) {
 				}
 				envVarList = append(envVarList, envVar)
 			}
-			log.Info(fmt.Sprintf("Environment variables file %v content is now loaded!", envFile))
+			log.Infof("Environment variables file %v content is now loaded!", envFile)
 		} else {
 			log.Warnf("Environment file %v is empty, Nothing to load!", envFile)
 		}
