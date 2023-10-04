@@ -52,18 +52,20 @@ func New(resources fs.FS) icli {
 }
 
 func (c icli) baseBeforeFunc(ctx *cli.Context) error {
-	if err := c.loadFlagsFromConfig(ctx); err != nil {
-		return err
-	}
-
-	if err := c.checkRequiredFlags(ctx, []string{}); err != nil {
-		return err
-	}
-
-	if ctx.Command.Name != "init" && ctx.Command.Name != "help" {
-		clientConfigFileName := ctx.String(configFileFlag)
-		if err := versions.CheckClientConfigFileSchemaMatchesCli(clientConfigFileName, c.Resources); err != nil {
+	if ctx.Command.Name != "version" {
+		if err := c.loadFlagsFromConfig(ctx); err != nil {
 			return err
+		}
+
+		if err := c.checkRequiredFlags(ctx, []string{}); err != nil {
+			return err
+		}
+
+		if ctx.Command.Name != "init" && ctx.Command.Name != "help" {
+			clientConfigFileName := ctx.String(configFileFlag)
+			if err := versions.CheckClientConfigFileSchemaMatchesCli(clientConfigFileName, c.Resources); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -146,6 +148,7 @@ func (c icli) Run(args []string) error {
 			c.OnBranchCMD(),
 			c.TemplateCMD(),
 			c.InitCMD(),
+			c.VersionCMD(),
 		},
 		Before: func(ctx *cli.Context) error {
 			if err := c.loadFlagsFromConfig(ctx); err != nil {

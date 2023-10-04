@@ -20,6 +20,10 @@
           "type": "json",
           "path": "npm/package-lock.json",
           "jsonpath": "$.packages[''].version"
+        }, {
+          "type": "json",
+          "path": "assets/versions/versions.json",
+          "jsonpath": "$.cliVersion"
         }
       ]
     }

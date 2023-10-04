@@ -29,6 +29,16 @@ func LoadCliVersionsFileContent(resources fs.FS) ([]byte, error) {
 	return bytes, nil
 }
 
+func GetCliVersion(cliVersionsFileContent []byte) (string, error) {
+	var versionsFile VersionsFile
+	err := json.Unmarshal(cliVersionsFileContent, &versionsFile)
+	if err != nil {
+		return "", err
+	}
+
+	return versionsFile.CliVersion, nil
+}
+
 func GetCurrentCliConfigFileSchemaVersion(cliVersionsFileContent []byte) (string, error) {
 	var versionsFile VersionsFile
 	err := json.Unmarshal(cliVersionsFileContent, &versionsFile)

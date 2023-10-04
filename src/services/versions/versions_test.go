@@ -13,6 +13,8 @@ type ClientConfigFile struct {
 	AppName       string `yaml:"app-name"`
 }
 
+const cliVersion = "v0.5.0"
+
 func TestShouldReturnCurrentCliConfigFileSchemaVersion(t *testing.T) {
 	cliConfigFileSchemaVersion := InitialConfigFileSchemaVersion
 	bytes, err := getCliVersionsFileContent(cliConfigFileSchemaVersion)
@@ -26,6 +28,21 @@ func TestShouldReturnCurrentCliConfigFileSchemaVersion(t *testing.T) {
 	}
 
 	assert.Assert(t, schemaVersion == cliConfigFileSchemaVersion, fmt.Sprintf("Expected: %s, got: %s", cliConfigFileSchemaVersion, schemaVersion))
+}
+
+func TestShouldReturnCliVersion(t *testing.T) {
+	cliConfigFileSchemaVersion := InitialConfigFileSchemaVersion
+	cliVersionsFileContent, err := getCliVersionsFileContent(cliConfigFileSchemaVersion)
+	if err != nil {
+		t.Fatalf(fmt.Sprintf("Error: %s", err))
+	}
+
+	version, err := GetCliVersion(cliVersionsFileContent)
+	if err != nil {
+		t.Fatalf(fmt.Sprintf("Error: %s", err))
+	}
+
+	assert.Assert(t, version == cliVersion, fmt.Sprintf("Expected: %s, got: %s", cliVersion, version))
 }
 
 func TestShouldBeBackwardCompatibleWhenClientConfigIsMissingSchemaVersion(t *testing.T) {
@@ -78,7 +95,7 @@ func TestShouldReturnAnErrorWhenThereIsAMismatchBetweenSchemaVersions(t *testing
 
 func getCliVersionsFileContent(schemaVersion string) ([]byte, error) {
 	versionsFile := VersionsFile{
-		CliVersion:              "v0.5.0",
+		CliVersion:              cliVersion,
 		ConfigFileSchemaVersion: schemaVersion,
 	}
 	return json.Marshal(versionsFile)
