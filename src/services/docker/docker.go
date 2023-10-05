@@ -30,15 +30,18 @@ type DockerService struct {
 
 // Create a new instance of the DockerService
 func New(project project.Project, dockerImage DockerImage, dockerFileName string) (DockerService, error) {
-	client, err := getClient()
+	dockerClient, err := getClient()
 	if err != nil {
 		return DockerService{}, err
 	}
+	return NewWithDockerClient(project, dockerImage, dockerFileName, dockerClient)
+}
 
+func NewWithDockerClient(project project.Project, dockerImage DockerImage, dockerFileName string, dockerClient *client.Client) (DockerService, error) {
 	return DockerService{
 		project:        project,
 		DockerFileName: dockerFileName,
-		Client:         *client,
+		Client:         *dockerClient,
 		dockerImage:    dockerImage,
 	}, nil
 }
