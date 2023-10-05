@@ -3,10 +3,11 @@ package k8s
 import (
 	"encoding/base64"
 	"fmt"
-	"gotest.tools/v3/assert"
 	"os"
 	"path"
 	"testing"
+
+	"gotest.tools/v3/assert"
 
 	"github.com/nearform/initium-cli/src/services/docker"
 	"github.com/nearform/initium-cli/src/services/project"
@@ -57,12 +58,12 @@ func TestConfig(t *testing.T) {
 func TestLoadManifest(t *testing.T) {
 	namespace := "custom"
 	commitSha := "93f4be93"
-
+	imagePullSecret := "secretPassword123"
 
 	proj := &project.Project{Name: "knative_test",
-		Directory: path.Join(root, "example"),
-		Resources: os.DirFS(root),
-		ImagePullSecrets: "secretPassword123",
+		Directory:        path.Join(root, "example"),
+		Resources:        os.DirFS(root),
+		ImagePullSecrets: imagePullSecret,
 	}
 
 	dockerImage := docker.DockerImage{
@@ -79,7 +80,8 @@ func TestLoadManifest(t *testing.T) {
 	}
 
 	annotations := serviceManifest.Spec.Template.ObjectMeta.Annotations
+	pullSecret := serviceManifest.Spec.Template.Spec.ImagePullSecrets[0].Name
 	assert.Assert(t, annotations[UpdateTimestampAnnotationName] != "", "Missing %s annotation", UpdateTimestampAnnotationName)
 	assert.Assert(t, annotations[UpdateShaAnnotationName] == commitSha, "Expected %s SHA, got %s", commitSha, annotations[UpdateShaAnnotationName])
+	assert.Assert(t, pullSecret == "", "Missing secret %s", imagePullSecret)
 }
-
