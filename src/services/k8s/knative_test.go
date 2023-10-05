@@ -58,9 +58,11 @@ func TestLoadManifest(t *testing.T) {
 	namespace := "custom"
 	commitSha := "93f4be93"
 
+
 	proj := &project.Project{Name: "knative_test",
 		Directory: path.Join(root, "example"),
 		Resources: os.DirFS(root),
+		ImagePullSecrets: "secretPassword123",
 	}
 
 	dockerImage := docker.DockerImage{
