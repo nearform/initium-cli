@@ -83,5 +83,5 @@ func TestLoadManifest(t *testing.T) {
 	pullSecret := serviceManifest.Spec.Template.Spec.ImagePullSecrets[0].Name
 	assert.Assert(t, annotations[UpdateTimestampAnnotationName] != "", "Missing %s annotation", UpdateTimestampAnnotationName)
 	assert.Assert(t, annotations[UpdateShaAnnotationName] == commitSha, "Expected %s SHA, got %s", commitSha, annotations[UpdateShaAnnotationName])
-	assert.Assert(t, pullSecret == "", "Missing secret %s", imagePullSecret)
+	assert.Assert(t, pullSecret != "", "Missing secret %s", imagePullSecret)
 }
