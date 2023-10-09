@@ -104,7 +104,7 @@ func InitFlags() flags {
 				},
 				&cli.StringFlag{
 					Name:     imagePullSecretsFlag,
-					EnvVars:  []string{"INITIUM_REGISTRY_SECRET"},
+					EnvVars:  []string{"INITIUM_IMAGE_PULL_SECRET"},
 					Required: false,
 					Category: "deploy",
 				},
