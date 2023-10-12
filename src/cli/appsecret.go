@@ -2,12 +2,12 @@ package cli
 
 import (
 	"bufio"
-	"os"
 	"fmt"
 	"github.com/nearform/initium-cli/src/services/git"
 	knative "github.com/nearform/initium-cli/src/services/k8s"
 	"github.com/nearform/initium-cli/src/utils"
 	"github.com/urfave/cli/v2"
+	"os"
 )
 
 func (c *icli) AppSetSecret(cCtx *cli.Context) error {
