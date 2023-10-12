@@ -137,6 +137,7 @@ func (c icli) Run(args []string) error {
 			c.OnBranchCMD(),
 			c.TemplateCMD(),
 			c.InitCMD(),
+			c.AppSecretCMD(),
 		},
 		Before: func(ctx *cli.Context) error {
 			if err := c.loadFlagsFromConfig(ctx); err != nil {

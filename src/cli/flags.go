@@ -18,6 +18,7 @@ import (
 type FlagsType string
 
 const (
+	AppSecret  FlagsType = "appsecret"
 	Build      FlagsType = "build"
 	Kubernetes FlagsType = "kubernetes"
 	Registry   FlagsType = "registry"
@@ -45,6 +46,7 @@ const (
 	stopOnBuildFlag       string = "stop-on-build"
 	stopOnPushFlag        string = "stop-on-push"
 	envVarFileFlag        string = "env-var-file"
+	secretKeyFlag         string = "secret-key"
 )
 
 type flags struct {
@@ -69,6 +71,13 @@ func InitFlags() flags {
 	f := flags{
 		requiredFlags: []string{},
 		all: map[FlagsType]([]cli.Flag){
+			AppSecret: []cli.Flag{
+				&cli.StringFlag{
+					Name:     secretKeyFlag,
+					Usage:    "Provide secret key & will prompt for value",
+					Required: true,
+				},
+			},
 			Build: []cli.Flag{
 				&cli.StringFlag{
 					Name:     runtimeVersionFlag,

@@ -232,3 +232,52 @@ func Clean(namespace string, config *rest.Config, project *project.Project) erro
 	log.Info("The Knative service was successfully deleted", "host", config.Host, "name", project.Name, "namespace", namespace)
 	return nil
 }
+
+func SecretUpd(secretKey string, secretValue string, config *rest.Config, project *project.Project, namespace string) error {
+
+	secretName := "knative-app-" + strings.ToLower(secretKey)
+
+	log.Info("Assigning Knative secret..", "secret name", secretName)
+	ctx := context.Background()
+
+	// Create a new Knative Serving client
+	servingClient, err := servingv1client.NewForConfig(config)
+	if err != nil {
+		return fmt.Errorf("Error creating the knative client %v", err)
+	}
+
+	fmt.Printf("project name: %s", project.Name)
+	fmt.Printf("namespace name: %s", namespace)
+	service, err := servingClient.Services(namespace).Get(ctx, project.Name, metav1.GetOptions{})
+	if err != nil {
+		return fmt.Errorf("Error fetching Knative Service: %v", err)
+	}
+
+	SetSecret(secretName, secretKey, secretValue, config, namespace)
+
+	//service.Spec.Template.Spec.Containers[0].Env = append(service.Spec.Template.Spec.Containers[0].Env, envVarList...)
+
+	// Update the Knative Service to reference the secret
+	service.Spec.Template.Spec.Containers[0].Env = append(
+		service.Spec.Template.Spec.Containers[0].Env,
+		corev1.EnvVar{
+			Name: secretName,
+			ValueFrom: &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					LocalObjectReference: corev1.LocalObjectReference{Name: secretName},
+					Key:                  secretKey,
+				},
+			},
+		},
+	)
+
+	_, err = servingClient.Services(namespace).Update(ctx, service, metav1.UpdateOptions{})
+
+	if err != nil {
+		return fmt.Errorf("Updating K8s service %v", err)
+	}
+
+	log.Info("Knative secret was successfully assigned!", "secret name", secretName)
+
+	return nil
+}
