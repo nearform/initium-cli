@@ -58,7 +58,6 @@ func New(name string, language string, directory string, runtimeVersion string, 
 func (proj *Project) detectType() (ProjectType, error) {
 	detectedRuntimes := 0
 	var projectType ProjectType
-	var err error
 	if _, err := os.Stat(path.Join(proj.Directory, "package.json")); err == nil {
 		proj.DefaultRuntimeVersion = defaults.DefaultNodeRuntimeVersion
 		detectedRuntimes++
@@ -73,7 +72,7 @@ func (proj *Project) detectType() (ProjectType, error) {
 	if detectedRuntimes > 1 {
 		return "", fmt.Errorf("more than one project runtime detected, use --project-language flag or the INITIUM_PROJECT_LANGUAGE env variable to set the desired runtime")
 	}
-	return projectType, err
+	return projectType, nil
 }
 
 func (proj *Project) matchType() (ProjectType, error) {
