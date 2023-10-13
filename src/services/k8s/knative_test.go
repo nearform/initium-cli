@@ -58,12 +58,12 @@ func TestConfig(t *testing.T) {
 func TestLoadManifest(t *testing.T) {
 	namespace := "custom"
 	commitSha := "93f4be93"
-	imagePullSecret := "secretPassword123"
+	imagePullSecrets := []string{"secretPassword123"}
 
 	proj := &project.Project{Name: "knative_test",
 		Directory:        path.Join(root, "example"),
 		Resources:        os.DirFS(root),
-		ImagePullSecrets: imagePullSecret,
+		ImagePullSecrets: imagePullSecrets,
 	}
 
 	dockerImage := docker.DockerImage{
@@ -83,5 +83,5 @@ func TestLoadManifest(t *testing.T) {
 	pullSecret := serviceManifest.Spec.Template.Spec.ImagePullSecrets[0].Name
 	assert.Assert(t, annotations[UpdateTimestampAnnotationName] != "", "Missing %s annotation", UpdateTimestampAnnotationName)
 	assert.Assert(t, annotations[UpdateShaAnnotationName] == commitSha, "Expected %s SHA, got %s", commitSha, annotations[UpdateShaAnnotationName])
-	assert.Assert(t, pullSecret == imagePullSecret, "Expected secret value to be %s, got %s", imagePullSecret, pullSecret)
+	assert.Assert(t, pullSecret == imagePullSecrets[0], "Expected secret value to be %s, got %s", imagePullSecrets, pullSecret)
 }

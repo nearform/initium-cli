@@ -25,7 +25,7 @@ type Project struct {
 	Directory             string
 	RuntimeVersion        string
 	DefaultRuntimeVersion string
-	ImagePullSecrets      string
+	ImagePullSecrets      []string
 	Resources             fs.FS
 }
 
@@ -44,7 +44,7 @@ func GuessAppName() *string {
 	return &name
 }
 
-func New(name string, directory string, runtimeVersion string, version string, imagePullSecrets string, resources fs.FS) Project {
+func New(name string, directory string, runtimeVersion string, version string, imagePullSecrets []string, resources fs.FS) Project {
 	return Project{
 		Name:             name,
 		Directory:        directory,

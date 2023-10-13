@@ -6,9 +6,9 @@ metadata:
 spec:
   template:
     spec:
-      {{ if ne .ImagePullSecrets "" }}
       imagePullSecrets:
-        - name: {{ .ImagePullSecrets }}
+      {{ range .ImagePullSecrets  }}
+        - name: {{ . }}
       {{ end }}
       containers:
         - image: {{ .RemoteTag }}
