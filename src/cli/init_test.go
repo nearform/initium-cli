@@ -22,6 +22,7 @@ dockerfile-name: null
 env-var-file: .env.initium
 registry-user: null
 runtime-version: null
+secret-key: null
 `,
 		appName,
 		registry,
@@ -128,4 +129,14 @@ func TestAppName(t *testing.T) {
 	if !(strings.Contains(err.Error(), appNameFlag) && strings.Contains(err.Error(), repoNameFlag)) {
 		t.Errorf("the error message should contain %s and %s", appNameFlag, repoNameFlag)
 	}
+}
+
+func TestAppSecretFlag(t *testing.T) {
+	cli := GeticliForTesting(os.DirFS("../.."))
+
+	err := cli.Run([]string{"initium", "appsecret", "secret-key"})
+	if err == nil {
+		t.Errorf("CLI should ask for an argument (secret-key) if not detected")
+	}
+
 }

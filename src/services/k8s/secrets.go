@@ -13,7 +13,7 @@ import (
 
 func SetSecret(secretName string, secretKey string, secretValue string, config *rest.Config, namespace string) error {
 
-	log.Info("Creating K8s secret..", "secret name", secretName)
+	log.Info("Setting/Updating K8s secret..", "secret name", secretName)
 	ctx := context.Background()
 
 	client, err := kubernetes.NewForConfig(config)
