@@ -6,3 +6,5 @@ Dockerfile.initium
 initium_onmain.yaml
 initium_onbranch.yaml
 dist/
+
+node_modules

@@ -45,6 +45,7 @@ const (
 	namespaceFlag         string = "namespace"
 	stopOnBuildFlag       string = "stop-on-build"
 	stopOnPushFlag        string = "stop-on-push"
+	envVarFileFlag        string = "env-var-file"
 )
 
 type flags struct {
@@ -99,6 +100,11 @@ func InitFlags() flags {
 					Name:     namespaceFlag,
 					EnvVars:  []string{"INITIUM_NAMESPACE"},
 					Required: true,
+					Category: "deploy",
+				},
+				&cli.StringFlag{
+					Name:     envVarFileFlag,
+					Value:    defaults.EnvVarFile,
 					Category: "deploy",
 				},
 			},

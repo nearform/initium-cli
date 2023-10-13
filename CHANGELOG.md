@@ -1,5 +1,38 @@
 # Changelog
 
+## [0.6.0](https://github.com/nearform/initium-cli/compare/v0.5.0...v0.6.0) (2023-10-03)
+
+
+### Features
+
+* Come up with a standard to pass configuration to the deployed application ([#115](https://github.com/nearform/initium-cli/issues/115)) ([f1b3c2b](https://github.com/nearform/initium-cli/commit/f1b3c2baf4f47e19d59a7089b790c02e9c50b25c))
+* unify all release steps in a single pipeline ([#113](https://github.com/nearform/initium-cli/issues/113)) ([93f4be9](https://github.com/nearform/initium-cli/commit/93f4be9305056e7c67f6cadeca1f7809a17efb88))
+
+
+### Bug Fixes
+
+* add annotations to ensure new docker image is downloaded ([#117](https://github.com/nearform/initium-cli/issues/117)) ([2627252](https://github.com/nearform/initium-cli/commit/262725205322c44870eccfbe351ff2ff448f1d94))
+
+## [0.5.0](https://github.com/nearform/initium-cli/compare/v0.4.0...v0.5.0) (2023-09-21)
+
+
+### Features
+
+* allow release please to publish to npm ([5129767](https://github.com/nearform/initium-cli/commit/51297674339ff204afc71d6f6ee2ed38027fa9fa))
+
+## [0.4.0](https://github.com/nearform/initium-cli/compare/v0.3.0...v0.4.0) (2023-09-21)
+
+
+### Features
+
+* change released binary name to initium ([#107](https://github.com/nearform/initium-cli/issues/107)) ([798a813](https://github.com/nearform/initium-cli/commit/798a813687a4c5356016b02dbfc292a65a5f772d))
+
+
+### Bug Fixes
+
+* execute publish steps only on release ([#110](https://github.com/nearform/initium-cli/issues/110)) ([abb4439](https://github.com/nearform/initium-cli/commit/abb4439d6638fca609316fa6b0fd621135cf75e6))
+* release-please action failing for missing `)` ([#109](https://github.com/nearform/initium-cli/issues/109)) ([b12c919](https://github.com/nearform/initium-cli/commit/b12c919c241fcedb2594979cff666d63176a080d))
+
 ## [0.3.0](https://github.com/nearform/initium-cli/compare/v0.2.0...v0.3.0) (2023-09-04)
 
 

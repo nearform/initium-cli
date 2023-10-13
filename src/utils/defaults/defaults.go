@@ -9,6 +9,7 @@ const (
 	ConfigFile          string = ".initium.yaml"
 	AppVersion          string = "latest"
 	GeneratedDockerFile string = "Dockerfile.initium"
+	EnvVarFile          string = ".env.initium"
 )
 
 // renovate: datasource=docker depName=node
