@@ -3,6 +3,10 @@ kind: Service
 metadata:
   name: {{ .Name }}
   namespace: default
+  labels:
+  {{ if .PrivateService }}
+      networking.knative.dev/visibility: cluster-local
+  {{ end }}
 spec:
   template:
     spec:

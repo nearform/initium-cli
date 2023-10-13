@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/log"
@@ -86,6 +87,13 @@ func (c icli) InitConfigCMD(ctx *cli.Context) error {
 			}
 			n = stringSliceFlag.Name
 			v = strings.Join(ctx.StringSlice(stringSliceFlag.Name), ",")
+		case *cli.BoolFlag:
+			boolFlag := flag.(*cli.BoolFlag)
+			if slices.Contains(excludedFlags, boolFlag.Name) {
+				continue
+			}
+			n = boolFlag.Name
+			v = strconv.FormatBool(ctx.Bool(boolFlag.Name))
 		}
 
 		if v == "" {

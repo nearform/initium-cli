@@ -46,6 +46,7 @@ const (
 	stopOnBuildFlag       string = "stop-on-build"
 	stopOnPushFlag        string = "stop-on-push"
 	envVarFileFlag        string = "env-var-file"
+	isPublicServiceFlag   string = "public"
 )
 
 type flags struct {
@@ -155,6 +156,12 @@ func InitFlags() flags {
 					Usage:   "read parameters from config",
 					Value:   defaults.ConfigFile,
 					EnvVars: []string{"INITIUM_CONFIG_FILE"},
+				},
+				&cli.BoolFlag{
+					Name:     isPublicServiceFlag,
+					Usage:    "will deploy the service as accessible from outside of the cluster",
+					Category: "init",
+					Value:    false,
 				},
 			},
 			Shared: []cli.Flag{

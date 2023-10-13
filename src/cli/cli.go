@@ -79,6 +79,7 @@ func (c *icli) init(cCtx *cli.Context) error {
 	registry := cCtx.String(repoNameFlag)
 	imagePullSecrets := cCtx.StringSlice(imagePullSecretsFlag)
 	dockerFileName := cCtx.String(dockerFileNameFlag)
+	isPublicService := cCtx.Bool(isPublicServiceFlag)
 
 	if dockerFileName == "" {
 		dockerFileName = defaults.GeneratedDockerFile
@@ -94,6 +95,7 @@ func (c *icli) init(cCtx *cli.Context) error {
 		projectDirectory,
 		cCtx.String(runtimeVersionFlag),
 		version,
+		isPublicService,
 		imagePullSecrets,
 		c.Resources,
 	)

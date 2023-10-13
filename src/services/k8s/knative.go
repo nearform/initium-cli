@@ -54,9 +54,10 @@ func loadManifest(namespace string, commitSha string, project *project.Project, 
 	}
 
 	templateParams := map[string]interface{}{
-		"Name": dockerImage.Name,
-		"RemoteTag": dockerImage.RemoteTag(),
+		"Name":             dockerImage.Name,
+		"RemoteTag":        dockerImage.RemoteTag(),
 		"ImagePullSecrets": project.ImagePullSecrets,
+		"PrivateService":   !project.IsPublicService,
 	}
 
 	output := &bytes.Buffer{}

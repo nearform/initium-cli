@@ -27,6 +27,7 @@ type Project struct {
 	DefaultRuntimeVersion string
 	ImagePullSecrets      []string
 	Resources             fs.FS
+	IsPublicService       bool
 }
 
 type InitOptions struct {
@@ -44,7 +45,7 @@ func GuessAppName() *string {
 	return &name
 }
 
-func New(name string, directory string, runtimeVersion string, version string, imagePullSecrets []string, resources fs.FS) Project {
+func New(name string, directory string, runtimeVersion string, version string, isPublicService bool, imagePullSecrets []string, resources fs.FS) Project {
 	return Project{
 		Name:             name,
 		Directory:        directory,
@@ -52,6 +53,7 @@ func New(name string, directory string, runtimeVersion string, version string, i
 		ImagePullSecrets: imagePullSecrets,
 		Resources:        resources,
 		Version:          version,
+		IsPublicService:  isPublicService,
 	}
 }
 

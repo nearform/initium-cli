@@ -13,17 +13,19 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-func compareConfig(t *testing.T, appName string, registry string, writer io.Writer) {
+func compareConfig(t *testing.T, appName string, registry string, isPublicService bool, writer io.Writer) {
 	configTemplate := fmt.Sprintf(`app-name: %s
 container-registry: %s
 default-branch: main
 dockerfile-name: null
 env-var-file: .env.initium
 image-pull-secrets: null
+public: %b
 runtime-version: null
 `,
 		appName,
 		registry,
+		isPublicService,
 	)
 
 	result := fmt.Sprint(writer.(*bytes.Buffer))
@@ -80,7 +82,7 @@ func TestInitConfig(t *testing.T) {
 	if err = icli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config"}); err != nil {
 		t.Error(err)
 	}
-	compareConfig(t, "FromFile", registry, icli.Writer)
+	compareConfig(t, "FromFile", registry, false, icli.Writer)
 
 	// Environment Variable wins over config
 	os.Setenv("INITIUM_APP_NAME", "FromEnv")
@@ -89,14 +91,14 @@ func TestInitConfig(t *testing.T) {
 	if err = icli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config"}); err != nil {
 		t.Error(err)
 	}
-	compareConfig(t, "FromEnv", registry, icli.Writer)
+	compareConfig(t, "FromEnv", registry, false, icli.Writer)
 
 	// Command line argument wins over config and Environment variable
 	reseticliBuffer(&icli)
 	if err = icli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config", "--app-name=FromParam"}); err != nil {
 		t.Error(err)
 	}
-	compareConfig(t, "FromParam", registry, icli.Writer)
+	compareConfig(t, "FromParam", registry, false, icli.Writer)
 
 }
 
@@ -119,20 +121,33 @@ func TestRepoNameRetrocompatibiliy(t *testing.T) {
 	if err = cli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config", "--app-name=FromParam"}); err != nil {
 		t.Error(err)
 	}
-	compareConfig(t, "FromParam", "FromFile", cli.Writer)
+	compareConfig(t, "FromParam", "FromFile", false, cli.Writer)
 
 	//Override from parameter
 	reseticliBuffer(&cli)
 	if err = cli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config", "--app-name=FromParam", "--container-registry=ghcr.io/nearform"}); err != nil {
 		t.Error(err)
 	}
-	compareConfig(t, "FromParam", "ghcr.io/nearform", cli.Writer)
+	compareConfig(t, "FromParam", "ghcr.io/nearform", false, cli.Writer)
 }
 
 func TestAppName(t *testing.T) {
 	cli := geticliForTesting(os.DirFS("../.."))
 
 	err := cli.Run([]string{"initium", "build"})
+	if err == nil {
+		t.Errorf("CLI should ask for %s and %s if not detected", appNameFlag, repoNameFlag)
+	}
+
+	if !(strings.Contains(err.Error(), appNameFlag) && strings.Contains(err.Error(), repoNameFlag)) {
+		t.Errorf("the error message should contain %s and %s", appNameFlag, repoNameFlag)
+	}
+}
+
+func TestPublicKnativeService(t *testing.T) {
+	cli := GeticliForTesting(os.DirFS("../.."))
+
+	err := cli.Run([]string{"initium", "init"})
 	if err == nil {
 		t.Errorf("CLI should ask for %s and %s if not detected", appNameFlag, repoNameFlag)
 	}
