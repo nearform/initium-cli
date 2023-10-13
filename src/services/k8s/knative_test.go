@@ -80,13 +80,3 @@ func TestLoadManifest(t *testing.T) {
 	assert.Assert(t, annotations[UpdateTimestampAnnotationName] != "", "Missing %s annotation", UpdateTimestampAnnotationName)
 	assert.Assert(t, annotations[UpdateShaAnnotationName] == commitSha, "Expected %s SHA, got %s", commitSha, annotations[UpdateShaAnnotationName])
 }
-
-//func TestAppSecretFlag(t *testing.T) {
-//	cli := GeticliForTesting(os.DirFS("../.."))
-//
-//	err := cli.Run([]string{"initium", "appsecret", "secret-key"})
-//	if err == nil {
-//		t.Errorf("CLI should ask for an argument (secret-key) if not detected")
-//	}
-//
-//}
