@@ -15,12 +15,11 @@ import (
 
 func compareConfig(t *testing.T, appName string, registry string, writer io.Writer) {
 	configTemplate := fmt.Sprintf(`app-name: %s
-cluster-endpoint: null
 container-registry: %s
 default-branch: main
 dockerfile-name: null
 env-var-file: .env.initium
-registry-user: null
+image-pull-secrets: null
 runtime-version: null
 `,
 		appName,

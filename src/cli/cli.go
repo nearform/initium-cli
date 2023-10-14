@@ -23,7 +23,7 @@ type icli struct {
 	CWD           string
 	DockerService docker.DockerService
 	Logger        *log.Logger
-	project       project.Project
+	project       *project.Project
 	dockerImage   docker.DockerImage
 	flags         flags
 	Writer        io.Writer
@@ -67,6 +67,7 @@ func (c *icli) init(cCtx *cli.Context) error {
 	projectDirectory := cCtx.String(projectDirectoryFlag)
 	absProjectDirectory, err := filepath.Abs(cCtx.String(projectDirectoryFlag))
 	registry := cCtx.String(repoNameFlag)
+	imagePullSecrets := cCtx.StringSlice(imagePullSecretsFlag)
 	dockerFileName := cCtx.String(dockerFileNameFlag)
 
 	if dockerFileName == "" {
@@ -83,6 +84,7 @@ func (c *icli) init(cCtx *cli.Context) error {
 		projectDirectory,
 		cCtx.String(runtimeVersionFlag),
 		version,
+		imagePullSecrets,
 		c.Resources,
 	)
 
@@ -109,18 +111,18 @@ func (c *icli) init(cCtx *cli.Context) error {
 
 	c.DockerService = dockerService
 	c.dockerImage = dockerImage
-	c.project = project
+	c.project = &project
 	return nil
 }
 
 func (c *icli) getProject(cCtx *cli.Context) (*project.Project, error) {
-	if (c.project == project.Project{}) {
+	if c.project == nil {
 		err := c.init(cCtx)
 		if err != nil {
 			return nil, err
 		}
 	}
-	return &c.project, nil
+	return c.project, nil
 }
 
 func (c icli) Run(args []string) error {
@@ -143,10 +145,7 @@ func (c icli) Run(args []string) error {
 				return err
 			}
 
-			if err := c.checkRequiredFlags(ctx, []string{}); err != nil {
-				return err
-			}
-			return nil
+			return c.checkRequiredFlags(ctx, []string{})
 		},
 	}
 
