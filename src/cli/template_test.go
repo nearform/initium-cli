@@ -3,12 +3,13 @@ package cli
 import (
 	"bytes"
 	"fmt"
-	"github.com/nearform/initium-cli/src/services/project"
-	"github.com/urfave/cli/v2"
-	"gotest.tools/v3/assert"
 	"os"
 	"path"
 	"testing"
+
+	"github.com/nearform/initium-cli/src/services/project"
+	"github.com/urfave/cli/v2"
+	"gotest.tools/v3/assert"
 )
 
 const root = "../../"
@@ -61,7 +62,7 @@ func TestShouldRenderDockerTemplate(t *testing.T) {
 
 		cCtx := cli.Context{}
 		instance := icli{
-			project: project.Project{
+			project: &project.Project{
 				Name:      string(projectType),
 				Directory: path.Join(root, props["directory"]),
 				Resources: os.DirFS(root),

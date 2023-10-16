@@ -153,7 +153,7 @@ func (c icli) Run(args []string) error {
 				Name:  "version",
 				Usage: "Return the version of the cli",
 				Action: func(ctx *cli.Context) error {
-					_, err := fmt.Printf("version %s, commit %s, built at %s\n", c.release.Version, c.release.Commit, c.release.Date)
+					_, err := fmt.Fprintf(c.Writer, "version %s, commit %s, built at %s\n", c.release.Version, c.release.Commit, c.release.Date)
 					return err
 				},
 			},
