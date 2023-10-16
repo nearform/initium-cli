@@ -81,10 +81,10 @@ func (proj *Project) detectType() (ProjectType, error) {
 
 func (proj *Project) matchType() (ProjectType, error) {
 	switch proj.Type {
-	case "node":
+	case NodeProject:
 		proj.DefaultRuntimeVersion = defaults.DefaultNodeRuntimeVersion
 		return NodeProject, nil
-	case "go":
+	case GoProject:
 		proj.DefaultRuntimeVersion = defaults.DefaultGoRuntimeVersion
 		return GoProject, nil
 	default:
