@@ -22,12 +22,11 @@ func TestDetectType(t *testing.T) {
 
 	for project_type, props := range projects {
 		test_proj_type := Project{Name: string(project_type),
-			Directory: path.Join(root, props["directory"]),
-			Language:  "auto"}
+			Directory: path.Join(root, props["directory"])}
 
 		var proj_type ProjectType
 		var err error
-		if test_proj_type.Language == "auto" {
+		if test_proj_type.Type == "" {
 			proj_type, err = test_proj_type.detectType()
 		} else {
 			proj_type, err = test_proj_type.matchType()
@@ -52,7 +51,6 @@ func TestLoadDockerfile(t *testing.T) {
 	for project_type, props := range projects {
 		proj_dockerfile := Project{Name: string(project_type),
 			Directory: path.Join(root, props["directory"]),
-			Language:  "auto",
 			Resources: os.DirFS(root),
 		}
 		_, err := proj_dockerfile.loadDockerfile()
@@ -73,7 +71,6 @@ func TestCorrectRuntime(t *testing.T) {
 	proj_runtime := Project{
 		Name:           "test",
 		Directory:      path.Join(root, projects["node"]["directory"]),
-		Language:       "auto",
 		Resources:      os.DirFS(root),
 		RuntimeVersion: "30",
 	}

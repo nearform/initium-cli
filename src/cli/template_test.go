@@ -62,11 +62,10 @@ func TestShouldRenderDockerTemplate(t *testing.T) {
 
 		cCtx := cli.Context{}
 		instance := icli{
-			project: project.Project{
+			project: &project.Project{
 				Name:      string(projectType),
 				Directory: path.Join(root, props["directory"]),
 				Resources: os.DirFS(root),
-				Language:  "auto",
 			},
 			Writer: &buffer,
 		}

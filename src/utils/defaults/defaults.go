@@ -2,7 +2,7 @@ package defaults
 
 const (
 	ProjectDirectory    string = "."
-	ProjectLanguage     string = "auto"
+	ProjectType         string = ""
 	RepoName            string = "ghcr.io/nearform"
 	GithubActionFolder  string = ".github/workflows"
 	GithubDefaultBranch string = "main"

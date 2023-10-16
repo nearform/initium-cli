@@ -22,7 +22,7 @@ const (
 type Project struct {
 	Name                  string
 	Version               string
-	Language              string
+	Type                  ProjectType
 	Directory             string
 	RuntimeVersion        string
 	DefaultRuntimeVersion string
@@ -45,40 +45,42 @@ func GuessAppName() *string {
 	return &name
 }
 
-func New(name string, language string, directory string, runtimeVersion string, version string, imagePullSecrets []string, resources fs.FS) Project {
+func New(name string, projectType ProjectType, directory string, runtimeVersion string, version string, imagePullSecrets []string, resources fs.FS) Project {
 	return Project{
-		Name:           name,
-		Language:       language,
-		Directory:      directory,
-		RuntimeVersion: runtimeVersion,
-    ImagePullSecrets: imagePullSecrets,
-		Resources:      resources,
-		Version:        version,
+		Name:             name,
+		Type:             projectType,
+		Directory:        directory,
+		RuntimeVersion:   runtimeVersion,
+		ImagePullSecrets: imagePullSecrets,
+		Resources:        resources,
+		Version:          version,
 	}
 }
 
 func (proj *Project) detectType() (ProjectType, error) {
-	detectedRuntimes := 0
+	var detectedRuntimes []ProjectType
 	var projectType ProjectType
 	if _, err := os.Stat(path.Join(proj.Directory, "package.json")); err == nil {
 		proj.DefaultRuntimeVersion = defaults.DefaultNodeRuntimeVersion
-		detectedRuntimes++
+		detectedRuntimes = append(detectedRuntimes, NodeProject)
 		projectType = NodeProject
-	} else if _, err := os.Stat(path.Join(proj.Directory, "go.mod")); err == nil {
-		proj.DefaultRuntimeVersion = defaults.DefaultGoRuntimeVersion
-		detectedRuntimes++
-		projectType = GoProject
-	} else {
-		return "", fmt.Errorf("cannot detect project type %v", err)
 	}
-	if detectedRuntimes > 1 {
-		return "", fmt.Errorf("more than one project runtime detected, use --project-language flag or the INITIUM_PROJECT_LANGUAGE env variable to set the desired runtime")
+	if _, err := os.Stat(path.Join(proj.Directory, "go.mod")); err == nil {
+		proj.DefaultRuntimeVersion = defaults.DefaultGoRuntimeVersion
+		detectedRuntimes = append(detectedRuntimes, GoProject)
+		projectType = GoProject
+	}
+	if len(detectedRuntimes) == 0 {
+		return "", fmt.Errorf("cannot detect project type")
+	}
+	if len(detectedRuntimes) > 1 {
+		return "", fmt.Errorf("more than one project runtimes detected (%v), use --project-type flag or the INITIUM_PROJECT_TYPE env variable to set the desired runtime", detectedRuntimes)
 	}
 	return projectType, nil
 }
 
 func (proj *Project) matchType() (ProjectType, error) {
-	switch proj.Language {
+	switch proj.Type {
 	case "node":
 		proj.DefaultRuntimeVersion = defaults.DefaultNodeRuntimeVersion
 		return NodeProject, nil
@@ -86,17 +88,17 @@ func (proj *Project) matchType() (ProjectType, error) {
 		proj.DefaultRuntimeVersion = defaults.DefaultGoRuntimeVersion
 		return GoProject, nil
 	default:
-		return "", fmt.Errorf("cannot detect project type %s", proj.Language)
+		return "", fmt.Errorf("cannot detect project type %s", proj.Type)
 	}
 }
 
 func (proj Project) loadDockerfile() ([]byte, error) {
 	var projectType ProjectType
 	var err error
-	if proj.Language == "auto" {
-		projectType, err = proj.detectType()
-	} else {
+	if proj.Type != "" {
 		projectType, err = proj.matchType()
+	} else {
+		projectType, err = proj.detectType()
 	}
 	if err != nil {
 		return []byte{}, err
