@@ -43,6 +43,7 @@ const (
 	dockerFileNameFlag    string = "dockerfile-name"
 	configFileFlag        string = "config-file"
 	namespaceFlag         string = "namespace"
+	imagePullSecretsFlag  string = "image-pull-secrets"
 	stopOnBuildFlag       string = "stop-on-build"
 	stopOnPushFlag        string = "stop-on-push"
 	envVarFileFlag        string = "env-var-file"
@@ -100,6 +101,13 @@ func InitFlags() flags {
 					Name:     namespaceFlag,
 					EnvVars:  []string{"INITIUM_NAMESPACE"},
 					Required: true,
+					Category: "deploy",
+				},
+				&cli.StringSliceFlag{
+					Name:     imagePullSecretsFlag,
+					Usage:    "Define one or more (repeating the flag or in csv format for the environment variable) image pull secrets",
+					EnvVars:  []string{"INITIUM_IMAGE_PULL_SECRETS"},
+					Required: false,
 					Category: "deploy",
 				},
 				&cli.StringFlag{
@@ -191,12 +199,14 @@ func InitFlags() flags {
 	// this is an hack to go around that issue, we should remove it once urfave v3 is released
 	for _, vs := range f.all {
 		for _, flag := range vs {
-			stringFlag := flag.(*cli.StringFlag)
-			if stringFlag.Required {
-				f.requiredFlags = append(f.requiredFlags, stringFlag.Name)
-				stringFlag.Required = false
+			switch flag.(type) {
+			case *cli.StringFlag:
+				stringFlag := flag.(*cli.StringFlag)
+				if stringFlag.Required {
+					f.requiredFlags = append(f.requiredFlags, stringFlag.Name)
+					stringFlag.Required = false
+				}
 			}
-
 		}
 	}
 
@@ -209,7 +219,6 @@ func (c icli) checkRequiredFlags(ctx *cli.Context, ignoredFlags []string) error 
 
 	for _, v := range ctx.Command.Flags {
 		name := v.Names()[0]
-		c.Logger.Debugf("%s is set to %s", name, ctx.String(name))
 		if slices.Contains(requiredFlags, name) && !slices.Contains(ignoredFlags, name) && !ctx.IsSet(name) {
 			missingFlags = append(missingFlags, name)
 		}
@@ -240,14 +249,16 @@ func (c icli) loadFlagsFromConfig(ctx *cli.Context) error {
 		return fmt.Errorf("cannot parse config file %s, not a valid yaml", cfgFile)
 	}
 
+	excludedFlags := excludedFlagsFromConfig()
+
+	c.Logger.Debugf("Loading flags %v", ctx.Command)
 	for _, v := range ctx.Command.Flags {
 		mainName := v.Names()[0]
 		for _, name := range v.Names() {
-			c.Logger.Debugf("%s is set to %s", name, ctx.String(name))
-			if name != "help" && !ctx.IsSet(mainName) {
-				if config[name] != nil {
-					c.Logger.Debugf("Loading %s as %s", name, config[name])
-					ctx.Set(mainName, config[name].(string))
+			c.Logger.Debugf("%s is set = %v", name, ctx.IsSet(name))
+			if name != "help" && !slices.Contains(excludedFlags, name) && config[name] != nil && !ctx.IsSet(mainName) {
+				if err := ctx.Set(mainName, config[name].(string)); err != nil {
+					return err
 				}
 			}
 		}

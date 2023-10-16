@@ -6,6 +6,10 @@ metadata:
 spec:
   template:
     spec:
+      imagePullSecrets:
+      {{ range .ImagePullSecrets  }}
+        - name: {{ . }}
+      {{ end }}
       containers:
         - image: {{ .RemoteTag }}
           imagePullPolicy: Always

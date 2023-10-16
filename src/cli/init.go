@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/charmbracelet/log"
 	"k8s.io/utils/strings/slices"
@@ -41,8 +42,8 @@ func (c icli) InitGithubCMD(cCtx *cli.Context) error {
 	return nil
 }
 
-func (c icli) InitConfigCMD(ctx *cli.Context) error {
-	excludedFlags := []string{
+func excludedFlagsFromConfig() []string {
+	return []string{
 		"help",
 		appVersionFlag,
 		namespaceFlag,
@@ -53,7 +54,13 @@ func (c icli) InitConfigCMD(ctx *cli.Context) error {
 		tokenFlag,
 		registryPasswordFlag,
 		caCRTFlag,
+		registryUserFlag,
+		endpointFlag,
 	}
+}
+
+func (c icli) InitConfigCMD(ctx *cli.Context) error {
+	excludedFlags := excludedFlagsFromConfig()
 
 	f := []cli.Flag{}
 	for _, vs := range c.flags.all {
@@ -61,27 +68,31 @@ func (c icli) InitConfigCMD(ctx *cli.Context) error {
 	}
 
 	sort.Sort(cli.FlagsByName(f))
-
+	var n, v string
 	config := ""
 	for _, flag := range f {
-		stringFlag := flag.(*cli.StringFlag)
-		if slices.Contains(excludedFlags, stringFlag.Name) {
-			continue
+		switch flag.(type) {
+		case *cli.StringFlag:
+			stringFlag := flag.(*cli.StringFlag)
+			if slices.Contains(excludedFlags, stringFlag.Name) {
+				continue
+			}
+
+			n = stringFlag.Name
+			v = ctx.String(stringFlag.Name)
+		case *cli.StringSliceFlag:
+			stringSliceFlag := flag.(*cli.StringSliceFlag)
+			if slices.Contains(excludedFlags, stringSliceFlag.Name) {
+				continue
+			}
+			n = stringSliceFlag.Name
+			v = strings.Join(ctx.StringSlice(stringSliceFlag.Name), ",")
 		}
 
-		value := ctx.String(stringFlag.Name)
-		if value == "" {
-			value = stringFlag.Value
+		if v == "" {
+			v = "null"
 		}
-
-		next := ""
-		if value == "" {
-			next = fmt.Sprintf("%s: null\n", stringFlag.Name)
-		} else {
-			next = fmt.Sprintf("%s: %s\n", stringFlag.Name, value)
-		}
-
-		config = config + next
+		config = config + fmt.Sprintf("%s: %s\n", n, v)
 	}
 
 	if ctx.Bool(persistFlag) {
@@ -103,7 +114,16 @@ func (c icli) InitServiceAccountCMD(ctx *cli.Context) error {
 }
 
 func (c icli) InitCMD() *cli.Command {
-	configFlags := c.CommandFlags([]FlagsType{Shared})
+	ef := excludedFlagsFromConfig()
+	configFlags := []cli.Flag{}
+	for _, vs := range c.flags.all {
+		for _, flag := range vs {
+			if !slices.Contains(ef, flag.Names()[0]) {
+				configFlags = append(configFlags, flag)
+			}
+		}
+	}
+
 	configFlags = append(configFlags, &cli.BoolFlag{
 		Name:  persistFlag,
 		Value: false,
@@ -126,7 +146,15 @@ func (c icli) InitCMD() *cli.Command {
 				Usage:  "create a config file with all available flags set to null",
 				Flags:  configFlags,
 				Action: c.InitConfigCMD,
-				Before: c.baseBeforeFunc,
+				Before: func(ctx *cli.Context) error {
+					if err := c.loadFlagsFromConfig(ctx); err != nil {
+						return err
+					}
+
+					ignoredFlags := excludedFlagsFromConfig()
+
+					return c.checkRequiredFlags(ctx, ignoredFlags)
+				},
 			},
 			{
 				Name:   "service-account",
