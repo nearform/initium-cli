@@ -33,7 +33,7 @@ runtime-version: null
 	}
 }
 
-func GeticliForTesting(resources fs.FS) icli {
+func geticliForTesting(resources fs.FS) icli {
 	return NewWithOptions(
 		resources,
 		log.NewWithOptions(os.Stderr, log.Options{
@@ -42,11 +42,24 @@ func GeticliForTesting(resources fs.FS) icli {
 			ReportTimestamp: true,
 		}),
 		new(bytes.Buffer),
+		Release{
+			Version: "1",
+			Date:    "today",
+			Commit:  "unknown",
+		},
 	)
 }
 
+func reseticliBuffer(c *icli) {
+	c.Writer = new(bytes.Buffer)
+}
+
+func icliOutput(c icli) string {
+	return fmt.Sprint(c.Writer.(*bytes.Buffer))
+}
+
 func TestInitConfig(t *testing.T) {
-	icli := GeticliForTesting(os.DirFS("../.."))
+	icli := geticliForTesting(os.DirFS("../.."))
 	// Config file is read correctly
 
 	// Generate temporary file and add app-name parameter
@@ -63,7 +76,7 @@ func TestInitConfig(t *testing.T) {
 		t.Errorf("writing config content %v", err)
 	}
 
-	icli.Writer = new(bytes.Buffer)
+	reseticliBuffer(&icli)
 	if err = icli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config"}); err != nil {
 		t.Error(err)
 	}
@@ -72,14 +85,14 @@ func TestInitConfig(t *testing.T) {
 	// Environment Variable wins over config
 	os.Setenv("INITIUM_APP_NAME", "FromEnv")
 	defer os.Unsetenv("INITIUM_APP_NAME") // Unset the environment variable at the end
-	icli.Writer = new(bytes.Buffer)
+	reseticliBuffer(&icli)
 	if err = icli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config"}); err != nil {
 		t.Error(err)
 	}
 	compareConfig(t, "FromEnv", registry, icli.Writer)
 
 	// Command line argument wins over config and Environment variable
-	icli.Writer = new(bytes.Buffer)
+	reseticliBuffer(&icli)
 	if err = icli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config", "--app-name=FromParam"}); err != nil {
 		t.Error(err)
 	}
@@ -88,7 +101,7 @@ func TestInitConfig(t *testing.T) {
 }
 
 func TestRepoNameRetrocompatibiliy(t *testing.T) {
-	cli := GeticliForTesting(os.DirFS("../.."))
+	cli := geticliForTesting(os.DirFS("../.."))
 
 	// Generate temporary file and add repo-name parameter
 	f, err := os.CreateTemp("", "tmpfile-")
@@ -102,14 +115,14 @@ func TestRepoNameRetrocompatibiliy(t *testing.T) {
 		t.Errorf("writing config content %v", err)
 	}
 
-	cli.Writer = new(bytes.Buffer)
+	reseticliBuffer(&cli)
 	if err = cli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config", "--app-name=FromParam"}); err != nil {
 		t.Error(err)
 	}
 	compareConfig(t, "FromParam", "FromFile", cli.Writer)
 
 	//Override from parameter
-	cli.Writer = new(bytes.Buffer)
+	reseticliBuffer(&cli)
 	if err = cli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config", "--app-name=FromParam", "--container-registry=ghcr.io/nearform"}); err != nil {
 		t.Error(err)
 	}
@@ -117,7 +130,7 @@ func TestRepoNameRetrocompatibiliy(t *testing.T) {
 }
 
 func TestAppName(t *testing.T) {
-	cli := GeticliForTesting(os.DirFS("../.."))
+	cli := geticliForTesting(os.DirFS("../.."))
 
 	err := cli.Run([]string{"initium", "build"})
 	if err == nil {
