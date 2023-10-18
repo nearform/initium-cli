@@ -60,9 +60,9 @@ func TestLoadManifestForPrivateService(t *testing.T) {
 	commitSha := "93f4be93"
 
 	proj := &project.Project{Name: "knative_test",
-		Directory:       path.Join(root, "example"),
-		Resources:       os.DirFS(root),
-		IsPublicService: false,
+		Directory: path.Join(root, "example"),
+		Resources: os.DirFS(root),
+		IsPrivate: false,
 	}
 
 	dockerImage := docker.DockerImage{
@@ -72,7 +72,7 @@ func TestLoadManifestForPrivateService(t *testing.T) {
 		Tag:       "v1.1.0",
 	}
 
-	serviceManifest, err := loadManifest(namespace, commitSha, proj, dockerImage, path.Join(root, "example/.env.sample"))
+	serviceManifest, err := LoadManifest(namespace, commitSha, proj, dockerImage, path.Join(root, "example/.env.sample"))
 
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Error: %v", err))
@@ -82,8 +82,9 @@ func TestLoadManifestForPrivateService(t *testing.T) {
 	assert.Assert(t, annotations[UpdateTimestampAnnotationName] != "", "Missing %s annotation", UpdateTimestampAnnotationName)
 	assert.Assert(t, annotations[UpdateShaAnnotationName] == commitSha, "Expected %s SHA, got %s", commitSha, annotations[UpdateShaAnnotationName])
 
-	labels := serviceManifest.ObjectMeta.Labels
-	assert.Assert(t, labels["networking.knative.dev/visibility"] == "cluster-local", "Missing networking.knative.dev/visibility label with cluster-local value")
+	labels := serviceManifest.GetLabels()
+	_, ok := labels[visibilityLabel]
+	assert.Assert(t, !ok, "Visibility label should not be set for public services")
 }
 
 func TestLoadManifestForPublicService(t *testing.T) {
@@ -95,7 +96,7 @@ func TestLoadManifestForPublicService(t *testing.T) {
 		Directory:        path.Join(root, "example"),
 		Resources:        os.DirFS(root),
 		ImagePullSecrets: imagePullSecrets,
-		IsPublicService:  true,
+		IsPrivate:        true,
 	}
 
 	dockerImage := docker.DockerImage{
@@ -105,7 +106,7 @@ func TestLoadManifestForPublicService(t *testing.T) {
 		Tag:       "v1.1.0",
 	}
 
-	serviceManifest, err := loadManifest(namespace, commitSha, proj, dockerImage, path.Join(root, "example/.env.sample"))
+	serviceManifest, err := LoadManifest(namespace, commitSha, proj, dockerImage, path.Join(root, "example/.env.sample"))
 
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Error: %v", err))
@@ -117,6 +118,6 @@ func TestLoadManifestForPublicService(t *testing.T) {
 	assert.Assert(t, annotations[UpdateShaAnnotationName] == commitSha, "Expected %s SHA, got %s", commitSha, annotations[UpdateShaAnnotationName])
 	assert.Assert(t, pullSecret == imagePullSecrets[0], "Expected secret value to be %s, got %s", imagePullSecrets, pullSecret)
 
-	labels := serviceManifest.ObjectMeta.Labels
-	assert.Assert(t, labels["networking.knative.dev/visibility"] == "", "Label networking.knative.dev/visibility should not be present")
+	labels := serviceManifest.GetLabels()
+	assert.Assert(t, labels[visibilityLabel] == visibilityLabelPrivateValue)
 }

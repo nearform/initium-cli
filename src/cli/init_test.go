@@ -13,19 +13,19 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-func compareConfig(t *testing.T, appName string, registry string, isPublicService bool, writer io.Writer) {
+func compareConfig(t *testing.T, appName string, registry string, isPrivateService bool, writer io.Writer) {
 	configTemplate := fmt.Sprintf(`app-name: %s
 container-registry: %s
 default-branch: main
 dockerfile-name: null
 env-var-file: .env.initium
 image-pull-secrets: null
-public: %t
+private: %t
 runtime-version: null
 `,
 		appName,
 		registry,
-		isPublicService,
+		isPrivateService,
 	)
 
 	result := fmt.Sprint(writer.(*bytes.Buffer))

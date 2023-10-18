@@ -15,10 +15,13 @@ import (
 	"github.com/nearform/initium-cli/src/services/docker"
 	"github.com/nearform/initium-cli/src/services/project"
 	"github.com/nearform/initium-cli/src/utils/defaults"
+	"sigs.k8s.io/yaml"
 
 	corev1 "k8s.io/api/core/v1"
 	apimachineryErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
@@ -30,6 +33,8 @@ import (
 const (
 	UpdateShaAnnotationName       = "initium.nearform.com/updateSha"
 	UpdateTimestampAnnotationName = "initium.nearform.com/updateTimestamp"
+	visibilityLabel               = "networking.knative.dev/visibility"
+	visibilityLabelPrivateValue   = "cluster-local"
 )
 
 func Config(endpoint string, token string, caCrt []byte) (*rest.Config, error) {
@@ -46,7 +51,16 @@ func Config(endpoint string, token string, caCrt []byte) (*rest.Config, error) {
 	}, nil
 }
 
-func loadManifest(namespace string, commitSha string, project *project.Project, dockerImage docker.DockerImage, envFile string) (*servingv1.Service, error) {
+func setLabels(manifest *servingv1.Service, project project.Project) {
+	if manifest.ObjectMeta.Labels == nil {
+		manifest.ObjectMeta.Labels = map[string]string{}
+	}
+	if project.IsPrivate {
+		manifest.ObjectMeta.Labels[visibilityLabel] = visibilityLabelPrivateValue
+	}
+}
+
+func LoadManifest(namespace string, commitSha string, project *project.Project, dockerImage docker.DockerImage, envFile string) (*servingv1.Service, error) {
 	knativeTemplate := path.Join("assets", "knative", "service.yaml.tmpl")
 	template, err := template.ParseFS(project.Resources, knativeTemplate)
 	if err != nil {
@@ -57,7 +71,6 @@ func loadManifest(namespace string, commitSha string, project *project.Project, 
 		"Name":             dockerImage.Name,
 		"RemoteTag":        dockerImage.RemoteTag(),
 		"ImagePullSecrets": project.ImagePullSecrets,
-		"PrivateService":   !project.IsPublicService,
 	}
 
 	output := &bytes.Buffer{}
@@ -91,14 +104,22 @@ func loadManifest(namespace string, commitSha string, project *project.Project, 
 		UpdateTimestampAnnotationName: time.Now().Format(time.RFC3339),
 	}
 
-	envVarList, err := loadEnvFile(envFile)
-	if err != nil {
+	setLabels(service, *project)
+	if err = setEnv(service, envFile); err != nil {
 		return nil, err
 	}
 
-	service.Spec.Template.Spec.Containers[0].Env = append(service.Spec.Template.Spec.Containers[0].Env, envVarList...)
-
 	return service, nil
+}
+
+func setEnv(manifest *servingv1.Service, envFile string) error {
+	envVarList, err := loadEnvFile(envFile)
+	if err != nil {
+		return err
+	}
+
+	manifest.Spec.Template.Spec.Containers[0].Env = append(manifest.Spec.Template.Spec.Containers[0].Env, envVarList...)
+	return nil
 }
 
 func loadEnvFile(envFile string) ([]corev1.EnvVar, error) {
@@ -157,15 +178,21 @@ func loadEnvFile(envFile string) ([]corev1.EnvVar, error) {
 	return envVarList, nil
 }
 
-func Apply(namespace string, commitSha string, config *rest.Config, project *project.Project, dockerImage docker.DockerImage, envFile string) error {
-	log.Info("Deploying Knative service", "host", config.Host, "name", project.Name, "namespace", namespace)
+func ToYaml(serviceManifest *servingv1.Service) ([]byte, error) {
+	scheme := runtime.NewScheme()
+	servingv1.AddToScheme(scheme)
+	codec := serializer.NewCodecFactory(scheme).LegacyCodec(servingv1.SchemeGroupVersion)
+	jsonBytes, err := runtime.Encode(codec, serviceManifest)
+	if err != nil {
+		return nil, err
+	}
+	return yaml.JSONToYAML(jsonBytes)
+}
+
+func Apply(serviceManifest *servingv1.Service, config *rest.Config) error {
+	log.Info("Deploying Knative service", "host", config.Host, "name", serviceManifest.ObjectMeta.Name, "namespace", serviceManifest.ObjectMeta.Namespace)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
-
-	serviceManifest, err := loadManifest(namespace, commitSha, project, dockerImage, envFile)
-	if err != nil {
-		return err
-	}
 
 	// Create a new Knative Serving client
 	servingClient, err := servingv1client.NewForConfig(config)
