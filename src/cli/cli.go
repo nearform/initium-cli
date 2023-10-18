@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"io"
 	"io/fs"
 
@@ -18,6 +19,12 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+type Release struct {
+	Version string
+	Commit  string
+	Date    string
+}
+
 type icli struct {
 	Resources     fs.FS
 	CWD           string
@@ -27,18 +34,20 @@ type icli struct {
 	dockerImage   docker.DockerImage
 	flags         flags
 	Writer        io.Writer
+	release       Release
 }
 
-func NewWithOptions(resources fs.FS, logger *log.Logger, writer io.Writer) icli {
+func NewWithOptions(resources fs.FS, logger *log.Logger, writer io.Writer, release Release) icli {
 	return icli{
 		Resources: resources,
 		Logger:    logger,
 		Writer:    writer,
 		flags:     InitFlags(),
+		release:   release,
 	}
 }
 
-func New(resources fs.FS) icli {
+func New(resources fs.FS, release Release) icli {
 	return NewWithOptions(
 		resources,
 		log.NewWithOptions(os.Stderr, log.Options{
@@ -47,6 +56,7 @@ func New(resources fs.FS) icli {
 			ReportTimestamp: true,
 		}),
 		os.Stdout,
+		release,
 	)
 }
 
@@ -141,6 +151,14 @@ func (c icli) Run(args []string) error {
 			c.OnBranchCMD(),
 			c.TemplateCMD(),
 			c.InitCMD(),
+			{
+				Name:  "version",
+				Usage: "Return the version of the cli",
+				Action: func(ctx *cli.Context) error {
+					_, err := fmt.Fprintf(c.Writer, "version %s, commit %s, built at %s\n", c.release.Version, c.release.Commit, c.release.Date)
+					return err
+				},
+			},
 		},
 		Before: func(ctx *cli.Context) error {
 			if err := c.loadFlagsFromConfig(ctx); err != nil {
