@@ -48,7 +48,6 @@ func excludedFlagsFromConfig() []string {
 		appVersionFlag,
 		namespaceFlag,
 		configFileFlag,
-		projectTypeFlag,
 		projectDirectoryFlag,
 		destinationFolderFlag,
 		tokenFlag,

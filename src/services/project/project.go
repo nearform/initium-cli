@@ -57,16 +57,14 @@ func New(name string, projectType ProjectType, directory string, runtimeVersion 
 	}
 }
 
-func (proj *Project) detectType() (ProjectType, error) {
+func DetectType(directory string) (ProjectType, error) {
 	var detectedRuntimes []ProjectType
 	var projectType ProjectType
-	if _, err := os.Stat(path.Join(proj.Directory, "package.json")); err == nil {
-		proj.DefaultRuntimeVersion = defaults.DefaultNodeRuntimeVersion
+	if _, err := os.Stat(path.Join(directory, "package.json")); err == nil {
 		detectedRuntimes = append(detectedRuntimes, NodeProject)
 		projectType = NodeProject
 	}
-	if _, err := os.Stat(path.Join(proj.Directory, "go.mod")); err == nil {
-		proj.DefaultRuntimeVersion = defaults.DefaultGoRuntimeVersion
+	if _, err := os.Stat(path.Join(directory, "go.mod")); err == nil {
 		detectedRuntimes = append(detectedRuntimes, GoProject)
 		projectType = GoProject
 	}
@@ -82,13 +80,24 @@ func (proj *Project) detectType() (ProjectType, error) {
 func (proj *Project) matchType() (ProjectType, error) {
 	switch proj.Type {
 	case NodeProject:
-		proj.DefaultRuntimeVersion = defaults.DefaultNodeRuntimeVersion
 		return NodeProject, nil
 	case GoProject:
-		proj.DefaultRuntimeVersion = defaults.DefaultGoRuntimeVersion
 		return GoProject, nil
 	default:
 		return "", fmt.Errorf("cannot detect project type %s", proj.Type)
+	}
+}
+
+func (proj *Project) setRuntimeVersion() error {
+	switch proj.Type {
+	case NodeProject:
+		proj.DefaultRuntimeVersion = defaults.DefaultNodeRuntimeVersion
+		return nil
+	case GoProject:
+		proj.DefaultRuntimeVersion = defaults.DefaultGoRuntimeVersion
+		return nil
+	default:
+		return fmt.Errorf("cannot detect runtime version for project type %s", proj.Type)
 	}
 }
 
@@ -98,8 +107,13 @@ func (proj Project) loadDockerfile() ([]byte, error) {
 	if proj.Type != "" {
 		projectType, err = proj.matchType()
 	} else {
-		projectType, err = proj.detectType()
+		projectType, err = DetectType(proj.Directory)
+		proj.Type = projectType
 	}
+	if err != nil {
+		return []byte{}, err
+	}
+	err = proj.setRuntimeVersion()
 	if err != nil {
 		return []byte{}, err
 	}

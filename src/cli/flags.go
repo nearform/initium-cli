@@ -68,6 +68,12 @@ func InitFlags() flags {
 		appName = *guess
 	}
 
+	var projectType project.ProjectType
+	tempProjectType, err := project.DetectType(".")
+	if err == nil {
+		projectType = tempProjectType
+	}
+
 	f := flags{
 		requiredFlags: []string{},
 		all: map[FlagsType]([]cli.Flag){
@@ -76,6 +82,14 @@ func InitFlags() flags {
 					Name:     runtimeVersionFlag,
 					EnvVars:  []string{"INITIUM_RUNTIME_VERSION"},
 					Category: "build",
+				},
+				&cli.StringFlag{
+					Name:     projectTypeFlag,
+					Usage:    "The project type (node, go)",
+					Value:    string(projectType),
+					EnvVars:  []string{"INITIUM_PROJECT_TYPE"},
+					Category: "build",
+					Required: projectType == "",
 				},
 			},
 			Kubernetes: []cli.Flag{
@@ -150,12 +164,6 @@ func InitFlags() flags {
 					Usage:   "The directory in which your Dockerfile lives",
 					Value:   defaults.ProjectDirectory,
 					EnvVars: []string{"INITIUM_PROJECT_DIRECTORY"},
-				},
-				&cli.StringFlag{
-					Name:    projectTypeFlag,
-					Usage:   "The project type (node, go)",
-					Value:   defaults.ProjectType,
-					EnvVars: []string{"INITIUM_PROJECT_TYPE"},
 				},
 				&cli.StringFlag{
 					Name:    configFileFlag,

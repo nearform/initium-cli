@@ -11,19 +11,22 @@ import (
 	"testing"
 
 	"github.com/charmbracelet/log"
+	"github.com/nearform/initium-cli/src/services/project"
 )
 
-func compareConfig(t *testing.T, appName string, registry string, writer io.Writer) {
+func compareConfig(t *testing.T, appName string, registry string, projectType project.ProjectType, writer io.Writer) {
 	configTemplate := fmt.Sprintf(`app-name: %s
 container-registry: %s
 default-branch: main
 dockerfile-name: null
 env-var-file: .env.initium
 image-pull-secrets: null
+project-type: %s
 runtime-version: null
 `,
 		appName,
 		registry,
+		projectType,
 	)
 
 	result := fmt.Sprint(writer.(*bytes.Buffer))
@@ -59,7 +62,7 @@ func TestInitConfig(t *testing.T) {
 
 	registry := "ghcr.io/nearform"
 
-	if _, err := f.WriteString("app-name: FromFile\ncontainer-registry: " + registry); err != nil {
+	if _, err := f.WriteString("app-name: FromFile\ncontainer-registry: " + registry + "\nproject-type: go"); err != nil {
 		t.Errorf("writing config content %v", err)
 	}
 
@@ -67,23 +70,25 @@ func TestInitConfig(t *testing.T) {
 	if err = icli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config"}); err != nil {
 		t.Error(err)
 	}
-	compareConfig(t, "FromFile", registry, icli.Writer)
+	compareConfig(t, "FromFile", registry, "go", icli.Writer)
 
 	// Environment Variable wins over config
 	os.Setenv("INITIUM_APP_NAME", "FromEnv")
+	os.Setenv("INITIUM_PROJECT_TYPE", "go")
+	defer os.Unsetenv("INITIUM_PROJECT_TYPE")
 	defer os.Unsetenv("INITIUM_APP_NAME") // Unset the environment variable at the end
 	icli.Writer = new(bytes.Buffer)
 	if err = icli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config"}); err != nil {
 		t.Error(err)
 	}
-	compareConfig(t, "FromEnv", registry, icli.Writer)
+	compareConfig(t, "FromEnv", registry, "go", icli.Writer)
 
 	// Command line argument wins over config and Environment variable
 	icli.Writer = new(bytes.Buffer)
-	if err = icli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config", "--app-name=FromParam"}); err != nil {
+	if err = icli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config", "--app-name=FromParam", "--project-type=go"}); err != nil {
 		t.Error(err)
 	}
-	compareConfig(t, "FromParam", registry, icli.Writer)
+	compareConfig(t, "FromParam", registry, "go", icli.Writer)
 
 }
 
@@ -98,7 +103,7 @@ func TestRepoNameRetrocompatibiliy(t *testing.T) {
 	defer f.Close()
 	defer os.Remove(f.Name())
 
-	if _, err := f.WriteString("repo-name: FromFile"); err != nil {
+	if _, err := f.WriteString("repo-name: FromFile\nproject-type: go"); err != nil {
 		t.Errorf("writing config content %v", err)
 	}
 
@@ -106,14 +111,14 @@ func TestRepoNameRetrocompatibiliy(t *testing.T) {
 	if err = cli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config", "--app-name=FromParam"}); err != nil {
 		t.Error(err)
 	}
-	compareConfig(t, "FromParam", "FromFile", cli.Writer)
+	compareConfig(t, "FromParam", "FromFile", "go", cli.Writer)
 
 	//Override from parameter
 	cli.Writer = new(bytes.Buffer)
 	if err = cli.Run([]string{"initium", fmt.Sprintf("--config-file=%s", f.Name()), "init", "config", "--app-name=FromParam", "--container-registry=ghcr.io/nearform"}); err != nil {
 		t.Error(err)
 	}
-	compareConfig(t, "FromParam", "ghcr.io/nearform", cli.Writer)
+	compareConfig(t, "FromParam", "ghcr.io/nearform", "go", cli.Writer)
 }
 
 func TestAppName(t *testing.T) {

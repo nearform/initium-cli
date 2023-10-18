@@ -27,7 +27,8 @@ func TestDetectType(t *testing.T) {
 		var proj_type ProjectType
 		var err error
 		if test_proj_type.Type == "" {
-			proj_type, err = test_proj_type.detectType()
+			proj_type, err = DetectType(path.Join(root, props["directory"]))
+			test_proj_type.Type = proj_type
 		} else {
 			proj_type, err = test_proj_type.matchType()
 		}
@@ -52,6 +53,7 @@ func TestLoadDockerfile(t *testing.T) {
 		proj_dockerfile := Project{Name: string(project_type),
 			Directory: path.Join(root, props["directory"]),
 			Resources: os.DirFS(root),
+			Type:      project_type,
 		}
 		_, err := proj_dockerfile.loadDockerfile()
 
