@@ -20,7 +20,7 @@ default-branch: main
 dockerfile-name: null
 env-var-file: .env.initium
 image-pull-secrets: null
-public: %b
+public: %t
 runtime-version: null
 `,
 		appName,
@@ -135,19 +135,6 @@ func TestAppName(t *testing.T) {
 	cli := geticliForTesting(os.DirFS("../.."))
 
 	err := cli.Run([]string{"initium", "build"})
-	if err == nil {
-		t.Errorf("CLI should ask for %s and %s if not detected", appNameFlag, repoNameFlag)
-	}
-
-	if !(strings.Contains(err.Error(), appNameFlag) && strings.Contains(err.Error(), repoNameFlag)) {
-		t.Errorf("the error message should contain %s and %s", appNameFlag, repoNameFlag)
-	}
-}
-
-func TestPublicKnativeService(t *testing.T) {
-	cli := GeticliForTesting(os.DirFS("../.."))
-
-	err := cli.Run([]string{"initium", "init"})
 	if err == nil {
 		t.Errorf("CLI should ask for %s and %s if not detected", appNameFlag, repoNameFlag)
 	}
