@@ -46,7 +46,7 @@ func Config(endpoint string, token string, caCrt []byte) (*rest.Config, error) {
 	}, nil
 }
 
-func loadManifest(namespace string, commitSha string, project *project.Project, dockerImage docker.DockerImage, envFile string) (*servingv1.Service, error) {
+func loadManifest(namespace string, commitSha string, project *project.Project, dockerImage docker.DockerImage, envFile string, isPublicService bool) (*servingv1.Service, error) {
 	knativeTemplate := path.Join("assets", "knative", "service.yaml.tmpl")
 	template, err := template.ParseFS(project.Resources, knativeTemplate)
 	if err != nil {
@@ -57,6 +57,7 @@ func loadManifest(namespace string, commitSha string, project *project.Project, 
 		"Name": dockerImage.Name,
 		"RemoteTag": dockerImage.RemoteTag(),
 		"ImagePullSecrets": project.ImagePullSecrets,
+		"IsPublicService": isPublicService,
 	}
 
 	output := &bytes.Buffer{}
@@ -156,12 +157,12 @@ func loadEnvFile(envFile string) ([]corev1.EnvVar, error) {
 	return envVarList, nil
 }
 
-func Apply(namespace string, commitSha string, config *rest.Config, project *project.Project, dockerImage docker.DockerImage, envFile string) error {
+func Apply(namespace string, commitSha string, config *rest.Config, project *project.Project, dockerImage docker.DockerImage, envFile string, isPublicService bool) error {
 	log.Info("Deploying Knative service", "host", config.Host, "name", project.Name, "namespace", namespace)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
 
-	serviceManifest, err := loadManifest(namespace, commitSha, project, dockerImage, envFile)
+	serviceManifest, err := loadManifest(namespace, commitSha, project, dockerImage, envFile, isPublicService)
 	if err != nil {
 		return err
 	}

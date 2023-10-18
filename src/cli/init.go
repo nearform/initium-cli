@@ -71,21 +71,32 @@ func (c icli) InitConfigCMD(ctx *cli.Context) error {
 	config := ""
 	for _, flag := range f {
 		switch flag.(type) {
-		case *cli.StringFlag:
-			stringFlag := flag.(*cli.StringFlag)
-			if slices.Contains(excludedFlags, stringFlag.Name) {
-				continue
-			}
+            case *cli.StringFlag:
+                stringFlag := flag.(*cli.StringFlag)
+                if slices.Contains(excludedFlags, stringFlag.Name) {
+                    continue
+                }
 
-			n = stringFlag.Name
-			v = ctx.String(stringFlag.Name)
-		case *cli.StringSliceFlag:
-			stringSliceFlag := flag.(*cli.StringSliceFlag)
-			if slices.Contains(excludedFlags, stringSliceFlag.Name) {
-				continue
-			}
-			n = stringSliceFlag.Name
-			v = strings.Join(ctx.StringSlice(stringSliceFlag.Name), ",")
+                n = stringFlag.Name
+                v = ctx.String(stringFlag.Name)
+            case *cli.StringSliceFlag:
+                stringSliceFlag := flag.(*cli.StringSliceFlag)
+                if slices.Contains(excludedFlags, stringSliceFlag.Name) {
+                    continue
+                }
+                n = stringSliceFlag.Name
+                v = strings.Join(ctx.StringSlice(stringSliceFlag.Name), ",")
+            case *cli.BoolFlag:
+                boolFlag := flag.(*cli.BoolFlag)
+                if slices.Contains(excludedFlags, boolFlag.Name) {
+                    continue
+                }
+                n = boolFlag.Name
+                if ctx.Bool(boolFlag.Name) {
+                    v = "true"
+                } else {
+                    v = "false"
+                }
 		}
 
 		if v == "" {

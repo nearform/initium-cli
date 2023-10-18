@@ -60,6 +60,8 @@ func TestLoadManifest(t *testing.T) {
 	commitSha := "93f4be93"
 	imagePullSecrets := []string{"secretPassword123"}
 
+	isPublicService = false
+
 	proj := &project.Project{Name: "knative_test",
 		Directory:        path.Join(root, "example"),
 		Resources:        os.DirFS(root),
@@ -73,7 +75,7 @@ func TestLoadManifest(t *testing.T) {
 		Tag:       "v1.1.0",
 	}
 
-	serviceManifest, err := loadManifest(namespace, commitSha, proj, dockerImage, path.Join(root, "example/.env.sample"))
+	serviceManifest, err := loadManifest(namespace, commitSha, proj, dockerImage, path.Join(root, "example/.env.sample"), isPublicService)
 
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Error: %v", err))

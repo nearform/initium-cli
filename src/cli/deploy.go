@@ -26,7 +26,15 @@ func (c *icli) Deploy(cCtx *cli.Context) error {
 		return err
 	}
 
-	return knative.Apply(cCtx.String(namespaceFlag), commitSha, config, project, c.dockerImage, cCtx.String(envVarFileFlag))
+	return knative.Apply(
+        cCtx.String(namespaceFlag),
+        commitSha,
+        config,
+        project,
+        c.dockerImage,
+        cCtx.String(envVarFileFlag),
+        cCtx.Bool(publicServiceFlag),
+	)
 }
 
 func (c icli) DeployCMD() *cli.Command {

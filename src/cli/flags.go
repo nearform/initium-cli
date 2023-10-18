@@ -46,6 +46,7 @@ const (
 	stopOnBuildFlag       string = "stop-on-build"
 	stopOnPushFlag        string = "stop-on-push"
 	envVarFileFlag        string = "env-var-file"
+	publicServiceFlag     string = "public-service"
 )
 
 type flags struct {
@@ -112,6 +113,13 @@ func InitFlags() flags {
 				&cli.StringFlag{
 					Name:     envVarFileFlag,
 					Value:    defaults.EnvVarFile,
+					Category: "deploy",
+				},
+				&cli.BoolFlag{
+					Name:     publicServiceFlag,
+					EnvVars:  []string{"INITIUM_PUBLIC_SERVICE"},
+					Required: false,
+					Value:    true,
 					Category: "deploy",
 				},
 			},
