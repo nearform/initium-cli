@@ -96,6 +96,12 @@ func InitFlags() flags {
 					EnvVars:  []string{"INITIUM_PROJECT_TYPE"},
 					Category: "build",
 					Required: projectType == "",
+					Action: func(ctx *cli.Context, value string) error {
+						if !project.IsValidProjectType(value) {
+							return fmt.Errorf("project type invalid, possible values are (node, go)")
+						}
+						return nil
+					},
 				},
 			},
 			Kubernetes: []cli.Flag{

@@ -59,6 +59,17 @@ func New(name string, projectType ProjectType, directory string, runtimeVersion 
 	}
 }
 
+func IsValidProjectType(projectType string) bool {
+	switch projectType {
+	case string(NodeProject):
+		return true
+	case string(GoProject):
+		return true
+	default:
+		return false
+	}
+}
+
 func DetectType(directory string) (ProjectType, error) {
 	var detectedRuntimes []ProjectType
 	var projectType ProjectType
