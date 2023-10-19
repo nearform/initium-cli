@@ -104,11 +104,9 @@ func (proj *Project) setRuntimeVersion() error {
 }
 
 func (proj Project) loadDockerfile() ([]byte, error) {
-	var projectType ProjectType
 	var err error
-	if IsValidProjectType(string(proj.Type)) {
-		projectType = proj.Type
-	} else {
+	projectType := proj.Type
+	if !IsValidProjectType(string(projectType)) {
 		projectType, err = DetectType(proj.Directory)
 		proj.Type = projectType
 	}
