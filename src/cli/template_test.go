@@ -66,6 +66,7 @@ func TestShouldRenderDockerTemplate(t *testing.T) {
 				Name:      string(projectType),
 				Directory: path.Join(root, props["directory"]),
 				Resources: os.DirFS(root),
+				Type:      projectType,
 			},
 			Writer: &buffer,
 		}

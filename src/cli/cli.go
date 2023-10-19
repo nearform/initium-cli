@@ -74,6 +74,7 @@ func (c icli) baseBeforeFunc(ctx *cli.Context) error {
 func (c *icli) init(cCtx *cli.Context) error {
 	appName := cCtx.String(appNameFlag)
 	version := cCtx.String(appVersionFlag)
+	projectType := cCtx.String(projectTypeFlag)
 	projectDirectory := cCtx.String(projectDirectoryFlag)
 	absProjectDirectory, err := filepath.Abs(cCtx.String(projectDirectoryFlag))
 	registry := cCtx.String(repoNameFlag)
@@ -91,6 +92,7 @@ func (c *icli) init(cCtx *cli.Context) error {
 
 	project := project.New(
 		appName,
+		project.ProjectType(projectType),
 		projectDirectory,
 		cCtx.String(runtimeVersionFlag),
 		version,

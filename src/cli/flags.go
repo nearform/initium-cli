@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/charmbracelet/log"
 	"github.com/nearform/initium-cli/src/services/git"
 	"github.com/nearform/initium-cli/src/services/project"
 	"github.com/nearform/initium-cli/src/utils/defaults"
@@ -39,6 +40,7 @@ const (
 	appNameFlag           string = "app-name"
 	appVersionFlag        string = "app-version"
 	projectDirectoryFlag  string = "project-directory"
+	projectTypeFlag       string = "project-type"
 	repoNameFlag          string = "container-registry"
 	dockerFileNameFlag    string = "dockerfile-name"
 	configFileFlag        string = "config-file"
@@ -70,6 +72,14 @@ func InitFlags() flags {
 		appName = *guess
 	}
 
+	var projectType project.ProjectType
+	tempProjectType, err := project.DetectType(".")
+	if err == nil {
+		projectType = tempProjectType
+	} else {
+		log.Warn(err)
+	}
+
 	f := flags{
 		requiredFlags: []string{},
 		all: map[FlagsType]([]cli.Flag){
@@ -78,6 +88,20 @@ func InitFlags() flags {
 					Name:     runtimeVersionFlag,
 					EnvVars:  []string{"INITIUM_RUNTIME_VERSION"},
 					Category: "build",
+				},
+				&cli.StringFlag{
+					Name:     projectTypeFlag,
+					Usage:    "The project type (node, go)",
+					Value:    string(projectType),
+					EnvVars:  []string{"INITIUM_PROJECT_TYPE"},
+					Category: "build",
+					Required: projectType == "",
+					Action: func(ctx *cli.Context, value string) error {
+						if !project.IsValidProjectType(value) {
+							return fmt.Errorf("project type invalid, possible values are (node, go)")
+						}
+						return nil
+					},
 				},
 			},
 			Kubernetes: []cli.Flag{
