@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/charmbracelet/log"
 	"github.com/nearform/initium-cli/src/services/git"
 	"github.com/nearform/initium-cli/src/services/project"
 	"github.com/nearform/initium-cli/src/utils/defaults"
@@ -75,6 +76,8 @@ func InitFlags() flags {
 	tempProjectType, err := project.DetectType(".")
 	if err == nil {
 		projectType = tempProjectType
+	} else {
+		log.Warn(err)
 	}
 
 	f := flags{

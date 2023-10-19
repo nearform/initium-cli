@@ -71,10 +71,10 @@ func DetectType(directory string) (ProjectType, error) {
 		projectType = GoProject
 	}
 	if len(detectedRuntimes) == 0 {
-		return "", fmt.Errorf("cannot detect project type")
+		return "", fmt.Errorf("cannot detect the project type by checking the repository file structure, use the --project-type flag or the INITIUM_PROJECT_TYPE env variable to set the desired runtime")
 	}
 	if len(detectedRuntimes) > 1 {
-		return "", fmt.Errorf("more than one project runtimes detected (%v), use --project-type flag or the INITIUM_PROJECT_TYPE env variable to set the desired runtime", detectedRuntimes)
+		return "", fmt.Errorf("more than one project runtimes detected (%v), use the --project-type flag or the INITIUM_PROJECT_TYPE env variable to set the desired runtime", detectedRuntimes)
 	}
 	return projectType, nil
 }
