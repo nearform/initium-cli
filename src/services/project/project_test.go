@@ -30,7 +30,8 @@ func TestDetectType(t *testing.T) {
 			proj_type, err = DetectType(path.Join(root, props["directory"]))
 			test_proj_type.Type = proj_type
 		} else {
-			proj_type, err = test_proj_type.matchType()
+			proj_type = test_proj_type.Type
+			err = nil
 		}
 
 		// if we cannot autodetect a project we will return an error

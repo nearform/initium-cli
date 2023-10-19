@@ -90,17 +90,6 @@ func DetectType(directory string) (ProjectType, error) {
 	return projectType, nil
 }
 
-func (proj *Project) matchType() (ProjectType, error) {
-	switch proj.Type {
-	case NodeProject:
-		return NodeProject, nil
-	case GoProject:
-		return GoProject, nil
-	default:
-		return "", fmt.Errorf("cannot detect project type %s", proj.Type)
-	}
-}
-
 func (proj *Project) setRuntimeVersion() error {
 	switch proj.Type {
 	case NodeProject:
@@ -117,8 +106,8 @@ func (proj *Project) setRuntimeVersion() error {
 func (proj Project) loadDockerfile() ([]byte, error) {
 	var projectType ProjectType
 	var err error
-	if proj.Type != "" {
-		projectType, err = proj.matchType()
+	if IsValidProjectType(string(proj.Type)) {
+		projectType = proj.Type
 	} else {
 		projectType, err = DetectType(proj.Directory)
 		proj.Type = projectType
