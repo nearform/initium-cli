@@ -21,8 +21,8 @@ default-branch: main
 dockerfile-name: null
 env-var-file: .env.initium
 image-pull-secrets: null
-project-type: %s
 private: %t
+project-type: %s
 runtime-version: null
 `,
 		appName,
