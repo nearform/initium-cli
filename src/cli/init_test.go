@@ -27,8 +27,8 @@ runtime-version: null
 `,
 		appName,
 		registry,
-		projectType,
 		isPrivateService,
+		projectType,
 	)
 
 	result := fmt.Sprint(writer.(*bytes.Buffer))
