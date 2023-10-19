@@ -1,21 +1,17 @@
 package cli
 
 import (
+	"fmt"
+
 	"github.com/nearform/initium-cli/src/services/git"
 	knative "github.com/nearform/initium-cli/src/services/k8s"
 	"github.com/urfave/cli/v2"
 )
 
 func (c *icli) Deploy(cCtx *cli.Context) error {
-	config, err := knative.Config(
-		cCtx.String(endpointFlag),
-		cCtx.String(tokenFlag),
-		[]byte(cCtx.String(caCRTFlag)),
-	)
+	namespace := cCtx.String(namespaceFlag)
+	envFile := cCtx.String(envVarFileFlag)
 
-	if err != nil {
-		return err
-	}
 	project, err := c.getProject(cCtx)
 	if err != nil {
 		return err
@@ -26,15 +22,58 @@ func (c *icli) Deploy(cCtx *cli.Context) error {
 		return err
 	}
 
-	return knative.Apply(cCtx.String(namespaceFlag), commitSha, config, project, c.dockerImage, cCtx.String(envVarFileFlag))
+	serviceManifest, err := knative.LoadManifest(namespace, commitSha, project, c.dockerImage, envFile)
+	if err != nil {
+		return err
+	}
+
+	if cCtx.Bool(dryRunFlag) {
+		yamlBytes, err := knative.ToYaml(serviceManifest)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(c.Writer, "%s", yamlBytes)
+		return nil
+	}
+
+	config, err := knative.Config(
+		cCtx.String(endpointFlag),
+		cCtx.String(tokenFlag),
+		[]byte(cCtx.String(caCRTFlag)),
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return knative.Apply(serviceManifest, config)
 }
 
 func (c icli) DeployCMD() *cli.Command {
+	flags := c.CommandFlags([]FlagsType{Kubernetes, Shared})
+
+	flags = append(flags, &cli.BoolFlag{
+		Name:  dryRunFlag,
+		Usage: "print out the knative manifest without applying it",
+		Value: false,
+	})
+
 	return &cli.Command{
 		Name:   "deploy",
 		Usage:  "deploy the application as a knative service",
-		Flags:  c.CommandFlags([]FlagsType{Kubernetes, Shared}),
+		Flags:  flags,
 		Action: c.Deploy,
-		Before: c.baseBeforeFunc,
+		Before: func(ctx *cli.Context) error {
+			if err := c.loadFlagsFromConfig(ctx); err != nil {
+				return err
+			}
+
+			ignoredFlags := []string{}
+			if ctx.Bool(dryRunFlag) {
+				ignoredFlags = append(ignoredFlags, endpointFlag, tokenFlag, caCRTFlag)
+			}
+
+			return c.checkRequiredFlags(ctx, ignoredFlags)
+		},
 	}
 }

@@ -94,6 +94,7 @@ func (c *icli) init(cCtx *cli.Context) error {
 		projectDirectory,
 		cCtx.String(runtimeVersionFlag),
 		version,
+		cCtx.Bool(isPrivateServiceFlag),
 		imagePullSecrets,
 		c.Resources,
 	)

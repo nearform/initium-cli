@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/nearform/initium-cli/src/services/git"
@@ -46,6 +47,8 @@ const (
 	stopOnBuildFlag       string = "stop-on-build"
 	stopOnPushFlag        string = "stop-on-push"
 	envVarFileFlag        string = "env-var-file"
+	isPrivateServiceFlag  string = "private"
+	dryRunFlag            string = "dry-run"
 )
 
 type flags struct {
@@ -108,6 +111,12 @@ func InitFlags() flags {
 					EnvVars:  []string{"INITIUM_IMAGE_PULL_SECRETS"},
 					Required: false,
 					Category: "deploy",
+				},
+				&cli.BoolFlag{
+					Name:     isPrivateServiceFlag,
+					Usage:    "Do not expose the service public endpoint",
+					Category: "init",
+					Value:    false,
 				},
 				&cli.StringFlag{
 					Name:     envVarFileFlag,
@@ -250,9 +259,17 @@ func (c icli) loadFlagsFromConfig(ctx *cli.Context) error {
 		for _, name := range v.Names() {
 			c.Logger.Debugf("%s is set = %v", name, ctx.IsSet(name))
 			if name != "help" && !slices.Contains(excludedFlags, name) && config[name] != nil && !ctx.IsSet(mainName) {
-				if err := ctx.Set(mainName, config[name].(string)); err != nil {
-					return err
+				switch config[name].(type) {
+				case bool:
+					if err := ctx.Set(mainName, strconv.FormatBool(config[name].(bool))); err != nil {
+						return err
+					}
+				default:
+					if err := ctx.Set(mainName, config[name].(string)); err != nil {
+						return err
+					}
 				}
+
 			}
 		}
 	}
