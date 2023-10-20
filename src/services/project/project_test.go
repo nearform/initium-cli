@@ -11,9 +11,10 @@ import (
 )
 
 var projects = map[ProjectType]map[string]string{
-	NodeProject: {"directory": "example"},
-	GoProject:   {"directory": "."},
-	"invalid":   {"directory": "src"},
+	NodeProject:       {"directory": "example/node"},
+	FrontendJsProject: {"directory": "example/frontend-js"},
+	GoProject:         {"directory": "."},
+	"invalid":         {"directory": "src"},
 }
 
 var root = "../../../"

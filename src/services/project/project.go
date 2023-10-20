@@ -15,8 +15,9 @@ import (
 type ProjectType string
 
 const (
-	NodeProject ProjectType = "node"
-	GoProject   ProjectType = "go"
+	NodeProject       ProjectType = "node"
+	GoProject         ProjectType = "go"
+	FrontendJsProject ProjectType = "frontend-js"
 )
 
 type Project struct {
@@ -74,8 +75,13 @@ func DetectType(directory string) (ProjectType, error) {
 	var detectedRuntimes []ProjectType
 	var projectType ProjectType
 	if _, err := os.Stat(path.Join(directory, "package.json")); err == nil {
-		detectedRuntimes = append(detectedRuntimes, NodeProject)
-		projectType = NodeProject
+		if _, err := os.Stat(path.Join(directory, "dist")); err == nil {
+			detectedRuntimes = append(detectedRuntimes, FrontendJsProject)
+			projectType = FrontendJsProject
+		} else {
+			detectedRuntimes = append(detectedRuntimes, NodeProject)
+			projectType = NodeProject
+		}
 	}
 	if _, err := os.Stat(path.Join(directory, "go.mod")); err == nil {
 		detectedRuntimes = append(detectedRuntimes, GoProject)
@@ -97,6 +103,9 @@ func (proj *Project) setRuntimeVersion() error {
 		return nil
 	case GoProject:
 		proj.DefaultRuntimeVersion = defaults.DefaultGoRuntimeVersion
+		return nil
+	case FrontendJsProject:
+		proj.DefaultRuntimeVersion = defaults.DefaultFrontendJsRuntimeVersion
 		return nil
 	default:
 		return fmt.Errorf("cannot detect runtime version for project type %s", proj.Type)

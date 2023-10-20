@@ -1,0 +1,22 @@
+FROM node:{{ or .RuntimeVersion .DefaultRuntimeVersion }} AS build-env
+
+WORKDIR /app
+
+COPY package*.json tsconfig*.json ./
+
+RUN {{ .NodeInstallCommand }}
+
+COPY . .
+
+RUN npm run build --if-present
+RUN npm test
+
+FROM node:{{ or .RuntimeVersion .DefaultRuntimeVersion }}
+
+COPY --from=build-env /app /app
+
+WORKDIR /app
+
+USER nonroot
+
+CMD npx http-server ./dist
