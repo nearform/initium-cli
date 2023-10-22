@@ -243,6 +243,7 @@ func Apply(serviceManifest *servingv1.Service, config *rest.Config) error {
 		}
 
 		time.Sleep(time.Millisecond * 500)
+		log.Info("Waiting for service to become active...");
 	}
 
 	return nil
