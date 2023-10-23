@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"strings"
 	"text/template"
 
 	"github.com/nearform/initium-cli/src/services/git"
@@ -77,7 +78,12 @@ func DetectType(directory string) (ProjectType, error) {
 	var detectedRuntimes []ProjectType
 	var projectType ProjectType
 	if _, err := os.Stat(path.Join(directory, "package.json")); err == nil {
-		if _, err := os.Stat(path.Join(directory, "dist")); err == nil {
+		bytes, err := os.ReadFile(path.Join(directory, "package.json"))
+		if err != nil {
+			fmt.Print(err)
+		}
+		fileStr := string(bytes)
+		if strings.Contains(fileStr, "react") || strings.Contains(fileStr, "angular") || strings.Contains(fileStr, "vue") {
 			detectedRuntimes = append(detectedRuntimes, FrontendJsProject)
 			projectType = FrontendJsProject
 		} else {
