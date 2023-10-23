@@ -140,7 +140,7 @@ func TestNodeInstallCommand(t *testing.T) {
 			Resources: os.DirFS(root),
 		}
 
-		if project_type == NodeProject {
+		if project_type == NodeProject || project_type == FrontendJsProject {
 			expected := "npm i"
 			installCommand := proj.NodeInstallCommand()
 			if installCommand != expected {
