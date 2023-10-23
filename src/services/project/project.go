@@ -66,6 +66,8 @@ func IsValidProjectType(projectType string) bool {
 		return true
 	case string(GoProject):
 		return true
+	case string(FrontendJsProject):
+		return true
 	default:
 		return false
 	}
