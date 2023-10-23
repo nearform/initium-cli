@@ -29,6 +29,7 @@ FROM gcr.io/distroless/static-debian11
 
 COPY --from=build /go/bin/app /
 ENTRYPOINT ["/app"]
+
 `
 
 const expectedNodeAppDockerTemplate = `FROM node:20.2.0 AS build-env
@@ -49,6 +50,7 @@ COPY --from=build-env /app /app
 WORKDIR /app
 USER nonroot
 CMD ["index.js"]
+
 `
 
 const expectedFrontendJsAppDockerTemplate = `FROM node:20.2.0 AS build-env
@@ -57,7 +59,7 @@ WORKDIR /app
 
 COPY package*.json tsconfig*.json ./
 
-RUN i
+RUN npm i
 
 COPY . .
 
@@ -73,6 +75,7 @@ WORKDIR /app
 USER nonroot
 
 CMD npx http-server ./dist
+
 `
 
 var projects = map[project.ProjectType]map[string]string{
