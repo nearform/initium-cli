@@ -17,6 +17,8 @@ COPY --from=build-env /app /app
 
 WORKDIR /app
 
+EXPOSE 3000
+
 USER node
 
-CMD npx http-server ./dist
+CMD npx http-server -p 3000 ./dist
