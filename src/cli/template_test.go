@@ -76,7 +76,7 @@ EXPOSE 3000
 
 USER node
 
-CMD npx http-server -p 3000 ./dist
+CMD npx http-server -p 3000 ./build
 
 `
 
