@@ -60,7 +60,7 @@ func setLabels(manifest *servingv1.Service, project project.Project) {
 	}
 }
 
-func LoadManifest(namespace string, commitSha string, project *project.Project, dockerImage docker.DockerImage, envFile string) (*servingv1.Service, error) {
+func LoadManifest(namespace string, commitSha string, project *project.Project, dockerImage docker.DockerImage, envFile string, SecretRefEnvFile string) (*servingv1.Service, error) {
 	knativeTemplate := path.Join("assets", "knative", "service.yaml.tmpl")
 	template, err := template.ParseFS(project.Resources, knativeTemplate)
 	if err != nil {
@@ -108,8 +108,25 @@ func LoadManifest(namespace string, commitSha string, project *project.Project, 
 	if err = setEnv(service, envFile); err != nil {
 		return nil, err
 	}
+	if err = setSecretEnv(service, SecretRefEnvFile); err != nil {
+		return nil, err
+	}
 
 	return service, nil
+}
+
+func setSecretEnv(manifest *servingv1.Service, SecretRefEnvFile string) error {
+	secretEnvVarList, err := loadEnvFile(SecretRefEnvFile)
+	if err != nil {
+		return err
+	}
+	for i, secretEnvVar := range secretEnvVarList { //eg: [MOCK5=kubernetessecretname/secretkey]
+		secretKeyRef := strings.Split(secretEnvVar.Value, "/")
+		manifest.Spec.Template.Spec.Containers[i].Env[0].Name = secretEnvVarList[0].Name               //eg: MOCK5
+		manifest.Spec.Template.Spec.Containers[i].Env[0].ValueFrom.SecretKeyRef.Name = secretKeyRef[0] //eg: kubernetessecretname
+		manifest.Spec.Template.Spec.Containers[i].Env[0].ValueFrom.SecretKeyRef.Key = secretKeyRef[1]  //eg: secretkey
+	}
+	return nil
 }
 
 func setEnv(manifest *servingv1.Service, envFile string) error {
@@ -117,7 +134,6 @@ func setEnv(manifest *servingv1.Service, envFile string) error {
 	if err != nil {
 		return err
 	}
-
 	manifest.Spec.Template.Spec.Containers[0].Env = append(manifest.Spec.Template.Spec.Containers[0].Env, envVarList...)
 	return nil
 }

@@ -9,6 +9,7 @@ const (
 	AppVersion          string = "latest"
 	GeneratedDockerFile string = "Dockerfile.initium"
 	EnvVarFile          string = ".env.initium"
+	SecretRefEnvFile    string = ".env.secretref.initium"
 )
 
 // renovate: datasource=docker depName=node
