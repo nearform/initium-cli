@@ -5,6 +5,10 @@ on:
  pull_request:
    types: [opened, synchronize, reopened, closed]
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   on_pr:
     if: github.event.action != 'closed'
