@@ -1,5 +1,7 @@
 FROM node:{{ or .RuntimeVersion .DefaultRuntimeVersion }} AS build-env
 
+ENV CI=true
+
 WORKDIR /app
 
 COPY package*.json tsconfig*.json ./
