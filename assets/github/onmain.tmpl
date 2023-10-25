@@ -6,6 +6,10 @@ on:
     branches:
       - {{ .DefaultBranch }}
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   cli:
     runs-on: ubuntu-latest
