@@ -2,6 +2,7 @@ package project
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"os"
@@ -79,11 +80,21 @@ func DetectType(directory string) (ProjectType, error) {
 	var projectType ProjectType
 	if _, err := os.Stat(path.Join(directory, "package.json")); err == nil {
 		bytes, err := os.ReadFile(path.Join(directory, "package.json"))
+		var result map[string]any
+		json.Unmarshal([]byte(bytes), &result)
+		dependencies := result["dependencies"].(map[string]string)
+
 		if err != nil {
 			fmt.Print(err)
 		}
-		fileStr := string(bytes)
-		if strings.Contains(fileStr, "react") || strings.Contains(fileStr, "angular") || strings.Contains(fileStr, "vue") {
+
+		frontendDetected := false
+		for dependency := range dependencies {
+			if strings.Contains(dependency, "react") || strings.Contains(dependency, "angular") || strings.Contains(dependency, "vue") {
+				frontendDetected = true
+			}
+		}
+		if frontendDetected {
 			detectedRuntimes = append(detectedRuntimes, FrontendJsProject)
 			projectType = FrontendJsProject
 		} else {

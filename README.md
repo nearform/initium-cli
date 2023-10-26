@@ -68,6 +68,7 @@ Following we have a matrix related to which application runtime our CLI is curre
 |----------------------|:------------------:|
 | [Nodejs](https://github.com/nearform/initium-cli/blob/main/assets/docker/Dockerfile.node.tmpl) | :white_check_mark: |
 | [GoLang](https://github.com/nearform/initium-cli/blob/main/assets/docker/Dockerfile.go.tmpl) | :white_check_mark: |
+| [Frontend](https://github.com/nearform/initium-cli/blob/main/assets/docker/Dockerfile.frontend-js.tmpl) | :white_check_mark: |
 | Python               | Coming Soon        |
 | More will be added...|                    |
 
