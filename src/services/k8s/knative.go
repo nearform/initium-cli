@@ -175,7 +175,7 @@ func loadEnvFile(envFile string, manifestEnvVars map[string]string) ([]corev1.En
 	var envVarList []corev1.EnvVar
 	envVariables, err := godotenv.Read(envFile)
 	if err != nil {
-		fmt.Errorf("Error loading .env file. '%s' already set", err)
+		return nil, fmt.Errorf("Error loading .env file. '%s' already set", err)
 	}
 
 	if len(envVariables) > 0 {
