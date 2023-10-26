@@ -1,20 +1,18 @@
 package k8s
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"fmt"
-	"os"
 	"path"
 	"strings"
 	"text/template"
 	"time"
 
 	"github.com/charmbracelet/log"
+	"github.com/joho/godotenv"
 	"github.com/nearform/initium-cli/src/services/docker"
 	"github.com/nearform/initium-cli/src/services/project"
-	"github.com/nearform/initium-cli/src/utils/defaults"
 	"sigs.k8s.io/yaml"
 
 	corev1 "k8s.io/api/core/v1"
@@ -36,7 +34,7 @@ const (
 	visibilityLabel               = "networking.knative.dev/visibility"
 	visibilityLabelPrivateValue   = "cluster-local"
 )
-var globalEnvVarMap = map[string]string{}
+var globalEnvVar = map[string]string{}
 
 func Config(endpoint string, token string, caCrt []byte) (*rest.Config, error) {
 	if _, err := certutil.NewPoolFromBytes(caCrt); err != nil {
@@ -174,63 +172,28 @@ func setEnv(manifest *servingv1.Service, envFile string) error {
 
 func loadEnvFile(envFile string) ([]corev1.EnvVar, error) {
 	var envVarList []corev1.EnvVar
-	if _, err := os.Stat(envFile); err != nil {
-		if (os.IsNotExist(err)) && (path.Base(envFile) == defaults.EnvVarFile || path.Base(envFile) == defaults.SecretRefEnvFile) {
-			log.Infof("No environment variables file %s to Load!", envFile)
-		} else {
-			return nil, fmt.Errorf("Error loading %v file: %v", envFile, err)
-		}
-	} else {
-		log.Infof("Environment variables file %s found! Loading..", envFile)
-		file, err := os.Open(envFile)
-		if err != nil {
-			return nil, fmt.Errorf("Error opening %v file: %v", envFile, err)
-		}
-		defer file.Close()
+	envVariables, err := godotenv.Read(envFile)
+	if err != nil {
+		fmt.Errorf("Error loading .env file. '%s' already set", err)
+	}
 
-		scanner := bufio.NewScanner(file)
-		envVariables := make(map[string]string)
-
-		checkFormat := func(line string) bool {
-			parts := strings.SplitN(line, "=", 2)
-			return len(parts) == 2
-		}
-
-		for scanner.Scan() {
-			line := scanner.Text()
-			if checkFormat(line) {
-				parts := strings.SplitN(line, "=", 2)
-				key := strings.TrimSpace(parts[0])
-				value := strings.TrimSpace(parts[1])
-				envVariables[key] = value
+	if len(envVariables) > 0 {
+		for key, value := range envVariables {
+			envVar := corev1.EnvVar{
+				Name:  key,
+				Value: value,
+			}
+			if globalEnvVar[envVar.Name] == "" {
+				globalEnvVar[envVar.Name] = envVar.Value
+				envVarList = append(envVarList, envVar)
+				fmt.Println(globalEnvVar[envVar.Name])
 			} else {
-				log.Warnf("Environment variables file %v line won't be processed due to invalid format: %s. Accepted: KEY=value", envFile, line)
+				return nil, fmt.Errorf("Conflicting environment variable. '%s' already set through another file", envVar.Name)
 			}
 		}
-
-		if err := scanner.Err(); err != nil {
-			return nil, fmt.Errorf("Error reading environment variables file %v: %v", envFile, err)
-		}
-
-		if len(envVariables) > 0 {
-			for key, value := range envVariables {
-				envVar := corev1.EnvVar{
-					Name:  key,
-					Value: value,
-				}
-				fmt.Println("*****************************")
-				fmt.Println(globalEnvVarMap[envVar.Name])
-				if globalEnvVarMap[envVar.Name] == "" {
-					globalEnvVarMap[envVar.Name] = envVar.Value
-					envVarList = append(envVarList, envVar)
-				} else {
-					return nil, fmt.Errorf("Conflicting environment variable. '%s' already set", envVar.Name)
-				}
-			}
-			log.Infof("Environment variables file %v content is now loaded!", envFile)
-		} else {
-			log.Warnf("Environment file %v is empty, Nothing to load!", envFile)
-		}
+		log.Infof("Environment variables file %v content is now loaded!", envFile)
+	} else {
+		log.Warnf("Environment file %v is empty, Nothing to load!", envFile)
 	}
 	return envVarList, nil
 }
