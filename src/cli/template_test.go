@@ -74,11 +74,9 @@ COPY --from=build-env /app /app
 
 WORKDIR /app
 
-EXPOSE 3000
-
 USER node
 
-CMD npx http-server -p 3000 ./build
+CMD npx http-server -p 8080 ./build
 
 `
 
