@@ -120,11 +120,20 @@ func setSecretEnv(manifest *servingv1.Service, SecretRefEnvFile string) error {
 	if err != nil {
 		return err
 	}
-	for i, secretEnvVar := range secretEnvVarList { //eg: [MOCK5=kubernetessecretname/secretkey]
-		secretKeyRef := strings.Split(secretEnvVar.Value, "/")
-		manifest.Spec.Template.Spec.Containers[i].Env[0].Name = secretEnvVarList[0].Name               //eg: MOCK5
-		manifest.Spec.Template.Spec.Containers[i].Env[0].ValueFrom.SecretKeyRef.Name = secretKeyRef[0] //eg: kubernetessecretname
-		manifest.Spec.Template.Spec.Containers[i].Env[0].ValueFrom.SecretKeyRef.Key = secretKeyRef[1]  //eg: secretkey
+	for _, secretEnvVar := range secretEnvVarList { //eg: [MOCK5=kubernetessecretname/secretkey]
+		// TODO: Add secret format validation (Contains "/")
+		secretKeyRef := strings.SplitN(secretEnvVar.Value, "/", 2)
+		manifest.Spec.Template.Spec.Containers[0].Env = append(manifest.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
+			Name: secretEnvVar.Name, //eg: MOCK5
+			ValueFrom: &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					Key: secretKeyRef[1], //eg: secretkey
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: secretKeyRef[0], //eg: kubernetessecretname
+					},
+				},
+			},
+		})
 	}
 	return nil
 }
@@ -141,8 +150,8 @@ func setEnv(manifest *servingv1.Service, envFile string) error {
 func loadEnvFile(envFile string) ([]corev1.EnvVar, error) {
 	var envVarList []corev1.EnvVar
 	if _, err := os.Stat(envFile); err != nil {
-		if (os.IsNotExist(err)) && (path.Base(envFile) == defaults.EnvVarFile) {
-			log.Infof("No environment variables file %s to Load!", defaults.EnvVarFile)
+		if (os.IsNotExist(err)) && (path.Base(envFile) == defaults.EnvVarFile || path.Base(envFile) == defaults.SecretRefEnvFile) {
+			log.Infof("No environment variables file %s to Load!", envFile)
 		} else {
 			return nil, fmt.Errorf("Error loading %v file: %v", envFile, err)
 		}
