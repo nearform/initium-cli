@@ -36,6 +36,7 @@ const (
 	visibilityLabel               = "networking.knative.dev/visibility"
 	visibilityLabelPrivateValue   = "cluster-local"
 )
+var globalEnvVarMap = map[string]string{}
 
 func Config(endpoint string, token string, caCrt []byte) (*rest.Config, error) {
 	if _, err := certutil.NewPoolFromBytes(caCrt); err != nil {
@@ -121,19 +122,19 @@ func setSecretEnv(manifest *servingv1.Service, SecretRefEnvFile string) error {
 		return err
 	}
 	for _, secretEnvVar := range secretEnvVarList { //eg: [MOCK5=kubernetessecretname/secretkey]
-		err := validateSecretValue(secretEnvVar)
+		err := validateSecretEnvVar(secretEnvVar)
 		if err != nil {
 			return err
 		}
 
-		secretKeyRef := strings.SplitN(secretEnvVar.Value, "/", 2)
+		secretValue := strings.SplitN(secretEnvVar.Value, "/", 2)
 		manifest.Spec.Template.Spec.Containers[0].Env = append(manifest.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
 			Name: secretEnvVar.Name, //eg: MOCK5
 			ValueFrom: &corev1.EnvVarSource{
 				SecretKeyRef: &corev1.SecretKeySelector{
-					Key: secretKeyRef[1], //eg: kubernetesecretkey
+					Key: secretValue[1], //eg: kubernetesecretkey
 					LocalObjectReference: corev1.LocalObjectReference{
-						Name: secretKeyRef[0], //eg: kubernetesecretname
+						Name: secretValue[0], //eg: kubernetesecretname
 					},
 				},
 			},
@@ -142,7 +143,7 @@ func setSecretEnv(manifest *servingv1.Service, SecretRefEnvFile string) error {
 	return nil
 }
 
-func validateSecretValue(secretEnvVar corev1.EnvVar) error {
+func validateSecretEnvVar(secretEnvVar corev1.EnvVar) error {
 	invalidChars := []string{
 		"\"",
 		"'",
@@ -153,7 +154,7 @@ func validateSecretValue(secretEnvVar corev1.EnvVar) error {
 		return fmt.Errorf("Invalid secret format for '%s'. Missing '/' char. Value must be in the format <secret-name>/<secret-key>, instead of '%s'", secretEnvVar.Name, secretEnvVar.Value)
 	}
 
-	//Invalid chars
+	// Invalid chars
 	for _, value := range invalidChars {
 		if strings.Contains(secretEnvVar.Value, value) {
 			return fmt.Errorf("Invalid secret format for '%s'. Invalid char found (\", ')", secretEnvVar.Name)
@@ -217,7 +218,14 @@ func loadEnvFile(envFile string) ([]corev1.EnvVar, error) {
 					Name:  key,
 					Value: value,
 				}
-				envVarList = append(envVarList, envVar)
+				fmt.Println("*****************************")
+				fmt.Println(globalEnvVarMap[envVar.Name])
+				if globalEnvVarMap[envVar.Name] == "" {
+					globalEnvVarMap[envVar.Name] = envVar.Value
+					envVarList = append(envVarList, envVar)
+				} else {
+					return nil, fmt.Errorf("Conflicting environment variable. '%s' already set", envVar.Name)
+				}
 			}
 			log.Infof("Environment variables file %v content is now loaded!", envFile)
 		} else {
