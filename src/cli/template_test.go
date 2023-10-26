@@ -55,6 +55,8 @@ CMD ["index.js"]
 
 const expectedFrontendJsAppDockerTemplate = `FROM node:20.2.0 AS build-env
 
+ENV CI=true
+
 WORKDIR /app
 
 COPY package*.json tsconfig*.json ./
