@@ -34,7 +34,6 @@ const (
 	visibilityLabel               = "networking.knative.dev/visibility"
 	visibilityLabelPrivateValue   = "cluster-local"
 )
-var globalEnvVar = map[string]string{}
 
 func Config(endpoint string, token string, caCrt []byte) (*rest.Config, error) {
 	if _, err := certutil.NewPoolFromBytes(caCrt); err != nil {
@@ -60,8 +59,10 @@ func setLabels(manifest *servingv1.Service, project project.Project) {
 }
 
 func LoadManifest(namespace string, commitSha string, project *project.Project, dockerImage docker.DockerImage, envFile string, SecretRefEnvFile string) (*servingv1.Service, error) {
+	manifestEnvVars := map[string]string{}
 	knativeTemplate := path.Join("assets", "knative", "service.yaml.tmpl")
 	template, err := template.ParseFS(project.Resources, knativeTemplate)
+
 	if err != nil {
 		return nil, fmt.Errorf("error reading the knative service yaml: %v", err)
 	}
@@ -104,18 +105,18 @@ func LoadManifest(namespace string, commitSha string, project *project.Project, 
 	}
 
 	setLabels(service, *project)
-	if err = setEnv(service, envFile); err != nil {
+	if err = setEnv(service, envFile, manifestEnvVars); err != nil {
 		return nil, err
 	}
-	if err = setSecretEnv(service, SecretRefEnvFile); err != nil {
+	if err = setSecretEnv(service, SecretRefEnvFile, manifestEnvVars); err != nil {
 		return nil, err
 	}
 
 	return service, nil
 }
 
-func setSecretEnv(manifest *servingv1.Service, SecretRefEnvFile string) error {
-	secretEnvVarList, err := loadEnvFile(SecretRefEnvFile)
+func setSecretEnv(manifest *servingv1.Service, SecretRefEnvFile string, manifestEnvVars map[string]string) error {
+	secretEnvVarList, err := loadEnvFile(SecretRefEnvFile, manifestEnvVars)
 	if err != nil {
 		return err
 	}
@@ -161,8 +162,8 @@ func validateSecretEnvVar(secretEnvVar corev1.EnvVar) error {
 	return nil
 }
 
-func setEnv(manifest *servingv1.Service, envFile string) error {
-	envVarList, err := loadEnvFile(envFile)
+func setEnv(manifest *servingv1.Service, envFile string, manifestEnvVars map[string]string) error {
+	envVarList, err := loadEnvFile(envFile, manifestEnvVars)
 	if err != nil {
 		return err
 	}
@@ -170,7 +171,7 @@ func setEnv(manifest *servingv1.Service, envFile string) error {
 	return nil
 }
 
-func loadEnvFile(envFile string) ([]corev1.EnvVar, error) {
+func loadEnvFile(envFile string, manifestEnvVars map[string]string) ([]corev1.EnvVar, error) {
 	var envVarList []corev1.EnvVar
 	envVariables, err := godotenv.Read(envFile)
 	if err != nil {
@@ -179,8 +180,8 @@ func loadEnvFile(envFile string) ([]corev1.EnvVar, error) {
 
 	if len(envVariables) > 0 {
 		for key, value := range envVariables {			
-			if globalEnvVar[key] == "" {
-				globalEnvVar[key] = value
+			if manifestEnvVars[key] == "" {
+				manifestEnvVars[key] = value
 				envVar := corev1.EnvVar{
 					Name:  key,
 					Value: value,
