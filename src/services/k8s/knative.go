@@ -178,17 +178,16 @@ func loadEnvFile(envFile string) ([]corev1.EnvVar, error) {
 	}
 
 	if len(envVariables) > 0 {
-		for key, value := range envVariables {
-			envVar := corev1.EnvVar{
-				Name:  key,
-				Value: value,
-			}
-			if globalEnvVar[envVar.Name] == "" {
-				globalEnvVar[envVar.Name] = envVar.Value
+		for key, value := range envVariables {			
+			if globalEnvVar[key] == "" {
+				globalEnvVar[key] = value
+				envVar := corev1.EnvVar{
+					Name:  key,
+					Value: value,
+				}
 				envVarList = append(envVarList, envVar)
-				fmt.Println(globalEnvVar[envVar.Name])
 			} else {
-				return nil, fmt.Errorf("Conflicting environment variable. '%s' already set through another file", envVar.Name)
+				return nil, fmt.Errorf("Conflicting environment variable. '%s' already set through another file", key)
 			}
 		}
 		log.Infof("Environment variables file %v content is now loaded!", envFile)
