@@ -121,19 +121,22 @@ func setSecretEnv(manifest *servingv1.Service, SecretRefEnvFile string) error {
 		return err
 	}
 	for _, secretEnvVar := range secretEnvVarList { //eg: [MOCK5=kubernetessecretname/secretkey]
-		// TODO: Add secret format validation (Contains "/")
-		secretKeyRef := strings.SplitN(secretEnvVar.Value, "/", 2)
-		manifest.Spec.Template.Spec.Containers[0].Env = append(manifest.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
-			Name: secretEnvVar.Name, //eg: MOCK5
-			ValueFrom: &corev1.EnvVarSource{
-				SecretKeyRef: &corev1.SecretKeySelector{
-					Key: secretKeyRef[1], //eg: secretkey
-					LocalObjectReference: corev1.LocalObjectReference{
-						Name: secretKeyRef[0], //eg: kubernetessecretname
+		if strings.Contains(secretEnvVar.Value, "/") {
+			secretKeyRef := strings.SplitN(secretEnvVar.Value, "/", 2)
+			manifest.Spec.Template.Spec.Containers[0].Env = append(manifest.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
+				Name: secretEnvVar.Name, //eg: MOCK5
+				ValueFrom: &corev1.EnvVarSource{
+					SecretKeyRef: &corev1.SecretKeySelector{
+						Key: secretKeyRef[1], //eg: kubernetesecretkey
+						LocalObjectReference: corev1.LocalObjectReference{
+							Name: secretKeyRef[0], //eg: kubernetesecretname
+						},
 					},
 				},
-			},
-		})
+			})
+		} else {
+			return fmt.Errorf("Invalid secret format for '%s'. Missing '/' char. Value must be in the format <secret-name>/<secret-key>, instead of '%s'", secretEnvVar.Name, secretEnvVar.Value)
+		}
 	}
 	return nil
 }
