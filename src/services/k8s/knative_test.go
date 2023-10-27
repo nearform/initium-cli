@@ -72,7 +72,7 @@ func TestLoadManifestForPrivateService(t *testing.T) {
 		Tag:       "v1.1.0",
 	}
 
-	serviceManifest, err := LoadManifest(namespace, commitSha, proj, dockerImage, path.Join(root, "example/.env.sample"))
+	serviceManifest, err := LoadManifest(namespace, commitSha, proj, dockerImage, path.Join(root, "example/node/.env.sample"))
 
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Error: %v", err))
@@ -93,7 +93,7 @@ func TestLoadManifestForPublicService(t *testing.T) {
 	imagePullSecrets := []string{"secretPassword123"}
 
 	proj := &project.Project{Name: "knative_test",
-		Directory:        path.Join(root, "example"),
+		Directory:        path.Join(root, "example/node"),
 		Resources:        os.DirFS(root),
 		ImagePullSecrets: imagePullSecrets,
 		IsPrivate:        true,
@@ -106,7 +106,7 @@ func TestLoadManifestForPublicService(t *testing.T) {
 		Tag:       "v1.1.0",
 	}
 
-	serviceManifest, err := LoadManifest(namespace, commitSha, proj, dockerImage, path.Join(root, "example/.env.sample"))
+	serviceManifest, err := LoadManifest(namespace, commitSha, proj, dockerImage, path.Join(root, "example/node/.env.sample"))
 
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Error: %v", err))

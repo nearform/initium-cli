@@ -1,18 +1,24 @@
 FROM node:{{ or .RuntimeVersion .DefaultRuntimeVersion }} AS build-env
 
+ENV CI=true
+
 WORKDIR /app
 
 COPY package*.json tsconfig*.json ./
 
 RUN {{ .NodeInstallCommand }}
 
-COPY . /app
+COPY . .
 
 RUN npm run build --if-present
 RUN npm test
 
-FROM gcr.io/distroless/nodejs20-debian11
+FROM node:{{ or .RuntimeVersion .DefaultRuntimeVersion }}
+
 COPY --from=build-env /app /app
+
 WORKDIR /app
-USER nonroot
-CMD ["index.js"]
+
+USER node
+
+ENTRYPOINT npx http-server ./build

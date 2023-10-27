@@ -2,10 +2,12 @@ package project
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/fs"
 	"os"
 	"path"
+	"strings"
 	"text/template"
 
 	"github.com/nearform/initium-cli/src/services/git"
@@ -15,8 +17,9 @@ import (
 type ProjectType string
 
 const (
-	NodeProject ProjectType = "node"
-	GoProject   ProjectType = "go"
+	NodeProject       ProjectType = "node"
+	GoProject         ProjectType = "go"
+	FrontendJsProject ProjectType = "frontend-js"
 )
 
 type Project struct {
@@ -65,6 +68,8 @@ func IsValidProjectType(projectType string) bool {
 		return true
 	case string(GoProject):
 		return true
+	case string(FrontendJsProject):
+		return true
 	default:
 		return false
 	}
@@ -74,8 +79,28 @@ func DetectType(directory string) (ProjectType, error) {
 	var detectedRuntimes []ProjectType
 	var projectType ProjectType
 	if _, err := os.Stat(path.Join(directory, "package.json")); err == nil {
-		detectedRuntimes = append(detectedRuntimes, NodeProject)
-		projectType = NodeProject
+		bytes, err := os.ReadFile(path.Join(directory, "package.json"))
+		var result map[string]any
+		json.Unmarshal(bytes, &result)
+		dependencies := result["dependencies"].(map[string]any)
+
+		if err != nil {
+			fmt.Print(err)
+		}
+
+		frontendDetected := false
+		for dependency := range dependencies {
+			if strings.Contains(string(dependency), "react") || strings.Contains(string(dependency), "angular") || strings.Contains(string(dependency), "vue") {
+				frontendDetected = true
+			}
+		}
+		if frontendDetected {
+			detectedRuntimes = append(detectedRuntimes, FrontendJsProject)
+			projectType = FrontendJsProject
+		} else {
+			detectedRuntimes = append(detectedRuntimes, NodeProject)
+			projectType = NodeProject
+		}
 	}
 	if _, err := os.Stat(path.Join(directory, "go.mod")); err == nil {
 		detectedRuntimes = append(detectedRuntimes, GoProject)
@@ -97,6 +122,9 @@ func (proj *Project) setRuntimeVersion() error {
 		return nil
 	case GoProject:
 		proj.DefaultRuntimeVersion = defaults.DefaultGoRuntimeVersion
+		return nil
+	case FrontendJsProject:
+		proj.DefaultRuntimeVersion = defaults.DefaultFrontendJsRuntimeVersion
 		return nil
 	default:
 		return fmt.Errorf("cannot detect runtime version for project type %s", proj.Type)

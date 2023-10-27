@@ -16,3 +16,5 @@ const DefaultNodeRuntimeVersion string = "20.2.0"
 
 // renovate: datasource=docker depName=golang
 const DefaultGoRuntimeVersion string = "1.20.4"
+
+const DefaultFrontendJsRuntimeVersion string = "20.2.0"

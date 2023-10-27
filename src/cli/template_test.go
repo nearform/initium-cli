@@ -29,6 +29,7 @@ FROM gcr.io/distroless/static-debian11
 
 COPY --from=build /go/bin/app /
 ENTRYPOINT ["/app"]
+
 `
 
 const expectedNodeAppDockerTemplate = `FROM node:20.2.0 AS build-env
@@ -49,11 +50,40 @@ COPY --from=build-env /app /app
 WORKDIR /app
 USER nonroot
 CMD ["index.js"]
+
+`
+
+const expectedFrontendJsAppDockerTemplate = `FROM node:20.2.0 AS build-env
+
+ENV CI=true
+
+WORKDIR /app
+
+COPY package*.json tsconfig*.json ./
+
+RUN npm i
+
+COPY . .
+
+RUN npm run build --if-present
+RUN npm test
+
+FROM node:20.2.0
+
+COPY --from=build-env /app /app
+
+WORKDIR /app
+
+USER node
+
+CMD npx http-server -p 8080 ./build
+
 `
 
 var projects = map[project.ProjectType]map[string]string{
-	project.NodeProject: {"directory": "example", "expectedTemplate": expectedNodeAppDockerTemplate},
-	project.GoProject:   {"directory": ".", "expectedTemplate": expectedGoAppDockerTemplate},
+	project.NodeProject:       {"directory": "example/node", "expectedTemplate": expectedNodeAppDockerTemplate},
+	project.GoProject:         {"directory": ".", "expectedTemplate": expectedGoAppDockerTemplate},
+	project.FrontendJsProject: {"directory": "example/frontend-js", "expectedTemplate": expectedFrontendJsAppDockerTemplate},
 }
 
 func TestShouldRenderDockerTemplate(t *testing.T) {
