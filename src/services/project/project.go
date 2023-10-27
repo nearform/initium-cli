@@ -82,7 +82,7 @@ func DetectType(directory string) (ProjectType, error) {
 		bytes, err := os.ReadFile(path.Join(directory, "package.json"))
 		var result map[string]any
 		json.Unmarshal([]byte(bytes), &result)
-		dependencies := result["dependencies"].(map[string]string)
+		dependencies := result["dependencies"].(map[string]any)
 
 		if err != nil {
 			fmt.Print(err)
