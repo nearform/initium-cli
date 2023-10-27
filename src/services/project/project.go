@@ -81,7 +81,7 @@ func DetectType(directory string) (ProjectType, error) {
 	if _, err := os.Stat(path.Join(directory, "package.json")); err == nil {
 		bytes, err := os.ReadFile(path.Join(directory, "package.json"))
 		var result map[string]any
-		json.Unmarshal([]byte(bytes), &result)
+		json.Unmarshal(bytes, &result)
 		dependencies := result["dependencies"].(map[string]any)
 
 		if err != nil {
@@ -90,7 +90,7 @@ func DetectType(directory string) (ProjectType, error) {
 
 		frontendDetected := false
 		for dependency := range dependencies {
-			if strings.Contains(dependency, "react") || strings.Contains(dependency, "angular") || strings.Contains(dependency, "vue") {
+			if strings.Contains(string(dependency), "react") || strings.Contains(string(dependency), "angular") || strings.Contains(string(dependency), "vue") {
 				frontendDetected = true
 			}
 		}
