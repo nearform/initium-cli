@@ -129,8 +129,6 @@ func TestLoadManifestForPrivateService(t *testing.T) {
 // 8 -> only .env.secretref is empty
 
 func TestLoadManifestEnvironmentVariables(t *testing.T) {
-	var missingEnvVar string
-	envVarWasSet := true
 	envVariablesFromFile, err := godotenv.Read(envTestFile)
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Error: %v", err))
@@ -146,11 +144,9 @@ func TestLoadManifestEnvironmentVariables(t *testing.T) {
 	}
 
 	for _, envVar := range serviceManifest.Spec.Template.Spec.Containers[0].Env {
-		if (envVariablesFromFile[envVar.Name] != "" || secretRefEnvVariablesFromFile[envVar.Name] != "") && (envVar.Value != "" || envVar.ValueFrom != nil) {
-			envVarWasSet = false
-			missingEnvVar = envVar.Name
-			break
-		}
+		delete(envVariablesFromFile, envVar.Name)
+		delete(secretRefEnvVariablesFromFile, envVar.Name)
 	}
-	assert.Assert(t, envVarWasSet, "Environment variable %s wasn't set", missingEnvVar)
+	assert.Assert(t, len(envVariablesFromFile) == 0, "Missing environment variables: %s", envVariablesFromFile )
+	assert.Assert(t, len(secretRefEnvVariablesFromFile) == 0, "Missing secret environment variables: %s", secretRefEnvVariablesFromFile)
 }
