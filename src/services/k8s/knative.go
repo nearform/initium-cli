@@ -3,7 +3,9 @@ package k8s
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"os"
 	"path"
 	"strings"
 	"text/template"
@@ -143,21 +145,9 @@ func setSecretEnv(manifest *servingv1.Service, SecretRefEnvFile string, manifest
 }
 
 func validateSecretEnvVar(secretEnvVar corev1.EnvVar) error {
-	invalidChars := []string{
-		"\"",
-		"'",
-	}
-
 	// Mandatory char
 	if !strings.Contains(secretEnvVar.Value, "/") {
 		return fmt.Errorf("Invalid secret format for '%s'. Missing '/' char. Value must be in the format <secret-name>/<secret-key>, instead of '%s'", secretEnvVar.Name, secretEnvVar.Value)
-	}
-
-	// Invalid chars
-	for _, value := range invalidChars {
-		if strings.Contains(secretEnvVar.Value, value) {
-			return fmt.Errorf("Invalid secret format for '%s'. Invalid char found (\", ')", secretEnvVar.Name)
-		}
 	}
 	return nil
 }
@@ -173,13 +163,18 @@ func setEnv(manifest *servingv1.Service, envFile string, manifestEnvVars map[str
 
 func loadEnvFile(envFile string, manifestEnvVars map[string]string) ([]corev1.EnvVar, error) {
 	var envVarList []corev1.EnvVar
+	
+	if _, err := os.Stat(envFile); errors.Is(err, os.ErrNotExist) {
+		return nil, nil
+	}
+	
 	envVariables, err := godotenv.Read(envFile)
 	if err != nil {
 		return nil, fmt.Errorf("Error loading .env file. '%s' already set", err)
 	}
 
 	if len(envVariables) > 0 {
-		for key, value := range envVariables {			
+		for key, value := range envVariables {
 			if manifestEnvVars[key] == "" {
 				manifestEnvVars[key] = value
 				envVar := corev1.EnvVar{

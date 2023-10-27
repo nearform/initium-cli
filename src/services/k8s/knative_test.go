@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 	"testing"
 
 	"gotest.tools/v3/assert"
@@ -118,16 +119,6 @@ func TestLoadManifestForPrivateService(t *testing.T) {
 	assert.Assert(t, labels[visibilityLabel] == visibilityLabelPrivateValue)
 }
 
-// TODO: New use cases:
-// 1 -> All happy and working
-// 2 -> Invalid chars
-// 3 -> Mandatory '/' char
-// 4 -> Conflicting env vars between files
-// 5 -> Invalid dotenv format
-// 6 -> Empty files
-// 7 -> only .env is empty
-// 8 -> only .env.secretref is empty
-
 func TestLoadManifestEnvironmentVariables(t *testing.T) {
 	envVariablesFromFile, err := godotenv.Read(envTestFile)
 	if err != nil {
@@ -149,4 +140,38 @@ func TestLoadManifestEnvironmentVariables(t *testing.T) {
 	}
 	assert.Assert(t, len(envVariablesFromFile) == 0, "Missing environment variables: %s", envVariablesFromFile )
 	assert.Assert(t, len(secretRefEnvVariablesFromFile) == 0, "Missing secret environment variables: %s", secretRefEnvVariablesFromFile)
+}
+
+func TestLoadManifestEnvironmentVariablesInvalidFormat(t *testing.T) {
+	invalidEnvTestFile := path.Join(root, "assets/testdata/.env.initium.invalid")
+	serviceManifest, err := LoadManifest(namespace, commitSha, proj, dockerImage, invalidEnvTestFile, secretRefEnvTestFile)
+	assert.Assert(t, err != nil && strings.Contains(err.Error(), "Error loading .env file"), "There should be a validation error when missing a mandatory character" )
+	assert.Assert(t, serviceManifest == nil, "Expected nil manifest, got %v", serviceManifest)
+}
+
+func TestLoadManifestSecretRefEnvironmentMandatoryChars(t *testing.T) {
+	invalidSecretRefEnvTestFile := path.Join(root, "assets/testdata/.env.secretref.initium.invalid2")
+	serviceManifest, err := LoadManifest(namespace, commitSha, proj, dockerImage, envTestFile, invalidSecretRefEnvTestFile)
+	assert.Assert(t, err != nil && strings.Contains(err.Error(), "Value must be in the format <secret-name>/<secret-key>"), "There should be a validation error when missing a mandatory character" )
+	assert.Assert(t, serviceManifest == nil, "Expected nil manifest, got %v", serviceManifest)
+}
+
+func TestLoadManifestSecretRefEnvironmentConflict(t *testing.T) {
+	invalidSecretRefEnvTestFile := path.Join(root, "assets/testdata/.env.secretref.conflictingvar")
+	serviceManifest, err := LoadManifest(namespace, commitSha, proj, dockerImage, envTestFile, invalidSecretRefEnvTestFile)
+	assert.Assert(t, err != nil && strings.Contains(err.Error(), "Conflicting environment variable"), "There should be a validation error when missing a mandatory character" )
+	assert.Assert(t, serviceManifest == nil, "Expected nil manifest, got %v", serviceManifest)
+}
+
+func TestLoadManifestSecretEnvironmentVariablesFileDoesNotExist(t *testing.T) {
+	nonExistingEnvTestFile := "idontexist"
+	nonExistingSecretRefEnvTestFile := "idontexist"
+	serviceManifest, err := LoadManifest(namespace, commitSha, proj, dockerImage, nonExistingEnvTestFile, nonExistingSecretRefEnvTestFile)
+	assert.Assert(t, serviceManifest != nil, "Expected maifest to be created without issues. Dotenv files are optional. Err: %s", err)
+}
+
+func TestLoadManifestSecretEnvironmentVariablesEmptyFile(t *testing.T) {
+	emtpyFile := path.Join(root, "assets/testdata/.env.initium.empty")
+	serviceManifest, err := LoadManifest(namespace, commitSha, proj, dockerImage, emtpyFile, emtpyFile)
+	assert.Assert(t, serviceManifest != nil, "Expected maifest to be created without issues. Dotenv files are optional. Err: %s", err)
 }
