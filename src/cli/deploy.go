@@ -11,7 +11,7 @@ import (
 func (c *icli) Deploy(cCtx *cli.Context) error {
 	namespace := cCtx.String(namespaceFlag)
 	envFile := cCtx.String(envVarFileFlag)
-	SecretRefEnvFile := cCtx.String(SecretRefEnvFileFlag)
+	SecretRefEnvFile := cCtx.String(secretRefEnvFileFlag)
 
 	project, err := c.getProject(cCtx)
 	if err != nil {

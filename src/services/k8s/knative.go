@@ -60,7 +60,7 @@ func setLabels(manifest *servingv1.Service, project project.Project) {
 	}
 }
 
-func LoadManifest(namespace string, commitSha string, project *project.Project, dockerImage docker.DockerImage, envFile string, SecretRefEnvFile string) (*servingv1.Service, error) {
+func LoadManifest(namespace string, commitSha string, project *project.Project, dockerImage docker.DockerImage, envFile string, secretRefEnvFile string) (*servingv1.Service, error) {
 	manifestEnvVars := map[string]string{}
 	knativeTemplate := path.Join("assets", "knative", "service.yaml.tmpl")
 	template, err := template.ParseFS(project.Resources, knativeTemplate)
@@ -110,15 +110,15 @@ func LoadManifest(namespace string, commitSha string, project *project.Project, 
 	if err = setEnv(service, envFile, manifestEnvVars); err != nil {
 		return nil, err
 	}
-	if err = setSecretEnv(service, SecretRefEnvFile, manifestEnvVars); err != nil {
+	if err = setSecretEnv(service, secretRefEnvFile, manifestEnvVars); err != nil {
 		return nil, err
 	}
 
 	return service, nil
 }
 
-func setSecretEnv(manifest *servingv1.Service, SecretRefEnvFile string, manifestEnvVars map[string]string) error {
-	secretEnvVarList, err := loadEnvFile(SecretRefEnvFile, manifestEnvVars)
+func setSecretEnv(manifest *servingv1.Service, secretRefEnvFile string, manifestEnvVars map[string]string) error {
+	secretEnvVarList, err := loadEnvFile(secretRefEnvFile, manifestEnvVars)
 	if err != nil {
 		return err
 	}

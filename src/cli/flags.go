@@ -49,7 +49,7 @@ const (
 	stopOnBuildFlag       string = "stop-on-build"
 	stopOnPushFlag        string = "stop-on-push"
 	envVarFileFlag        string = "env-var-file"
-	SecretRefEnvFileFlag  string = "secret-ref-env-var-file"
+	secretRefEnvFileFlag  string = "secret-ref-env-var-file"
 	isPrivateServiceFlag  string = "private"
 	dryRunFlag            string = "dry-run"
 )
@@ -149,7 +149,7 @@ func InitFlags() flags {
 					Category: "deploy",
 				},
 				&cli.StringFlag{
-					Name:     SecretRefEnvFileFlag,
+					Name:     secretRefEnvFileFlag,
 					Value:    defaults.SecretRefEnvFile,
 					Category: "deploy",
 				},
