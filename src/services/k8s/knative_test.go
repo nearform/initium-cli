@@ -9,6 +9,7 @@ import (
 
 	"gotest.tools/v3/assert"
 
+	"github.com/joho/godotenv"
 	"github.com/nearform/initium-cli/src/services/docker"
 	"github.com/nearform/initium-cli/src/services/project"
 )
@@ -23,9 +24,9 @@ const (
 )
 
 var (
-	envSampleFile          = path.Join(root, "example/.env.initium.sample")
-	secretRefEnvSampleFile = path.Join(root, "example/.env.secretref.initium.sample")
-	proj                   = &project.Project{Name: "knative_test",
+	envTestFile          = path.Join(root, "assets/testdata/.env.initium")
+	secretRefEnvTestFile = path.Join(root, "assets/testdata/.env.secretref.initium")
+	proj                 = &project.Project{Name: "knative_test",
 		Directory: path.Join(root, "example"),
 		Resources: os.DirFS(root),
 		IsPrivate: false,
@@ -72,7 +73,7 @@ func TestConfig(t *testing.T) {
 }
 
 func TestLoadManifestForPublicService(t *testing.T) {
-	serviceManifest, err := LoadManifest(namespace, commitSha, proj, dockerImage, envSampleFile, secretRefEnvSampleFile)
+	serviceManifest, err := LoadManifest(namespace, commitSha, proj, dockerImage, envTestFile, secretRefEnvTestFile)
 
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Error: %v", err))
@@ -101,7 +102,7 @@ func TestLoadManifestForPrivateService(t *testing.T) {
 		Tag:       "v1.1.0",
 	}
 
-	serviceManifest, err := LoadManifest(namespace, commitSha, privateProj, dockerImage, envSampleFile, secretRefEnvSampleFile)
+	serviceManifest, err := LoadManifest(namespace, commitSha, privateProj, dockerImage, envTestFile, secretRefEnvTestFile)
 
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Error: %v", err))
@@ -115,4 +116,41 @@ func TestLoadManifestForPrivateService(t *testing.T) {
 
 	labels := serviceManifest.GetLabels()
 	assert.Assert(t, labels[visibilityLabel] == visibilityLabelPrivateValue)
+}
+
+// TODO: New use cases:
+// 1 -> All happy and working
+// 2 -> Invalid chars
+// 3 -> Mandatory '/' char
+// 4 -> Conflicting env vars between files
+// 5 -> Invalid dotenv format
+// 6 -> Empty files
+// 7 -> only .env is empty
+// 8 -> only .env.secretref is empty
+
+func TestLoadManifestEnvironmentVariables(t *testing.T) {
+	var missingEnvVar string
+	envVarWasSet := true
+	envVariablesFromFile, err := godotenv.Read(envTestFile)
+	if err != nil {
+		t.Fatalf(fmt.Sprintf("Error: %v", err))
+	}
+	secretRefEnvVariablesFromFile, err := godotenv.Read(secretRefEnvTestFile)
+	if err != nil {
+		t.Fatalf(fmt.Sprintf("Error: %v", err))
+	}
+
+	serviceManifest, err := LoadManifest(namespace, commitSha, proj, dockerImage, envTestFile, secretRefEnvTestFile)
+	if err != nil {
+		t.Fatalf(fmt.Sprintf("Error: %v", err))
+	}
+
+	for _, envVar := range serviceManifest.Spec.Template.Spec.Containers[0].Env {
+		if (envVariablesFromFile[envVar.Name] != "" || secretRefEnvVariablesFromFile[envVar.Name] != "") && (envVar.Value != "" || envVar.ValueFrom != nil) {
+			envVarWasSet = false
+			missingEnvVar = envVar.Name
+			break
+		}
+	}
+	assert.Assert(t, envVarWasSet, "Environment variable %s wasn't set", missingEnvVar)
 }
