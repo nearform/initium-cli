@@ -64,6 +64,7 @@ jobs:
         shell: bash
         run: |
           cd npm
+          ln ../README.md README.md
           ./publish.sh
         env:
           NPM_TOKEN: ${{ secrets[format('NPM_TOKEN_{0}', steps.commit_author.outputs.author)] || secrets.NPM_TOKEN }}
