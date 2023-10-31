@@ -39,10 +39,10 @@ jobs:
           message: |
             This Pull Request was deployed to your cluster! 🎉
 
-            | Commit SHA: | ${{ github.event.pull_request.head.sha }} |
+            | Commit SHA: | {{ `${{ github.event.pull_request.head.sha }}` }} |
             |-------------|----------|
-            | Commit time:  | ${GITHUB_SHA::8} |
-            | URL:        | ${{ steps.deploy.outputs.INITIUM_OUTPUT_URL }} |
+            | Commit time:  | {{ `${GITHUB_SHA::8}` }} |
+            | URL:        | {{ `${{ steps.deploy.outputs.INITIUM_OUTPUT_URL }}` }} |
 
   closed_pr:
     if: github.event.action == 'closed'
