@@ -8,6 +8,7 @@ on:
 permissions:
   contents: read
   packages: write
+  pull-requests: write
 
 jobs:
   on_pr:
@@ -21,6 +22,7 @@ jobs:
 
       - name: build and deploy application
         uses: docker://ghcr.io/nearform/initium-cli:latest
+        id: deploy
         with:
           args: onbranch
         env:
@@ -29,6 +31,18 @@ jobs:
           INITIUM_CLUSTER_ENDPOINT: {{ `${{ secrets.CLUSTER_ENDPOINT }}` }}
           INITIUM_CLUSTER_TOKEN: {{ `${{ secrets.CLUSTER_TOKEN }}` }}
           INITIUM_CLUSTER_CA_CERT: {{ `${{ secrets.CLUSTER_CA_CERT }}` }}
+
+      - name: comment URL on the PR
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          comment_tag: initium_deploy_url
+          message: |
+            This Pull Request was deployed to your cluster! 🎉
+
+            | Commit SHA: | ${{ github.event.pull_request.head.sha }} |
+            |-------------|----------|
+            | Commit time:  | ${GITHUB_SHA::8} |
+            | URL:        | ${{ steps.deploy.outputs.INITIUM_OUTPUT_URL }} |
 
   closed_pr:
     if: github.event.action == 'closed'

@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/exec"
 	"path"
 	"strings"
 	"text/template"
@@ -239,6 +240,7 @@ func Apply(serviceManifest *servingv1.Service, config *rest.Config) error {
 		}
 		if service.Status.URL != nil {
 			fmt.Printf("You can reach it via %s\n", service.Status.URL)
+			exec.Command(fmt.Sprintf("echo \"INITIUM_OUTPUT_URL=%s\" >> \"$GITHUB_OUTPUT\"", service.Status.URL))
 			break
 		}
 
