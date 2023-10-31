@@ -11,6 +11,7 @@ import (
 func (c *icli) Deploy(cCtx *cli.Context) error {
 	namespace := cCtx.String(namespaceFlag)
 	envFile := cCtx.String(envVarFileFlag)
+	SecretRefEnvFile := cCtx.String(secretRefEnvFileFlag)
 
 	project, err := c.getProject(cCtx)
 	if err != nil {
@@ -22,7 +23,7 @@ func (c *icli) Deploy(cCtx *cli.Context) error {
 		return err
 	}
 
-	serviceManifest, err := knative.LoadManifest(namespace, commitSha, project, c.dockerImage, envFile)
+	serviceManifest, err := knative.LoadManifest(namespace, commitSha, project, c.dockerImage, envFile, SecretRefEnvFile)
 	if err != nil {
 		return err
 	}

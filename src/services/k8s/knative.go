@@ -1,9 +1,9 @@
 package k8s
 
 import (
-	"bufio"
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -12,9 +12,9 @@ import (
 	"time"
 
 	"github.com/charmbracelet/log"
+	"github.com/joho/godotenv"
 	"github.com/nearform/initium-cli/src/services/docker"
 	"github.com/nearform/initium-cli/src/services/project"
-	"github.com/nearform/initium-cli/src/utils/defaults"
 	"sigs.k8s.io/yaml"
 
 	corev1 "k8s.io/api/core/v1"
@@ -60,9 +60,11 @@ func setLabels(manifest *servingv1.Service, project project.Project) {
 	}
 }
 
-func LoadManifest(namespace string, commitSha string, project *project.Project, dockerImage docker.DockerImage, envFile string) (*servingv1.Service, error) {
+func LoadManifest(namespace string, commitSha string, project *project.Project, dockerImage docker.DockerImage, envFile string, secretRefEnvFile string) (*servingv1.Service, error) {
+	manifestEnvVars := map[string]string{}
 	knativeTemplate := path.Join("assets", "knative", "service.yaml.tmpl")
 	template, err := template.ParseFS(project.Resources, knativeTemplate)
+
 	if err != nil {
 		return nil, fmt.Errorf("error reading the knative service yaml: %v", err)
 	}
@@ -105,75 +107,88 @@ func LoadManifest(namespace string, commitSha string, project *project.Project, 
 	}
 
 	setLabels(service, *project)
-	if err = setEnv(service, envFile); err != nil {
+	if err = setEnv(service, envFile, manifestEnvVars); err != nil {
+		return nil, err
+	}
+	if err = setSecretEnv(service, secretRefEnvFile, manifestEnvVars); err != nil {
 		return nil, err
 	}
 
 	return service, nil
 }
 
-func setEnv(manifest *servingv1.Service, envFile string) error {
-	envVarList, err := loadEnvFile(envFile)
+func setSecretEnv(manifest *servingv1.Service, secretRefEnvFile string, manifestEnvVars map[string]string) error {
+	secretEnvVarList, err := loadEnvFile(secretRefEnvFile, manifestEnvVars)
 	if err != nil {
 		return err
 	}
+	for _, secretEnvVar := range secretEnvVarList { //eg: [MOCK5=kubernetessecretname/secretkey]
+		err := validateSecretEnvVar(secretEnvVar)
+		if err != nil {
+			return err
+		}
 
+		secretValue := strings.SplitN(secretEnvVar.Value, "/", 2)
+		manifest.Spec.Template.Spec.Containers[0].Env = append(manifest.Spec.Template.Spec.Containers[0].Env, corev1.EnvVar{
+			Name: secretEnvVar.Name, //eg: MOCK5
+			ValueFrom: &corev1.EnvVarSource{
+				SecretKeyRef: &corev1.SecretKeySelector{
+					Key: secretValue[1], //eg: kubernetesecretkey
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: secretValue[0], //eg: kubernetesecretname
+					},
+				},
+			},
+		})
+	}
+	return nil
+}
+
+func validateSecretEnvVar(secretEnvVar corev1.EnvVar) error {
+	// Mandatory char
+	if !strings.Contains(secretEnvVar.Value, "/") {
+		return fmt.Errorf("Invalid secret format for '%s'. Missing '/' char. Value must be in the format <secret-name>/<secret-key>, instead of '%s'", secretEnvVar.Name, secretEnvVar.Value)
+	}
+	return nil
+}
+
+func setEnv(manifest *servingv1.Service, envFile string, manifestEnvVars map[string]string) error {
+	envVarList, err := loadEnvFile(envFile, manifestEnvVars)
+	if err != nil {
+		return err
+	}
 	manifest.Spec.Template.Spec.Containers[0].Env = append(manifest.Spec.Template.Spec.Containers[0].Env, envVarList...)
 	return nil
 }
 
-func loadEnvFile(envFile string) ([]corev1.EnvVar, error) {
+func loadEnvFile(envFile string, manifestEnvVars map[string]string) ([]corev1.EnvVar, error) {
 	var envVarList []corev1.EnvVar
-	if _, err := os.Stat(envFile); err != nil {
-		if (os.IsNotExist(err)) && (path.Base(envFile) == defaults.EnvVarFile) {
-			log.Infof("No environment variables file %s to Load!", defaults.EnvVarFile)
-		} else {
-			return nil, fmt.Errorf("Error loading %v file: %v", envFile, err)
-		}
-	} else {
-		log.Infof("Environment variables file %s found! Loading..", envFile)
-		file, err := os.Open(envFile)
-		if err != nil {
-			return nil, fmt.Errorf("Error opening %v file: %v", envFile, err)
-		}
-		defer file.Close()
+	
+	if _, err := os.Stat(envFile); errors.Is(err, os.ErrNotExist) {
+		return nil, nil
+	}
+	
+	envVariables, err := godotenv.Read(envFile)
+	if err != nil {
+		return nil, fmt.Errorf("Error loading .env file. '%s' already set", err)
+	}
 
-		scanner := bufio.NewScanner(file)
-		envVariables := make(map[string]string)
-
-		checkFormat := func(line string) bool {
-			parts := strings.SplitN(line, "=", 2)
-			return len(parts) == 2
-		}
-
-		for scanner.Scan() {
-			line := scanner.Text()
-			if checkFormat(line) {
-				parts := strings.SplitN(line, "=", 2)
-				key := strings.TrimSpace(parts[0])
-				value := strings.TrimSpace(parts[1])
-				envVariables[key] = value
-			} else {
-				log.Warnf("Environment variables file %v line won't be processed due to invalid format: %s. Accepted: KEY=value", envFile, line)
-			}
-		}
-
-		if err := scanner.Err(); err != nil {
-			return nil, fmt.Errorf("Error reading environment variables file %v: %v", envFile, err)
-		}
-
-		if len(envVariables) > 0 {
-			for key, value := range envVariables {
+	if len(envVariables) > 0 {
+		for key, value := range envVariables {
+			if manifestEnvVars[key] == "" {
+				manifestEnvVars[key] = value
 				envVar := corev1.EnvVar{
 					Name:  key,
 					Value: value,
 				}
 				envVarList = append(envVarList, envVar)
+			} else {
+				return nil, fmt.Errorf("Conflicting environment variable. '%s' already set through another file", key)
 			}
-			log.Infof("Environment variables file %v content is now loaded!", envFile)
-		} else {
-			log.Warnf("Environment file %v is empty, Nothing to load!", envFile)
 		}
+		log.Infof("Environment variables file %v content is now loaded!", envFile)
+	} else {
+		log.Warnf("Environment file %v is empty, Nothing to load!", envFile)
 	}
 	return envVarList, nil
 }

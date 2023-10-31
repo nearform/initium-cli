@@ -4,8 +4,9 @@ go 1.20
 
 require (
 	github.com/charmbracelet/log v0.2.2
-        github.com/docker/docker v23.0.3+incompatible
+	github.com/docker/docker v23.0.3+incompatible
 	github.com/go-git/go-git/v5 v5.7.0
+	github.com/joho/godotenv v1.5.1
 	github.com/moby/term v0.0.0-20221205130635-1aeaba878587
 	github.com/urfave/cli/v2 v2.25.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -15,6 +16,7 @@ require (
 	k8s.io/client-go v0.27.1
 	k8s.io/utils v0.0.0-20230220204549-a5ecb0141aa5
 	knative.dev/serving v0.37.0
+	sigs.k8s.io/yaml v1.3.0
 )
 
 require (
@@ -104,5 +106,4 @@ require (
 	knative.dev/pkg v0.0.0-20230418073056-dfad48eaa5d0 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
-	sigs.k8s.io/yaml v1.3.0 // indirect
 )

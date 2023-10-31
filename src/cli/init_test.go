@@ -24,6 +24,7 @@ image-pull-secrets: null
 private: %t
 project-type: %s
 runtime-version: null
+secret-ref-env-var-file: .env.secretref.initium
 `,
 		appName,
 		registry,
