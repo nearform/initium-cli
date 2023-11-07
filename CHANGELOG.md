@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.7.0](https://github.com/nearform/initium-cli/compare/v0.6.0...v0.7.0) (2023-10-31)
+
+
+### Features
+
+* initium project type flag ([#101](https://github.com/nearform/initium-cli/issues/101)) ([321141e](https://github.com/nearform/initium-cli/commit/321141ea3fd5f6133708e5e4568ef141b73a197f))
+* pass secrets to app ([#142](https://github.com/nearform/initium-cli/issues/142)) ([3edf2ea](https://github.com/nearform/initium-cli/commit/3edf2ea350d3e5997c95313d6b56ab412460b711))
+* private registry with multiple secrets ([#130](https://github.com/nearform/initium-cli/issues/130)) ([a4a20f1](https://github.com/nearform/initium-cli/commit/a4a20f142dc57fb84d37549a621f4fd26656cd56))
+* provide an option to deploy private services ([#132](https://github.com/nearform/initium-cli/issues/132)) ([9528449](https://github.com/nearform/initium-cli/commit/9528449c88eff8473bc75ad6df2def176b7defb2))
+
+
+### Bug Fixes
+
+* add initium-cli workflow permissions to write packages ([#141](https://github.com/nearform/initium-cli/issues/141)) ([ba6ec24](https://github.com/nearform/initium-cli/commit/ba6ec246be76ef4da735cc006242d4d01611600e))
+* npm readme ([#136](https://github.com/nearform/initium-cli/issues/136)) ([7cfac95](https://github.com/nearform/initium-cli/commit/7cfac95bb8f93d28cdf10fefc1b165aebc0949e2))
+
 ## [0.6.0](https://github.com/nearform/initium-cli/compare/v0.5.0...v0.6.0) (2023-10-03)
 
 
