@@ -11,6 +11,7 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/nearform/initium-cli/src/services/git"
 	"github.com/nearform/initium-cli/src/services/project"
+	"github.com/nearform/initium-cli/src/utils"
 	"github.com/nearform/initium-cli/src/utils/defaults"
 	"github.com/urfave/cli/v2"
 	"gopkg.in/yaml.v2"
@@ -316,4 +317,20 @@ func (c icli) CommandFlags(commands []FlagsType) []cli.Flag {
 	}
 
 	return result
+}
+
+func (icli) detectFlagsFromGit(ctx *cli.Context) (error) {
+	var err error
+	branchName := ctx.String(branchNameFlag)
+
+	if branchName == "" {
+		branchName, err = git.GetBranchName()
+		if err != nil {
+			return err
+		}
+	}
+
+	ctx.Set(appVersionFlag, utils.EncodeRFC1123(branchName))
+	ctx.Set(namespaceFlag, utils.EncodeRFC1123(branchName))
+	return nil
 }

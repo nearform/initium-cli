@@ -151,6 +151,7 @@ func (c icli) Run(args []string) error {
 			c.OnMainCMD(),
 			c.OnBranchCMD(),
 			c.TemplateCMD(),
+			c.SecretsCMD(),
 			c.InitCMD(),
 			{
 				Name:  "version",

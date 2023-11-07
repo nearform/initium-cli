@@ -3,8 +3,6 @@ package cli
 import (
 	"fmt"
 
-	"github.com/nearform/initium-cli/src/services/git"
-	"github.com/nearform/initium-cli/src/utils"
 	"github.com/urfave/cli/v2"
 )
 
@@ -73,22 +71,14 @@ func (c icli) OnBranchCMD() *cli.Command {
 			return c.buildPushDeploy(cCtx)
 		},
 		Before: func(ctx *cli.Context) error {
-			var err error
 			if err := c.loadFlagsFromConfig(ctx); err != nil {
 				return err
 			}
 
-			branchName := ctx.String(branchNameFlag)
-
-			if branchName == "" {
-				branchName, err = git.GetBranchName()
-				if err != nil {
-					return err
-				}
+			err := c.detectFlagsFromGit(ctx)
+			if err != nil {
+				return err
 			}
-
-			ctx.Set(appVersionFlag, utils.EncodeRFC1123(branchName))
-			ctx.Set(namespaceFlag, utils.EncodeRFC1123(branchName))
 
 			ignoredFlags := []string{}
 			if ctx.Bool(stopOnBuildFlag) {
