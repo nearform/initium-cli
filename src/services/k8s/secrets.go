@@ -6,47 +6,36 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/log"
-	"github.com/nearform/initium-cli/src/utils/logger"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
 
-func ListSecrets(config *rest.Config, namespace string) (*v1.SecretList, error) {
-	convertSecretListToString := func (secretList *v1.SecretList) string {
-	    var sb strings.Builder
-
-	    for _, secret := range secretList.Items {
-	        sb.WriteString(fmt.Sprintf("%s\n", secret.ObjectMeta.Name))
-	        for key := range secret.Data {
-	            sb.WriteString(fmt.Sprintf("  %s\n", key))
-	        }
-	        sb.WriteString("\n")
-	    }
-
-	    return sb.String()
+func ListSecrets(config *rest.Config, namespace string) (string, error) {
+	formatSecretListOutput := func(secretList *v1.SecretList) string {
+		var sb strings.Builder
+		for _, secret := range secretList.Items {
+			sb.WriteString(
+				fmt.Sprintf("-name: %v\n namespace: %v\n", secret.ObjectMeta.Name, secret.ObjectMeta.Namespace),
+			)
+		}
+		return sb.String()
 	}
 
 	ctx := context.Background()
 	client, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return nil, fmt.Errorf("Creating K8s client %v", err)
+		return "", fmt.Errorf("Creating K8s client %v", err)
 	}
 
 	secretList, err := client.CoreV1().Secrets(namespace).List(ctx, metav1.ListOptions{})
 
 	if err != nil {
-		return nil, fmt.Errorf("Error fetching K8s secret %v", err.Error())
+		return "", fmt.Errorf("Error fetching K8s secret %v", err.Error())
 	}
 
-	stringSecretList := convertSecretListToString(secretList);
-	logger.PrintInfo("*********** CODEIUM CONVERTED"); // TODO: Return this and print it from CMD
-	logger.PrintInfo(stringSecretList); // TODO: Return this and print it from CMD
-	logger.PrintInfo("*********** SECRETLIST.STRING NATIVE METHOD"); // TODO: Return this and print it from CMD
-	logger.PrintInfo(secretList.String()); // TODO: Return this and print it from CMD
-
-	return secretList, nil
+	return formatSecretListOutput(secretList), nil
 }
 
 func GetSecret(config *rest.Config, secretName string, namespace string) (*v1.Secret, error) {
@@ -61,6 +50,32 @@ func GetSecret(config *rest.Config, secretName string, namespace string) (*v1.Se
 		return nil, fmt.Errorf("Error fetching K8s secret %v", err)
 	}
 	return secret, nil
+}
+
+func CreateSecret(config *rest.Config, secretName string, secretKey string, secretValue string, namespace string) error {
+	ctx := context.Background()
+	client, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return fmt.Errorf("Creating K8s client %v", err)
+	}
+	newSecret := &v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      secretName,
+			Namespace: namespace,
+		},
+		// TODO: Allow multiple keys
+		Data: map[string][]byte{
+			secretKey: []byte(secretValue),
+		},
+	}
+
+	_, err = client.CoreV1().Secrets(namespace).Create(ctx, newSecret, metav1.CreateOptions{})
+	if err != nil {
+		return fmt.Errorf("Creating K8s secret %v", err)
+	}
+
+	log.Infof("K8s secret: %v was successfully created", secretName)
+	return nil
 }
 
 func UpdateSecretKeyValue(config *rest.Config, secretName string, secretKey string, secretValue string, namespace string) error {
