@@ -78,7 +78,7 @@ func CreateSecret(config *rest.Config, secretName string, secretKey string, secr
 	return nil
 }
 
-func UpdateSecretKeyValue(config *rest.Config, secretName string, secretKey string, secretValue string, namespace string) error {
+func UpdateSecret(config *rest.Config, secretName string, secretKey string, secretValue string, namespace string) error {
 	ctx := context.Background()
 	client, err := kubernetes.NewForConfig(config)
 	if err != nil {
