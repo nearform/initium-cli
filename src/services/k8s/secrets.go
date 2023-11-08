@@ -17,8 +17,11 @@ func ListSecrets(config *rest.Config, namespace string) (string, error) {
 		var sb strings.Builder
 		for _, secret := range secretList.Items {
 			sb.WriteString(
-				fmt.Sprintf("-name: %v\n namespace: %v\n", secret.ObjectMeta.Name, secret.ObjectMeta.Namespace),
+				fmt.Sprintf("-name: %v\n namespace: %v\n data:\n", secret.ObjectMeta.Name, secret.ObjectMeta.Namespace),
 			)
+			for key, value := range secret.Data {
+				sb.WriteString(fmt.Sprintf("  %s: %s", key, string(value)))
+			}
 		}
 		return sb.String()
 	}
@@ -36,20 +39,6 @@ func ListSecrets(config *rest.Config, namespace string) (string, error) {
 	}
 
 	return formatSecretListOutput(secretList), nil
-}
-
-func GetSecret(config *rest.Config, secretName string, namespace string) (*v1.Secret, error) {
-	ctx := context.Background()
-	client, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, fmt.Errorf("Creating K8s client %v", err)
-	}
-
-	secret, err := getSecretUsingExistingCtx(client, ctx, secretName, namespace)
-	if err == nil {
-		return nil, fmt.Errorf("Error fetching K8s secret %v", err)
-	}
-	return secret, nil
 }
 
 func CreateSecret(config *rest.Config, secretName string, secretKey string, secretValue string, namespace string) error {

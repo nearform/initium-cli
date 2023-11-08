@@ -41,6 +41,20 @@ func (c *icli) CreateSecretsCMD(cCtx *cli.Context) error {
 	return nil
 }
 
+func (c *icli) UpdateSecretsCMD(cCtx *cli.Context) error {
+	config, err := setK8sConfig(cCtx)
+	if err != nil {
+		return err
+	}
+
+	err = k8s.UpdateSecret(config, cCtx.String("name"), cCtx.String("key"), cCtx.String("value"), cCtx.String(namespaceFlag))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c icli) SecretsCMD() *cli.Command {
 	flags := c.CommandFlags([]FlagsType{
 		Kubernetes,
@@ -73,12 +87,6 @@ func (c icli) SecretsCMD() *cli.Command {
 		},
 		Subcommands: []*cli.Command{
 			{
-				Name:   "list",
-				Usage:  "list secrets managed by initium",
-				Action: c.ListSecretsCMD,
-				Before: c.baseBeforeFunc,
-			},
-			{
 				Name:   "create",
 				Usage:  "create a secret",
 				Action: c.CreateSecretsCMD,
@@ -87,14 +95,46 @@ func (c icli) SecretsCMD() *cli.Command {
 					&cli.StringFlag{
 						Name:  "name",
 						Usage: "Secret name",
+						Required: true,
 					},					
 					&cli.StringSliceFlag{
 						Name:  "key",
 						Usage: "Secret key. Must be used in conjunction with --value. Allows multiple, and order matters",
+						Required: true,
 					},
 					&cli.StringSliceFlag{
 						Name:  "value",
 						Usage: "Secret value. Allows multiple, and they must be in the same order as the respective --key",
+						Required: true,
+					},
+				},
+			},
+			{
+				Name:   "get",
+				Usage:  "get secrets managed by initium",
+				Action: c.ListSecretsCMD,
+				Before: c.baseBeforeFunc,
+			},
+			{
+				Name:   "update",
+				Usage:  "update secrets managed by initium",
+				Action: c.UpdateSecretsCMD,
+				Before: c.baseBeforeFunc,
+				Flags: []cli.Flag{		
+					&cli.StringFlag{
+						Name:  "name", // TODO: Move 'name', 'key' and 'values' as constants
+						Usage: "Secret name",
+						Required: true,
+					},			
+					&cli.StringFlag{
+						Name:  "key",
+						Usage: "Secret key. Must be used in conjunction with --value",
+						Required: true,
+					},
+					&cli.StringFlag{
+						Name:  "value",
+						Usage: "Secret value",
+						Required: true,
 					},
 				},
 			},
