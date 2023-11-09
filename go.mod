@@ -3,6 +3,7 @@ module github.com/nearform/initium-cli
 go 1.20
 
 require (
+	filippo.io/age v1.1.1
 	github.com/charmbracelet/log v0.2.2
 	github.com/docker/docker v23.0.3+incompatible
 	github.com/go-git/go-git/v5 v5.7.0

@@ -152,6 +152,7 @@ func (c icli) Run(args []string) error {
 			c.OnBranchCMD(),
 			c.TemplateCMD(),
 			c.InitCMD(),
+			c.SecretsCMD(),
 			{
 				Name:  "version",
 				Usage: "Return the version of the cli",
