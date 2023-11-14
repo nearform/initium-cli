@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/base64"
 	"fmt"
 
 	"github.com/nearform/initium-cli/src/services/secrets"
@@ -13,62 +14,79 @@ func (c icli) generateKeys(ctx *cli.Context) error {
 		return err
 	}
 
-	fmt.Fprintf(c.Writer, "Private key: %q\n", keys.Private)
+	fmt.Fprintf(c.Writer, "Secret key: %q\n", keys.Private)
 	fmt.Fprintf(c.Writer, "Public key: %q\n", keys.Public)
 	return nil
 }
 
 func (c icli) encrypt(ctx *cli.Context) error {
-	publicKey := ctx.String("publicKey")
-	secretMaterial := ctx.String("secret")
-	return secrets.Encrypt(publicKey, secretMaterial, c.Writer)
+	publicKey := ctx.String(publicKeyFlag)
+	secret := ctx.String(secretFlag)
+	base64Secret := ctx.String(base64SecretFlag)
+
+	if base64Secret == "" {
+		base64Secret = base64.StdEncoding.EncodeToString([]byte(secret))
+	}
+
+	result, err := secrets.Encrypt(publicKey, base64Secret)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(c.Writer, "%s\n", result)
+	return nil
 }
 
 func (c icli) decrypt(ctx *cli.Context) error {
-	privateKey := ctx.String("privateKey")
-	secret := ctx.String("secret")
-	return secrets.Decrypt(privateKey, secret, c.Writer)
+	privateKey := ctx.String(privateKeyFlag)
+	secret := ctx.String(base64SecretFlag)
+	result, err := secrets.Decrypt(privateKey, secret)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintf(c.Writer, "%s\n", result)
+	return nil
 }
 
 func (c icli) SecretsCMD() *cli.Command {
 
 	return &cli.Command{
 		Name:  "secrets",
-		Usage: "create configuration for the cli [EXPERIMENTAL]",
+		Usage: "A series of command to generate age keys, encrypt and decrypt secrets",
 		Subcommands: []*cli.Command{
 			{
 				Name:   "generate-keys",
-				Usage:  "generate the public and private keys",
+				Usage:  "Generate the public and private keys and output them on stdout",
 				Action: c.generateKeys,
 				Before: c.baseBeforeFunc,
 			},
 			{
 				Name:   "encrypt",
+				Usage:  "Encrypt a secret, if the secret flag is used the secret is first encoded in base64 and then encrypted",
 				Action: c.encrypt,
-				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:    "publicKey",
-						EnvVars: []string{"INITIUM_SECRET_PUBLIC_KEY"},
-					},
-					&cli.StringFlag{
-						Name:    "secret",
-						EnvVars: []string{"INITIUM_SECRET_MATERIAL"},
-					},
+				Flags:  c.CommandFlags([]FlagsType{Encrypt}),
+				Before: func(ctx *cli.Context) error {
+					if err := c.loadFlagsFromConfig(ctx); err != nil {
+						return err
+					}
+
+					ignoredFlags := []string{}
+
+					if ctx.IsSet(secretFlag) {
+						ignoredFlags = append(ignoredFlags, base64SecretFlag)
+					}
+					if ctx.IsSet(base64SecretFlag) {
+						ignoredFlags = append(ignoredFlags, secretFlag)
+					}
+
+					return c.checkRequiredFlags(ctx, ignoredFlags)
 				},
 			},
 			{
 				Name:   "decrypt",
+				Usage:  "Decrypt a base64 encoded secret and output the base64 encoded value",
 				Action: c.decrypt,
-				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:    "privateKey",
-						EnvVars: []string{"INITIUM_SECRET_PRIVATE_KEY"},
-					},
-					&cli.StringFlag{
-						Name:    "secret",
-						EnvVars: []string{"INITIUM_ENCRYPTED_SECRET"},
-					},
-				},
+				Flags:  c.CommandFlags([]FlagsType{Decrypt}),
+				Before: c.baseBeforeFunc,
 			},
 		},
 	}

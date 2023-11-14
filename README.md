@@ -82,3 +82,16 @@ The matrix below gives an overview of the integration status of our CLI with CI 
 | Gitlab CI            | Coming Soon        |
 | Azure Devops         | Coming Soon        |
 | More will be added...|                    |
+
+
+Encrypt your secret with:
+
+```
+./initium secrets encrypt --publicKey age1zmh77nlvddsz55q5l67d4ufwewvyhentlku9z90t969szd2lnghslnlese --secret <your secret>
+```
+
+or if it's not a string
+
+```
+./initium secrets encrypt --publicKey age1zmh77nlvddsz55q5l67d4ufwewvyhentlku9z90t969szd2lnghslnlese --base64secret <your secret in base64>
+```

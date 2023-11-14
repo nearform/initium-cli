@@ -26,6 +26,8 @@ const (
 	InitGithub FlagsType = "init-github"
 	App        FlagsType = "app"
 	Shared     FlagsType = "shared"
+	Encrypt    FlagsType = "encrypt"
+	Decrypt    FlagsType = "decrypt"
 )
 
 const (
@@ -52,6 +54,10 @@ const (
 	secretRefEnvFileFlag  string = "secret-ref-env-var-file"
 	isPrivateServiceFlag  string = "private"
 	dryRunFlag            string = "dry-run"
+	publicKeyFlag         string = "public-key"
+	secretFlag            string = "secret"
+	privateKeyFlag        string = "private-key"
+	base64SecretFlag      string = "base64secret"
 )
 
 type flags struct {
@@ -194,6 +200,32 @@ func InitFlags() flags {
 					Usage:   "read parameters from config",
 					Value:   defaults.ConfigFile,
 					EnvVars: []string{"INITIUM_CONFIG_FILE"},
+				},
+			},
+			Encrypt: []cli.Flag{
+				&cli.StringFlag{
+					Name:     publicKeyFlag,
+					Required: true,
+					EnvVars:  []string{"INITIUM_SECRET_PUBLIC_KEY"},
+				},
+				&cli.StringFlag{
+					Name:     secretFlag,
+					Required: true,
+				},
+				&cli.StringFlag{
+					Name:     base64SecretFlag,
+					Required: true,
+				},
+			},
+			Decrypt: []cli.Flag{
+				&cli.StringFlag{
+					Name:     privateKeyFlag,
+					Required: true,
+					EnvVars:  []string{"INITIUM_SECRET_PRIVATE_KEY"},
+				},
+				&cli.StringFlag{
+					Name:     base64SecretFlag,
+					Required: true,
 				},
 			},
 			Shared: []cli.Flag{

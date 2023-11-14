@@ -28,35 +28,34 @@ func GenerateKeys() (Keys, error) {
 	return keys, nil
 }
 
-func Decrypt(privateKey string, secret string, writer io.Writer) error {
+func Decrypt(privateKey string, secret string) (string, error) {
 	identity, err := age.ParseX25519Identity(privateKey)
 	if err != nil {
-		return fmt.Errorf("Failed to parse private key %q: %v", privateKey, err)
+		return "", fmt.Errorf("failed to parse private key %q: %v", privateKey, err)
 	}
 
 	s, err := base64.StdEncoding.DecodeString(secret)
 	if err != nil {
-		return fmt.Errorf("Cannot decode base64 secret %v", err)
+		return "", fmt.Errorf("cannot decode base64 secret %v", err)
 	}
 	out := &bytes.Buffer{}
 	f := strings.NewReader(string(s))
 
 	r, err := age.Decrypt(f, identity)
 	if err != nil {
-		return fmt.Errorf("Failed to open encrypted file: %v", err)
+		return "", fmt.Errorf("failed to open encrypted file: %v", err)
 	}
 	if _, err := io.Copy(out, r); err != nil {
-		return fmt.Errorf("Failed to read encrypted file: %v", err)
+		return "", fmt.Errorf("failed to read encrypted file: %v", err)
 	}
 
-	fmt.Fprintf(writer, "%q\n", out.Bytes())
-	return nil
+	return out.String(), nil
 }
 
-func Encrypt(publicKey string, secret string, writer io.Writer) error {
+func Encrypt(publicKey string, secret string) (string, error) {
 	recipient, err := age.ParseX25519Recipient(publicKey)
 	if err != nil {
-		return fmt.Errorf("Failed to parse public key %q: %v", publicKey, err)
+		return "", fmt.Errorf("failed to parse public key %q: %v", publicKey, err)
 	}
 
 	buf := &bytes.Buffer{}
@@ -64,19 +63,16 @@ func Encrypt(publicKey string, secret string, writer io.Writer) error {
 
 	w, err := age.Encrypt(buf, recipient)
 	if err != nil {
-		return fmt.Errorf("Failed to create encrypted file: %v", err)
+		return "", fmt.Errorf("failed to create encrypted file: %v", err)
 	}
 	defer w.Close()
 
 	if _, err := io.WriteString(w, secret); err != nil {
-		return fmt.Errorf("Failed to write to encrypted file: %v", err)
+		return "", fmt.Errorf("failed to write to encrypted file: %v", err)
 	}
 	if err := w.Close(); err != nil {
-		return fmt.Errorf("Failed to close encrypted file: %v", err)
+		return "", fmt.Errorf("failed to close encrypted file: %v", err)
 	}
 
-	result := base64.StdEncoding.EncodeToString(buf.Bytes())
-
-	fmt.Fprintf(writer, "%s\n", result)
-	return nil
+	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
 }
