@@ -57,7 +57,8 @@ const (
 	publicKeyFlag         string = "public-key"
 	secretFlag            string = "secret"
 	privateKeyFlag        string = "private-key"
-	base64SecretFlag      string = "base64secret"
+	base64PlainSecretFlag      string = "base64-plain-secret"
+	base64EncryptedSecretFlag  string = "base64-encrypted-secret"
 )
 
 type flags struct {
@@ -213,7 +214,7 @@ func InitFlags() flags {
 					Required: true,
 				},
 				&cli.StringFlag{
-					Name:     base64SecretFlag,
+					Name:     base64PlainSecretFlag,
 					Required: true,
 				},
 			},
@@ -224,7 +225,7 @@ func InitFlags() flags {
 					EnvVars:  []string{"INITIUM_SECRET_PRIVATE_KEY"},
 				},
 				&cli.StringFlag{
-					Name:     base64SecretFlag,
+					Name:     base64EncryptedSecretFlag,
 					Required: true,
 				},
 			},

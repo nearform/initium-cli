@@ -56,10 +56,6 @@ func excludedFlagsFromConfig() []string {
 		caCRTFlag,
 		registryUserFlag,
 		endpointFlag,
-		base64SecretFlag,
-		publicKeyFlag,
-		privateKeyFlag,
-		secretFlag,
 	}
 }
 
