@@ -56,6 +56,7 @@ func excludedFlagsFromConfig() []string {
 		caCRTFlag,
 		registryUserFlag,
 		endpointFlag,
+		base64SecretFlag,
 	}
 }
 
@@ -63,19 +64,8 @@ func (c icli) InitConfigCMD(ctx *cli.Context) error {
 	excludedFlags := excludedFlagsFromConfig()
 
 	f := []cli.Flag{}
-
-	// Use a map to keep track of unique flag names
-	uniqueFlagNames := make(map[string]bool)
-
-	// Flatten all flags from c.flags.all and append them to f
 	for _, vs := range c.flags.all {
-		for _, flag := range vs {
-			flagName := flag.Names()[0]
-			if !uniqueFlagNames[flagName] {
-				uniqueFlagNames[flagName] = true
-				f = append(f, flag)
-			}
-		}
+		f = append(f, vs...)
 	}
 
 	sort.Sort(cli.FlagsByName(f))
