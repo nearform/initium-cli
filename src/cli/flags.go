@@ -41,24 +41,24 @@ const (
 	defaultBranchFlag     string = "default-branch"
 	appNameFlag           string = "app-name"
 	appVersionFlag        string = "app-version"
-	projectDirectoryFlag  string = "project-directory"
-	projectTypeFlag       string = "project-type"
-	repoNameFlag          string = "container-registry"
-	dockerFileNameFlag    string = "dockerfile-name"
-	configFileFlag        string = "config-file"
-	namespaceFlag         string = "namespace"
-	imagePullSecretsFlag  string = "image-pull-secrets"
-	stopOnBuildFlag       string = "stop-on-build"
-	stopOnPushFlag        string = "stop-on-push"
-	envVarFileFlag        string = "env-var-file"
-	secretRefEnvFileFlag  string = "secret-ref-env-var-file"
-	isPrivateServiceFlag  string = "private"
-	dryRunFlag            string = "dry-run"
-	publicKeyFlag         string = "public-key"
-	secretFlag            string = "secret"
-	privateKeyFlag        string = "private-key"
-	base64PlainSecretFlag      string = "base64-plain-secret"
-	base64EncryptedSecretFlag  string = "base64-encrypted-secret"
+	projectDirectoryFlag  		string = "project-directory"
+	projectTypeFlag       		string = "project-type"
+	repoNameFlag          		string = "container-registry"
+	dockerFileNameFlag    		string = "dockerfile-name"
+	configFileFlag        		string = "config-file"
+	namespaceFlag         		string = "namespace"
+	imagePullSecretsFlag  		string = "image-pull-secrets"
+	stopOnBuildFlag       		string = "stop-on-build"
+	stopOnPushFlag        		string = "stop-on-push"
+	envVarFileFlag        		string = "env-var-file"
+	secretRefEnvFileFlag  		string = "secret-ref-env-var-file"
+	isPrivateServiceFlag  		string = "private"
+	dryRunFlag            		string = "dry-run"
+	publicKeyFlag         		string = "public-key"
+	plainSecretFlag            	string = "plain-secret"
+	privateKeyFlag        		string = "private-key"
+	base64PlainSecretFlag      	string = "base64-plain-secret"
+	base64EncryptedSecretFlag  	string = "base64-encrypted-secret"
 )
 
 type flags struct {
@@ -210,7 +210,7 @@ func InitFlags() flags {
 					EnvVars:  []string{"INITIUM_SECRET_PUBLIC_KEY"},
 				},
 				&cli.StringFlag{
-					Name:     secretFlag,
+					Name:     plainSecretFlag,
 					Required: true,
 				},
 				&cli.StringFlag{

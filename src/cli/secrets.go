@@ -21,7 +21,7 @@ func (c icli) generateKeys(ctx *cli.Context) error {
 
 func (c icli) encrypt(ctx *cli.Context) error {
 	publicKey := ctx.String(publicKeyFlag)
-	secret := ctx.String(secretFlag)
+	secret := ctx.String(plainSecretFlag)
 	base64Secret := ctx.String(base64PlainSecretFlag)
 
 	if base64Secret == "" {
@@ -71,11 +71,11 @@ func (c icli) SecretsCMD() *cli.Command {
 
 					ignoredFlags := []string{}
 
-					if ctx.IsSet(secretFlag) {
+					if ctx.IsSet(plainSecretFlag) {
 						ignoredFlags = append(ignoredFlags, base64PlainSecretFlag)
 					}
 					if ctx.IsSet(base64PlainSecretFlag) {
-						ignoredFlags = append(ignoredFlags, secretFlag)
+						ignoredFlags = append(ignoredFlags, plainSecretFlag)
 					}
 
 					return c.checkRequiredFlags(ctx, ignoredFlags)
