@@ -29,7 +29,11 @@ func (c icli) buildPushDeploy(cCtx *cli.Context) error {
 	if cCtx.Bool(stopOnPushFlag) {
 		return err
 	}
-	return c.Deploy(cCtx)
+	appUrl := c.Deploy(cCtx)
+	if fromGithub := true; fromGithub {
+		git.PublishCommentPRGithub(appUrl)
+	}
+	return appUrl
 }
 
 func (c icli) OnBranchCMD() *cli.Command {

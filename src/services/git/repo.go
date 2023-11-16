@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	git "github.com/go-git/go-git/v5"
 )
@@ -107,4 +108,10 @@ func GetGithubOrg() (string, error) {
 
 	splitRemote := strings.Split(remote, "/")
 	return splitRemote[0], nil
+}
+
+func PublishCommentPRGithub (url string) {
+	fmt.Printf("Application URL: %s", url)
+	fmt.Printf("Commit hash: %s", GetHash())
+	fmt.Printf("Timestamp: %v", time.Now())
 }
