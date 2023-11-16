@@ -31,11 +31,15 @@ func (c icli) buildPushDeploy(cCtx *cli.Context) error {
 	}
 
 	err = c.Deploy(cCtx)
-	appUrl := "http://whatever"
-	if fromGithub := true; fromGithub {
+	appUrl := "http://whatever" // TODO: get service.Status.URL from knative.Apply
+
+	// Check if the CI environment variable is set to GitHub Actions
+	if isGitHubActions := os.Getenv("CI") == "true" && os.Getenv("GITHUB_ACTIONS") == "true"; isGitHubActions {
+		fmt.Println("Running in GitHub Actions!") // Debug
 		git.PublishCommentPRGithub(appUrl)
 	}
-	return appUrl
+
+	return err
 }
 
 func (c icli) OnBranchCMD() *cli.Command {
