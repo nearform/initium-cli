@@ -29,7 +29,9 @@ func (c icli) buildPushDeploy(cCtx *cli.Context) error {
 	if cCtx.Bool(stopOnPushFlag) {
 		return err
 	}
-	appUrl := c.Deploy(cCtx)
+
+	err = c.Deploy(cCtx)
+	appUrl := "http://whatever"
 	if fromGithub := true; fromGithub {
 		git.PublishCommentPRGithub(appUrl)
 	}
