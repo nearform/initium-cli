@@ -1,14 +1,16 @@
 package git
 
 import (
+	"context"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"time"
 
 	git "github.com/go-git/go-git/v5"
 	github "github.com/google/go-github/v56/github"
-	"golang.org/x/oauth2"
+	oauth2 "golang.org/x/oauth2"
 )
 
 const (
