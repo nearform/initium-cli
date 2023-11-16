@@ -7,6 +7,8 @@ import (
 	"time"
 
 	git "github.com/go-git/go-git/v5"
+	github "github.com/google/go-github/v56/github"
+	"golang.org/x/oauth2"
 )
 
 const (
@@ -111,8 +113,40 @@ func GetGithubOrg() (string, error) {
 }
 
 func PublishCommentPRGithub (url string) {
-	fmt.Printf("Application URL: %s", url)
 	commitSha, err := GetHash()
+
+	// Debug
+	fmt.Printf("Application URL: %s", url)
 	fmt.Printf("Commit hash: %s", commitSha)
 	fmt.Printf("Timestamp: %v", time.Now())
+
+	// Check GITHUB_TOKEN
+	token := os.Getenv("GITHUB_TOKEN")
+	if token == "" {
+		log.Fatal("Please set your GitHub access token in the GITHUB_TOKEN environment variable.")
+	}
+
+	// Create an authenticated GitHub client
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+
+	// Replace these variables with your repository owner, repository name, and pull request number
+	owner := "<your username>"
+	repo := "<your repository>"
+	prNumber := 1
+
+	// Specify the comment body
+	comment := &github.PullRequestComment{
+		Body: github.String("<your comment here>"),
+	}
+
+	// Post the comment to the pull request
+	newComment, _, err := client.PullRequests.CreateComment(ctx, owner, repo, prNumber, comment)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("Comment created: %s\n", newComment.GetHTMLURL())
 }
