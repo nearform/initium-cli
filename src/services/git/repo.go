@@ -112,6 +112,7 @@ func GetGithubOrg() (string, error) {
 
 func PublishCommentPRGithub (url string) {
 	fmt.Printf("Application URL: %s", url)
-	fmt.Printf("Commit hash: %s", GetHash())
+	commitSha, err := git.GetHash()
+	fmt.Printf("Commit hash: %s", commitSha)
 	fmt.Printf("Timestamp: %v", time.Now())
 }
