@@ -134,7 +134,7 @@ func PublishCommentPRGithub (url string) {
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
 
-	// Replace these variables with your repository owner, repository name, and pull request number
+	// TODO: Replace these variables with your repository owner, repository name, and pull request number
 	owner := "<your username>"
 	repo := "<your repository>"
 	prNumber := 1

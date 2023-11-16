@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/nearform/initium-cli/src/services/git"
 	"github.com/nearform/initium-cli/src/utils"
