@@ -114,7 +114,7 @@ func GetGithubOrg() (string, error) {
 }
 
 func PublishCommentPRGithub (url string) error {
-	var message string
+	var message, owner, repo string
 	commitSha, err := GetHash()
 
 	// Build message
@@ -136,8 +136,17 @@ func PublishCommentPRGithub (url string) error {
 	client := github.NewClient(tc)
 
 	// TODO: Replace these variables with your repository owner, repository name, and pull request number
-	owner := "mablanco"
-	repo := "initium-nodejs-demo-app"
+	repoInfo := os.Getenv("GITHUB_REPOSITORY")
+	repoParts := strings.Split(repoInfo, "/")
+	if len(repoParts) == 2 {
+		owner = repoParts[0]
+		repo = repoParts[1]
+
+		fmt.Printf("Owner: %s\n", owner) // Debug
+		fmt.Printf("Repository: %s\n", repo) // Debug
+	} else {
+		return fmt.Errorf("Invalid repository information")
+	}
 	prNumber := 2
 
 	// Specify the comment body
