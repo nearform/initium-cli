@@ -258,8 +258,6 @@ func Apply(serviceManifest *servingv1.Service, config *rest.Config) error {
 
 		time.Sleep(time.Millisecond * 500)
 	}
-
-	return nil
 }
 
 func Clean(namespace string, config *rest.Config, project *project.Project) error {
