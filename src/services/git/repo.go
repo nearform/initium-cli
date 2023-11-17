@@ -3,7 +3,6 @@ package git
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -125,7 +124,7 @@ func PublishCommentPRGithub (url string) {
 	// Check GITHUB_TOKEN
 	token := os.Getenv("GITHUB_TOKEN")
 	if token == "" {
-		log.Fatal("Please set your GitHub access token in the GITHUB_TOKEN environment variable.")
+		fmt.Printf("Please set your GitHub access token in the GITHUB_TOKEN environment variable.")
 	}
 
 	// Create an authenticated GitHub client
@@ -135,9 +134,9 @@ func PublishCommentPRGithub (url string) {
 	client := github.NewClient(tc)
 
 	// TODO: Replace these variables with your repository owner, repository name, and pull request number
-	owner := "<your username>"
-	repo := "<your repository>"
-	prNumber := 1
+	owner := "mablanco"
+	repo := "initium-nodejs-demo-app "
+	prNumber := 2
 
 	// Specify the comment body
 	comment := &github.PullRequestComment{
@@ -147,7 +146,7 @@ func PublishCommentPRGithub (url string) {
 	// Post the comment to the pull request
 	newComment, _, err := client.PullRequests.CreateComment(ctx, owner, repo, prNumber, comment)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("Error. %v", err)
 	}
 
 	fmt.Printf("Comment created: %s\n", newComment.GetHTMLURL())

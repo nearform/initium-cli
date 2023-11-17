@@ -47,7 +47,9 @@ func (c *icli) Deploy(cCtx *cli.Context) error {
 		return err
 	}
 
-	return knative.Apply(serviceManifest, config)
+	applyErr := knative.Apply(serviceManifest, config)
+	fmt.Printf("Manifest applied!!!\n") // Debug
+	return applyErr
 }
 
 func (c icli) DeployCMD() *cli.Command {
