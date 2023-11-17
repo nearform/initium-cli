@@ -114,14 +114,14 @@ func GetGithubOrg() (string, error) {
 }
 
 func PublishCommentPRGithub (url string) {
-	var comment string
+	var message string
 	commitSha, err := GetHash()
 
-	// Build comment
-	comment = fmt.Sprintf("Application URL: %s\n", url) + fmt.Sprintf("Commit hash: %s\n", commitSha) + fmt.Sprintf("Timestamp: %v\n", time.Now())
+	// Build message
+	message = fmt.Sprintf("Application URL: %s\n", url) + fmt.Sprintf("Commit hash: %s\n", commitSha) + fmt.Sprintf("Timestamp: %v\n", time.Now())
 
 	// Debug
-	fmt.Println(comment)
+	fmt.Println(message)
 
 	// Check GITHUB_TOKEN
 	token := os.Getenv("GITHUB_TOKEN")
