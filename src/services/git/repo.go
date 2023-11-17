@@ -137,18 +137,18 @@ func PublishCommentPRGithub (url string) {
 
 	// TODO: Replace these variables with your repository owner, repository name, and pull request number
 	owner := "mablanco"
-	repo := "initium-nodejs-demo-app "
+	repo := "initium-nodejs-demo-app"
 	prNumber := 2
 
 	// Specify the comment body
-	comment := &github.PullRequestComment{
-		Body: github.String("<your comment here>"),
+	comment := &github.IssueComment{
+		Body: github.String(message),
 	}
 
 	// Post the comment to the pull request
-	newComment, _, err := client.PullRequests.CreateComment(ctx, owner, repo, prNumber, comment)
+	newComment, _, err := client.Issues.CreateComment(ctx, owner, repo, prNumber, comment)
 	if err != nil {
-		fmt.Printf("Error. %v", err)
+		fmt.Printf("Error: %v", err)
 	}
 
 	fmt.Printf("Comment created: %s\n", newComment.GetHTMLURL())
