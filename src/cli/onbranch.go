@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/nearform/initium-cli/src/services/git"
@@ -32,17 +33,19 @@ func (c icli) buildPushDeploy(cCtx *cli.Context) error {
 	}
 
 	err = c.Deploy(cCtx)
-	fmt.Printf("App deployed!!!\n") // Debug
-	appUrl := "http://whatever.foo.bar" // TODO: get service.Status.URL from knative.Apply
+	appUrl, urlErr := url.Parse(err.Error())
+	if urlErr != nil {
+		fmt.Println("No URL available")
+		return err
+	}
 
 	// Check if the CI environment variable is set to GitHub Actions
 	if os.Getenv("CI") == "true" && os.Getenv("GITHUB_ACTIONS") == "true" {
-		err = git.PublishCommentPRGithub(appUrl)
+		err = git.PublishCommentPRGithub(appUrl.String())
 	} else {
-		fmt.Printf("You can reach the app via %s\n", appUrl)
+		fmt.Printf("You can reach the app via %s\n", appUrl.String())
+		err = nil
 	}
-
-	fmt.Println("***Done***") // Debug
 
 	return err
 }
