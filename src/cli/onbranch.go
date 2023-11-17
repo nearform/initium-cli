@@ -38,6 +38,7 @@ func (c icli) buildPushDeploy(cCtx *cli.Context) error {
 	// Check if the CI environment variable is set to GitHub Actions
 	if os.Getenv("CI") == "true" && os.Getenv("GITHUB_ACTIONS") == "true" {
 		git.PublishCommentPRGithub(appUrl)
+	} else {
 		fmt.Printf("You can reach the app via %s\n", appUrl)
 	}
 
