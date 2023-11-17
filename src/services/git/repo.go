@@ -113,7 +113,7 @@ func GetGithubOrg() (string, error) {
 	return splitRemote[0], nil
 }
 
-func PublishCommentPRGithub (url string) {
+func PublishCommentPRGithub (url string) error {
 	var message string
 	commitSha, err := GetHash()
 
@@ -126,7 +126,7 @@ func PublishCommentPRGithub (url string) {
 	// Check GITHUB_TOKEN
 	token := os.Getenv("GITHUB_TOKEN")
 	if token == "" {
-		fmt.Printf("Please set your GitHub access token in the GITHUB_TOKEN environment variable.")
+		return fmt.Errorf("Please set up the GITHUB_TOKEN environment variable")
 	}
 
 	// Create an authenticated GitHub client
@@ -149,7 +149,10 @@ func PublishCommentPRGithub (url string) {
 	newComment, _, err := client.Issues.CreateComment(ctx, owner, repo, prNumber, comment)
 	if err != nil {
 		fmt.Printf("Error: %v", err)
+		return err
 	}
 
 	fmt.Printf("Comment created: %s\n", newComment.GetHTMLURL())
+
+	return nil
 }
