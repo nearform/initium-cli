@@ -36,14 +36,17 @@ func (c icli) buildPushDeploy(cCtx *cli.Context) error {
 	appUrl := "http://whatever.foo.bar" // TODO: get service.Status.URL from knative.Apply
 
 	// Check if the CI environment variable is set to GitHub Actions
-	if isGitHubActions := os.Getenv("CI") == "true" && os.Getenv("GITHUB_ACTIONS") == "true"; isGitHubActions {
-		fmt.Println("Running from within GitHub Actions!") // Debug
-		git.PublishCommentPRGithub(appUrl)
-	} else {
-		fmt.Println("Not running inside GitHub Actions...") // Debug
-	}
+	// if isGitHubActions := os.Getenv("CI") == "true" && os.Getenv("GITHUB_ACTIONS") == "true"; isGitHubActions {
+	// 	fmt.Println("Running from within GitHub Actions!") // Debug
+	// 	git.PublishCommentPRGithub(appUrl)
+	// } else {
+	// 	fmt.Println("Not running inside GitHub Actions...") // Debug
+	// }
 
-	fmt.Printf("***Done***\n") // Debug
+	fmt.Println("Publishing comment in PR") // Debug
+	git.PublishCommentPRGithub(appUrl)
+
+	fmt.Println("***Done***") // Debug
 
 	return err
 }
