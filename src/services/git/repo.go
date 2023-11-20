@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -115,6 +117,7 @@ func GetGithubOrg() (string, error) {
 
 func PublishCommentPRGithub (url string) error {
 	var message, owner, repo string
+	var prNumber int
 	commitSha, err := GetHash()
 
 	// Build message
@@ -135,7 +138,6 @@ func PublishCommentPRGithub (url string) error {
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
 
-	// TODO: Replace these variables with your repository owner, repository name, and pull request number
 	repoInfo := os.Getenv("GITHUB_REPOSITORY")
 	repoParts := strings.Split(repoInfo, "/")
 	if len(repoParts) == 2 {
@@ -147,7 +149,29 @@ func PublishCommentPRGithub (url string) error {
 	} else {
 		return fmt.Errorf("Invalid repository information")
 	}
-	prNumber := 2
+
+	// Check if the workflow was triggered by a pull request event
+	eventName := os.Getenv("GITHUB_EVENT_NAME")
+	if eventName == "pull_request" {
+		// Get the pull request ref
+		prRef := os.Getenv("GITHUB_REF")
+
+		// Extract the pull request number using a regular expression
+		re := regexp.MustCompile(`refs/pull/(\d+)/merge`)
+		matches := re.FindStringSubmatch(prRef)
+
+		if len(matches) == 2 {
+			prNumber, err = strconv.Atoi(matches[1])
+			if err != nil {
+				return fmt.Errorf("Error converting string to int:", err)
+			}
+			fmt.Printf("Pull Request Number: %d\n", prNumber)
+		} else {
+			return fmt.Errorf("Unable to extract pull request number from GITHUB_REF")
+		}
+	} else {
+		return fmt.Errorf("This workflow was not triggered by a pull request event")
+	}
 
 	// Specify the comment body
 	comment := &github.IssueComment{

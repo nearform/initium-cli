@@ -36,7 +36,7 @@ func (c icli) buildPushDeploy(cCtx *cli.Context) error {
 	appUrl, urlErr := url.Parse(err.Error()) // Check if it contains the app URL or it's a legit error
 	if urlErr != nil {
 		fmt.Println("No app URL available")
-		return err // It's a real error!
+		return err
 	}
 
 	// Check if the CI environment variable is set to GitHub Actions
