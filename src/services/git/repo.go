@@ -123,9 +123,6 @@ func PublishCommentPRGithub (url string) error {
 	// Build message
 	message = fmt.Sprintf("Application URL: %s\n", url) + fmt.Sprintf("Commit hash: %s\n", commitSha) + fmt.Sprintf("Timestamp: %v\n", time.Now())
 
-	// Debug
-	fmt.Println(message)
-
 	// Check GITHUB_TOKEN
 	token := os.Getenv("GITHUB_TOKEN")
 	if token == "" {
@@ -144,9 +141,6 @@ func PublishCommentPRGithub (url string) error {
 	if len(repoParts) == 2 {
 		owner = repoParts[0]
 		repo = repoParts[1]
-
-		fmt.Printf("Owner: %s\n", owner) // Debug
-		fmt.Printf("Repository: %s\n", repo) // Debug
 	} else {
 		return fmt.Errorf("Invalid repository information")
 	}
@@ -166,7 +160,6 @@ func PublishCommentPRGithub (url string) error {
 			if err != nil {
 				return fmt.Errorf("Error converting string to int: %v", err)
 			}
-			fmt.Printf("Pull Request Number: %d\n", prNumber) // Debug
 		} else {
 			return fmt.Errorf("Unable to extract pull request number from GITHUB_REF")
 		}
@@ -182,10 +175,8 @@ func PublishCommentPRGithub (url string) error {
 	// List comments on the PR
 	comments, _, err := client.Issues.ListComments(ctx, owner, repo, prNumber, nil)
 	if err != nil {
-		fmt.Printf("Error listing comments: %v\n", err) // Debug
 		return err
 	}
-	fmt.Printf("List of comments: %v\n", comments) // Debug
 
 	commentID := findExistingCommentIDPRGithub(comments, "Application URL:") // Search for app URL comment
 
@@ -193,7 +184,6 @@ func PublishCommentPRGithub (url string) error {
 		// Update existing comment
 		updatedComment, _, err := client.Issues.EditComment(ctx, owner, repo, commentID, comment)
 		if err != nil {
-			fmt.Printf("Error updating comment: %v\n", err) // Debug
 			return err
 		}
 		fmt.Printf("Comment updated successfully: %s\n", updatedComment.GetHTMLURL())
@@ -201,7 +191,6 @@ func PublishCommentPRGithub (url string) error {
 		// Publish a new comment
 		newComment, _, err := client.Issues.CreateComment(ctx, owner, repo, prNumber, comment)
 		if err != nil {
-			fmt.Printf("Error publishing new comment: %v\n", err) // Debug
 			return err
 		}
 		fmt.Printf("Comment published: %s\n", newComment.GetHTMLURL())
@@ -211,9 +200,7 @@ func PublishCommentPRGithub (url string) error {
 }
 
 func findExistingCommentIDPRGithub(comments []*github.IssueComment, targetBody string) int64 {
-	fmt.Printf("Search string: %v\n", targetBody) // Debug
 	for _, comment := range comments {
-		fmt.Printf("Compare string: %v\n", comment.GetBody()) // Debug
 		if strings.Contains(comment.GetBody(), targetBody) {
 			return comment.GetID()
 		}
