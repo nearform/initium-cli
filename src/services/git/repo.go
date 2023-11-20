@@ -185,6 +185,8 @@ func PublishCommentPRGithub (url string) error {
 		fmt.Printf("Error listing comments: %v\n", err) // Debug
 		return err
 	}
+	fmt.Printf("List of comments: %v\n", comments) // Debug
+
 	commentID := findExistingCommentIDPRGithub(comments, fmt.Sprintf("Application URL: %s\n", url)) // Search for app URL comment
 
 	if commentID != 0 {
@@ -209,7 +211,9 @@ func PublishCommentPRGithub (url string) error {
 }
 
 func findExistingCommentIDPRGithub(comments []*github.IssueComment, targetBody string) int64 {
+	fmt.Printf("Search string: %v\n", strings.TrimSpace(targetBody)) // Debug
 	for _, comment := range comments {
+		fmt.Printf("Compare string: %v\n", strings.TrimSpace(comment.GetBody())
 		if strings.TrimSpace(comment.GetBody()) == strings.TrimSpace(targetBody) {
 			return comment.GetID()
 		}
