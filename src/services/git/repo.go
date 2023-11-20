@@ -163,7 +163,7 @@ func PublishCommentPRGithub (url string) error {
 		if len(matches) == 2 {
 			prNumber, err = strconv.Atoi(matches[1])
 			if err != nil {
-				return fmt.Errorf("Error converting string to int:", err)
+				return fmt.Errorf("Error converting string to int: %v", err)
 			}
 			fmt.Printf("Pull Request Number: %d\n", prNumber)
 		} else {
