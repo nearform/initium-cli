@@ -213,7 +213,7 @@ func PublishCommentPRGithub (url string) error {
 func findExistingCommentIDPRGithub(comments []*github.IssueComment, targetBody string) int64 {
 	fmt.Printf("Search string: %v\n", strings.TrimSpace(targetBody)) // Debug
 	for _, comment := range comments {
-		fmt.Printf("Compare string: %v\n", strings.TrimSpace(comment.GetBody())
+		fmt.Printf("Compare string: %v\n", strings.TrimSpace(comment.GetBody()))
 		if strings.TrimSpace(comment.GetBody()) == strings.TrimSpace(targetBody) {
 			return comment.GetID()
 		}
