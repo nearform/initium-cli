@@ -138,6 +138,7 @@ func PublishCommentPRGithub (url string) error {
 	tc := oauth2.NewClient(ctx, ts)
 	client := github.NewClient(tc)
 
+	// Get required data to publish a comment
 	repoInfo := os.Getenv("GITHUB_REPOSITORY")
 	repoParts := strings.Split(repoInfo, "/")
 	if len(repoParts) == 2 {
@@ -165,7 +166,7 @@ func PublishCommentPRGithub (url string) error {
 			if err != nil {
 				return fmt.Errorf("Error converting string to int: %v", err)
 			}
-			fmt.Printf("Pull Request Number: %d\n", prNumber)
+			fmt.Printf("Pull Request Number: %d\n", prNumber) // Debug
 		} else {
 			return fmt.Errorf("Unable to extract pull request number from GITHUB_REF")
 		}
@@ -173,19 +174,45 @@ func PublishCommentPRGithub (url string) error {
 		return fmt.Errorf("This workflow was not triggered by a pull request event")
 	}
 
-	// Specify the comment body
+	// Create comment with body
 	comment := &github.IssueComment{
 		Body: github.String(message),
 	}
 
-	// Post the comment to the pull request
-	newComment, _, err := client.Issues.CreateComment(ctx, owner, repo, prNumber, comment)
+	// List comments on the PR
+	comments, _, err := client.Issues.ListComments(ctx, owner, repo, prNumber, nil)
 	if err != nil {
-		fmt.Printf("Error: %v", err)
+		fmt.Printf("Error listing comments: %v\n", err) // Debug
 		return err
 	}
+	commentID := findExistingCommentIDPRGithub(comments, fmt.Sprintf("Application URL: %s\n", url)) // Search for app URL comment
 
-	fmt.Printf("Comment created: %s\n", newComment.GetHTMLURL())
+	if commentID != 0 {
+		// Update existing comment
+		updatedComment, _, err := client.Issues.EditComment(ctx, owner, repo, commentID, comment)
+		if err != nil {
+			fmt.Printf("Error updating comment: %v\n", err) // Debug
+			return err
+		}
+		fmt.Printf("Comment updated successfully: %s\n", updatedComment.GetHTMLURL())
+	} else {
+		// Publish a new comment
+		newComment, _, err := client.Issues.CreateComment(ctx, owner, repo, prNumber, comment)
+		if err != nil {
+			fmt.Printf("Error publishing new comment: %v\n", err) // Debug
+			return err
+		}
+		fmt.Printf("Comment published: %s\n", newComment.GetHTMLURL())
+	}
 
 	return nil
+}
+
+func findExistingCommentIDPRGithub(comments []*github.IssueComment, targetBody string) int64 {
+	for _, comment := range comments {
+		if strings.TrimSpace(comment.GetBody()) == strings.TrimSpace(targetBody) {
+			return comment.GetID()
+		}
+	}
+	return 0
 }
