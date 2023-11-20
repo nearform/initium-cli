@@ -187,7 +187,7 @@ func PublishCommentPRGithub (url string) error {
 	}
 	fmt.Printf("List of comments: %v\n", comments) // Debug
 
-	commentID := findExistingCommentIDPRGithub(comments, fmt.Sprintf("Application URL: %s", url)) // Search for app URL comment
+	commentID := findExistingCommentIDPRGithub(comments, "Application URL:") // Search for app URL comment
 
 	if commentID != 0 {
 		// Update existing comment
