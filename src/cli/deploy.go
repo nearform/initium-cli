@@ -47,8 +47,7 @@ func (c *icli) Deploy(cCtx *cli.Context) error {
 		return err
 	}
 
-	err = knative.Apply(serviceManifest, config)
-	return err
+	return knative.Apply(serviceManifest, config)
 }
 
 func (c icli) DeployCMD() *cli.Command {

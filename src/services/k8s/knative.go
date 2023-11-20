@@ -253,7 +253,7 @@ func Apply(serviceManifest *servingv1.Service, config *rest.Config) error {
 			return err
 		}
 		if service.Status.URL != nil {
-			return fmt.Errorf("%s", service.Status.URL)
+			return fmt.Errorf("%s", service.Status.URL) // Overload error return variable with URL string
 		}
 
 		time.Sleep(time.Millisecond * 500)
