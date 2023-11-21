@@ -45,6 +45,7 @@ RUN npm run build --if-present
 RUN npm test
 
 FROM gcr.io/distroless/nodejs20-debian11
+LABEL org.opencontainers.image.source=https://github.com/mablanco/initium-nodejs-demo-app
 COPY --from=build-env /app /app
 WORKDIR /app
 USER nonroot
