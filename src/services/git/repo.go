@@ -1,11 +1,17 @@
 package git
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
 	git "github.com/go-git/go-git/v5"
+	github "github.com/google/go-github/v56/github"
+	oauth2 "golang.org/x/oauth2"
 )
 
 const (
@@ -107,4 +113,97 @@ func GetGithubOrg() (string, error) {
 
 	splitRemote := strings.Split(remote, "/")
 	return splitRemote[0], nil
+}
+
+func PublishCommentPRGithub (url string) error {
+	var message, owner, repo string
+	var prNumber int
+	commitSha, err := GetHash()
+
+	// Build message
+	message = fmt.Sprintf("Application URL: %s\n", url) + fmt.Sprintf("Commit hash: %s\n", commitSha) + fmt.Sprintf("Timestamp: %v\n", time.Now())
+
+	// Check GITHUB_TOKEN
+	token := os.Getenv("GITHUB_TOKEN")
+	if token == "" {
+		return fmt.Errorf("Please set up the GITHUB_TOKEN environment variable")
+	}
+
+	// Create an authenticated GitHub client
+	ctx := context.Background()
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: token})
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+
+	// Get required data to publish a comment
+	repoInfo := os.Getenv("GITHUB_REPOSITORY")
+	repoParts := strings.Split(repoInfo, "/")
+	if len(repoParts) == 2 {
+		owner = repoParts[0]
+		repo = repoParts[1]
+	} else {
+		return fmt.Errorf("Invalid repository information")
+	}
+
+	// Check if the workflow was triggered by a pull request event
+	eventName := os.Getenv("GITHUB_EVENT_NAME")
+	if eventName == "pull_request" {
+		// Get the pull request ref
+		prRef := os.Getenv("GITHUB_REF")
+
+		// Extract the pull request number using a regular expression
+		re := regexp.MustCompile(`refs/pull/(\d+)/merge`)
+		matches := re.FindStringSubmatch(prRef)
+
+		if len(matches) == 2 {
+			prNumber, err = strconv.Atoi(matches[1])
+			if err != nil {
+				return fmt.Errorf("Error converting string to int: %v", err)
+			}
+		} else {
+			return fmt.Errorf("Unable to extract pull request number from GITHUB_REF")
+		}
+	} else {
+		return fmt.Errorf("This workflow was not triggered by a pull request event")
+	}
+
+	// Create comment with body
+	comment := &github.IssueComment{
+		Body: github.String(message),
+	}
+
+	// List comments on the PR
+	comments, _, err := client.Issues.ListComments(ctx, owner, repo, prNumber, nil)
+	if err != nil {
+		return err
+	}
+
+	commentID := findExistingCommentIDPRGithub(comments, "Application URL:") // Search for app URL comment
+
+	if commentID != 0 {
+		// Update existing comment
+		updatedComment, _, err := client.Issues.EditComment(ctx, owner, repo, commentID, comment)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Comment updated successfully: %s\n", updatedComment.GetHTMLURL())
+	} else {
+		// Publish a new comment
+		newComment, _, err := client.Issues.CreateComment(ctx, owner, repo, prNumber, comment)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Comment published: %s\n", newComment.GetHTMLURL())
+	}
+
+	return nil
+}
+
+func findExistingCommentIDPRGithub(comments []*github.IssueComment, targetBody string) int64 {
+	for _, comment := range comments {
+		if strings.Contains(comment.GetBody(), targetBody) {
+			return comment.GetID()
+		}
+	}
+	return 0
 }
