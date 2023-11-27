@@ -139,6 +139,7 @@ func (ds DockerService) Build() error {
 		Dockerfile: ds.DockerFileName,
 		Tags:       []string{ds.dockerImage.LocalTag()},
 		Remove:     true,
+		Platform:	"linux/amd64",
 	}
 
 	// Build the image
