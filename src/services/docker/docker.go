@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os/exec"
+	"strings"
 	"time"
 
 	"github.com/docker/docker/api/types"
@@ -124,6 +126,20 @@ func (ds DockerService) buildContext() (*bytes.Reader, error) {
 // Build Docker image
 func (ds DockerService) Build() error {
 	logger.PrintInfo("Building " + ds.dockerImage.LocalTag())
+	
+	platformInfo, err := GetPlatformInfo()
+	if err != nil {
+		return err
+	}
+
+	targetPlatforms := platformInfo.OS+"/"+platformInfo.Arch
+
+	// If the current platform is not linux/amd64, also build for linux/amd64
+	if platformInfo.OS+"/"+platformInfo.Arch != "linux/amd64" {
+		targetPlatforms += ",linux/amd64"
+	}
+
+	logger.PrintInfo("Architecture(s): " + targetPlatforms)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
@@ -182,4 +198,34 @@ func (ds DockerService) Push() error {
 	}
 
 	return logger.PrintStream(pushResponse)
+}
+
+// PlatformInfo represents the information about a platform
+type PlatformInfo struct {
+	OS   string
+	Arch string
+}
+
+// GetPlatformInfo returns the platform information for the running machine
+func GetPlatformInfo() (PlatformInfo, error) {	
+	// Retrieve the architecture of the running machine
+	cmd := exec.Command("uname", "-m")
+	archOutput, err := cmd.Output()
+	if err != nil {
+		return PlatformInfo{}, fmt.Errorf("Failed to get machine architecture: %v", err)
+	}
+
+	// Retrieve the operating system of the running machine
+	cmd = exec.Command("uname", "-s")
+	osOutput, err := cmd.Output()
+	if err != nil {
+		return PlatformInfo{}, fmt.Errorf("Failed to get machine operating system: %v", err)
+	}
+
+	platformInfo := PlatformInfo{
+		OS:   strings.TrimSpace(strings.ToLower(string(osOutput))),
+		Arch: strings.TrimSpace(string(archOutput)),
+	}
+
+	return platformInfo, nil
 }
