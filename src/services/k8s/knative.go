@@ -163,11 +163,11 @@ func setEnv(manifest *servingv1.Service, envFile string, manifestEnvVars map[str
 
 func loadEnvFile(envFile string, manifestEnvVars map[string]string) ([]corev1.EnvVar, error) {
 	var envVarList []corev1.EnvVar
-	
+
 	if _, err := os.Stat(envFile); errors.Is(err, os.ErrNotExist) {
 		return nil, nil
 	}
-	
+
 	envVariables, err := godotenv.Read(envFile)
 	if err != nil {
 		return nil, fmt.Errorf("Error loading .env file. '%s' already set", err)
@@ -204,7 +204,7 @@ func ToYaml(serviceManifest *servingv1.Service) ([]byte, error) {
 	return yaml.JSONToYAML(jsonBytes)
 }
 
-func Apply(serviceManifest *servingv1.Service, config *rest.Config) error {
+func Apply(serviceManifest *servingv1.Service, config *rest.Config) (string, error) {
 	log.Info("Deploying Knative service", "host", config.Host, "name", serviceManifest.ObjectMeta.Name, "namespace", serviceManifest.ObjectMeta.Namespace)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
 	defer cancel()
@@ -212,12 +212,12 @@ func Apply(serviceManifest *servingv1.Service, config *rest.Config) error {
 	// Create a new Knative Serving client
 	servingClient, err := servingv1client.NewForConfig(config)
 	if err != nil {
-		return fmt.Errorf("Error creating the knative client %v", err)
+		return "", fmt.Errorf("Error creating the knative client %v", err)
 	}
 
 	client, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		return fmt.Errorf("Creating Kubernetes client %v", err)
+		return "", fmt.Errorf("Creating Kubernetes client %v", err)
 	}
 
 	_, err = client.CoreV1().Namespaces().Create(ctx, &corev1.Namespace{
@@ -227,7 +227,7 @@ func Apply(serviceManifest *servingv1.Service, config *rest.Config) error {
 	}, metav1.CreateOptions{})
 
 	if err != nil && !apimachineryErrors.IsAlreadyExists(err) {
-		return fmt.Errorf("cannot create namespace %s, failed with %v", serviceManifest.ObjectMeta.Namespace, err)
+		return "", fmt.Errorf("cannot create namespace %s, failed with %v", serviceManifest.ObjectMeta.Namespace, err)
 	}
 
 	service, err := servingClient.Services(serviceManifest.ObjectMeta.Namespace).Get(ctx, serviceManifest.ObjectMeta.Name, metav1.GetOptions{})
@@ -235,13 +235,13 @@ func Apply(serviceManifest *servingv1.Service, config *rest.Config) error {
 	if err != nil {
 		deployedService, err = servingClient.Services(serviceManifest.ObjectMeta.Namespace).Create(ctx, serviceManifest, metav1.CreateOptions{})
 		if err != nil {
-			return fmt.Errorf("Creating Knative service %v", err)
+			return "", fmt.Errorf("Creating Knative service %v", err)
 		}
 	} else {
 		service.Spec = serviceManifest.Spec
 		deployedService, err = servingClient.Services(serviceManifest.ObjectMeta.Namespace).Update(ctx, service, metav1.UpdateOptions{})
 		if err != nil {
-			return fmt.Errorf("Updating Knative service %v", err)
+			return "", fmt.Errorf("Updating Knative service %v", err)
 		}
 	}
 
@@ -250,10 +250,10 @@ func Apply(serviceManifest *servingv1.Service, config *rest.Config) error {
 	for {
 		service, err = servingClient.Services(serviceManifest.ObjectMeta.Namespace).Get(ctx, serviceManifest.ObjectMeta.Name, metav1.GetOptions{})
 		if err != nil {
-			return err
+			return "", err
 		}
 		if service.Status.URL != nil {
-			return fmt.Errorf("%s", service.Status.URL) // Overload error return variable with URL string
+			return service.Status.URL.String(), nil
 		}
 
 		time.Sleep(time.Millisecond * 500)

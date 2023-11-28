@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/nearform/initium-cli/src/services/git"
 	knative "github.com/nearform/initium-cli/src/services/k8s"
@@ -47,7 +48,20 @@ func (c *icli) Deploy(cCtx *cli.Context) error {
 		return err
 	}
 
-	return knative.Apply(serviceManifest, config)
+	url, err := knative.Apply(serviceManifest, config)
+
+	if err != nil {
+		return err
+	}
+
+	_, isPR := os.LookupEnv("GITHUB_HEAD_REF")
+	if os.Getenv("CI") == "true" && os.Getenv("GITHUB_ACTIONS") == "true" && isPR {
+		return git.PublishCommentPRGithub(url)
+	}
+
+	fmt.Fprintf(c.Writer, "You can reach the app via %s\n", url)
+
+	return nil
 }
 
 func (c icli) DeployCMD() *cli.Command {
