@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.2](https://github.com/nearform/initium-cli/compare/v0.8.1...v0.8.2) (2023-11-30)
+
+
+### Bug Fixes
+
+* release please action needs access to packages ([#160](https://github.com/nearform/initium-cli/issues/160)) ([caff703](https://github.com/nearform/initium-cli/commit/caff703a62558f4da24439d6992eb1f7b5a3dcee))
+
 ## [0.8.1](https://github.com/nearform/initium-cli/compare/v0.8.0...v0.8.1) (2023-11-30)
 
 
