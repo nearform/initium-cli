@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/nearform/initium-cli/compare/v0.8.0...v0.8.1) (2023-11-30)
+
+
+### Bug Fixes
+
+* release-please and pipeline templates ([#158](https://github.com/nearform/initium-cli/issues/158)) ([d53d290](https://github.com/nearform/initium-cli/commit/d53d29050c40bf0d25d2ef710795629e2bf6f26f))
+
 ## [0.8.0](https://github.com/nearform/initium-cli/compare/v0.7.0...v0.8.0) (2023-11-30)
 
 
