@@ -22,7 +22,7 @@ jobs:
           ref: {{ `${{ github.head_ref }}` }}
 
       - name: build and deploy application
-        uses: docker://ghcr.io/nearform/initium-cli:latest
+        uses: docker://ghcr.io/nearform/initium-cli:{{ .Version }}
         with:
           args: onbranch
         env:
@@ -41,7 +41,7 @@ jobs:
       - uses: actions/checkout@v3
     
       - name: delete application
-        uses: docker://ghcr.io/nearform/initium-cli:latest
+        uses: docker://ghcr.io/nearform/initium-cli:{{ .Version }}
         with:
           args: onbranch --clean --branch-name {{ `${{ github.head_ref }}` }}
         env:

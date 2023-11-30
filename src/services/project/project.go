@@ -35,6 +35,7 @@ type InitOptions struct {
 	DestinationFolder string
 	DefaultBranch     string
 	PipelineType      string
+	Version           string
 }
 
 func GuessAppName() *string {
