@@ -19,7 +19,6 @@ jobs:
         with:
           command: manifest
 
-      ## Build go binary and add it to the release
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -30,6 +29,26 @@ jobs:
           go-version: stable
         if: ${{ steps.release.outputs.release_created }}
 
+      ## Use initium to build and push initium container
+      - name: build docker container using initium
+        run: go run main.go build
+        env:
+          INITIUM_APP_NAME: initium-cli
+          INITIUM_VERSION: ${{ steps.release.outputs.release_tag_name }}
+          INITIUM_REGISTRY_USER: ${{ github.actor }}
+          INITIUM_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ steps.release.outputs.release_created }}
+
+      - name: build docker container using initium
+        run: go run main.go push
+        env:
+          INITIUM_APP_NAME: initium-cli
+          INITIUM_VERSION: ${{ steps.release.outputs.release_tag_name }}
+          INITIUM_REGISTRY_USER: ${{ github.actor }}
+          INITIUM_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ steps.release.outputs.release_created }}
+
+      ## Build go binary and add it to the release
       - name: Build go binaries
         uses: goreleaser/goreleaser-action@v5
         with:
