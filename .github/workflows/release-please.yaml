@@ -34,7 +34,7 @@ jobs:
         run: go run main.go build
         env:
           INITIUM_APP_NAME: initium-cli
-          INITIUM_VERSION: ${{ steps.release.outputs.release_tag_name }}
+          INITIUM_VERSION: ${{ steps.release.outputs.tag_name }}
           INITIUM_REGISTRY_USER: ${{ github.actor }}
           INITIUM_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         if: ${{ steps.release.outputs.release_created }}
@@ -43,7 +43,7 @@ jobs:
         run: go run main.go push
         env:
           INITIUM_APP_NAME: initium-cli
-          INITIUM_VERSION: ${{ steps.release.outputs.release_tag_name }}
+          INITIUM_VERSION: ${{ steps.release.outputs.tag_name }}
           INITIUM_REGISTRY_USER: ${{ github.actor }}
           INITIUM_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
         if: ${{ steps.release.outputs.release_created }}

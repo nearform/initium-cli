@@ -25,11 +25,19 @@ func (c icli) InitGithubCMD(cCtx *cli.Context) error {
 	logger := log.New(os.Stderr)
 	logger.SetLevel(log.DebugLevel)
 
+	version := "v" + c.release.Version // Go releaser strips the v, we want it back for containers
+
+	if c.release.Version == "dev" {
+		version = "latest"
+	}
+
 	options := project.InitOptions{
 		PipelineType:      cCtx.Command.Name,
 		DestinationFolder: cCtx.String(destinationFolderFlag),
 		DefaultBranch:     cCtx.String(defaultBranchFlag),
+		Version:           version,
 	}
+
 	data, err := project.ProjectInit(options, c.Resources)
 
 	if err != nil {
