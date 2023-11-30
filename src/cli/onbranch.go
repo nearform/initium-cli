@@ -2,8 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"net/url"
-	"os"
 
 	"github.com/nearform/initium-cli/src/services/git"
 	"github.com/nearform/initium-cli/src/utils"
@@ -32,22 +30,7 @@ func (c icli) buildPushDeploy(cCtx *cli.Context) error {
 		return err
 	}
 
-	err = c.Deploy(cCtx)
-	appUrl, urlErr := url.Parse(err.Error()) // Check if it contains the app URL or it's a legit error
-	if urlErr != nil {
-		fmt.Println("No app URL available")
-		return err
-	}
-
-	// Check if the CI environment variable is set to GitHub Actions
-	if os.Getenv("CI") == "true" && os.Getenv("GITHUB_ACTIONS") == "true" {
-		err = git.PublishCommentPRGithub(appUrl.String())
-	} else {
-		fmt.Printf("You can reach the app via %s\n", appUrl.String())
-		err = nil
-	}
-
-	return err
+	return c.Deploy(cCtx)
 }
 
 func (c icli) OnBranchCMD() *cli.Command {
