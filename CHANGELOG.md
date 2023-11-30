@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.8.0](https://github.com/nearform/initium-cli/compare/v0.7.0...v0.8.0) (2023-11-30)
+
+
+### Features
+
+* add secrets management ([#145](https://github.com/nearform/initium-cli/issues/145)) ([9623e63](https://github.com/nearform/initium-cli/commit/9623e638883fd87fa4f46e1e7b006d4eea3758b3))
+* enforce linux/amd64 images ([#154](https://github.com/nearform/initium-cli/issues/154)) ([90aa6d8](https://github.com/nearform/initium-cli/commit/90aa6d8210fdb78514062659275a407b2abbf8f3))
+* post application url and commit hash as a PR comment after every deploy ([#148](https://github.com/nearform/initium-cli/issues/148)) ([79d5a2e](https://github.com/nearform/initium-cli/commit/79d5a2e4e6423a409aea36643be4dcc1e9405674))
+
+
+### Bug Fixes
+
+* cluster name for INITIUM_CLUSTER_ENDPOINT envvar ([#151](https://github.com/nearform/initium-cli/issues/151)) ([05c14db](https://github.com/nearform/initium-cli/commit/05c14db4836afb518c91427d5a39375cbab52e1c))
+* code refactoring and cleanup ([#156](https://github.com/nearform/initium-cli/issues/156)) ([b08bdd7](https://github.com/nearform/initium-cli/commit/b08bdd7f54c174c7db0247c100b8cd7ac756c6b7))
+
 ## [0.7.0](https://github.com/nearform/initium-cli/compare/v0.6.0...v0.7.0) (2023-10-31)
 
 
