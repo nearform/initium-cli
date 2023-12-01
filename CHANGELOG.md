@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.4](https://github.com/nearform/initium-cli/compare/v0.8.3...v0.8.4) (2023-12-01)
+
+
+### Bug Fixes
+
+* 0.8.4 ([49b8fbc](https://github.com/nearform/initium-cli/commit/49b8fbc0a00df5955f2dd4da13990afd33cd989d))
+
 ## [0.8.3](https://github.com/nearform/initium-cli/compare/v0.8.2...v0.8.3) (2023-12-01)
 
 
