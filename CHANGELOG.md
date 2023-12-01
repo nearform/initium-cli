@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.3](https://github.com/nearform/initium-cli/compare/v0.8.2...v0.8.3) (2023-12-01)
+
+
+### Bug Fixes
+
+* test npm publish action ([2d000df](https://github.com/nearform/initium-cli/commit/2d000df740afa45027629066228a74a0ba4ea655))
+
 ## [0.8.2](https://github.com/nearform/initium-cli/compare/v0.8.1...v0.8.2) (2023-11-30)
 
 
