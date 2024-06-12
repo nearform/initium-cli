@@ -13,3 +13,6 @@ spec:
       containers:
         - image: {{ .RemoteTag }}
           imagePullPolicy: Always
+          envFrom:
+            - secretRef:
+                name: app-config
